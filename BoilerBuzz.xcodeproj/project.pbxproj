@@ -29,15 +29,31 @@
 		8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8BCF6A4B2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BoilerBuzzTests/BoilerBuzzTests.swift,
+			);
+			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
+		};
+		8BCF6A4C2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzzTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BoilerBuzzTests/BoilerBuzzTests.swift,
+			);
+			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8BCF6A4B2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
+				8BCF6A4C2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzzTests" target */,
+			);
 			path = BoilerBuzz;
-			sourceTree = "<group>";
-		};
-		8B0A402F2D5444C1001C0A7D /* BoilerBuzzTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BoilerBuzzTests;
 			sourceTree = "<group>";
 		};
 		8B0A40392D5444C1001C0A7D /* BoilerBuzzUITests */ = {
@@ -76,7 +92,6 @@
 			isa = PBXGroup;
 			children = (
 				8B0A401E2D5444BF001C0A7D /* BoilerBuzz */,
-				8B0A402F2D5444C1001C0A7D /* BoilerBuzzTests */,
 				8B0A40392D5444C1001C0A7D /* BoilerBuzzUITests */,
 				8B0A401D2D5444BF001C0A7D /* Products */,
 			);
@@ -129,9 +144,6 @@
 			);
 			dependencies = (
 				8B0A402E2D5444C1001C0A7D /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				8B0A402F2D5444C1001C0A7D /* BoilerBuzzTests */,
 			);
 			name = BoilerBuzzTests;
 			packageProductDependencies = (
