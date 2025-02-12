@@ -103,3 +103,4 @@ struct SignUpView: View {
         task.resume()
     }
 }
+

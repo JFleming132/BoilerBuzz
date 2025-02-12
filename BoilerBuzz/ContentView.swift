@@ -19,9 +19,7 @@ struct ContentView: View {
             Tab("Home", systemImage: "house") {
                 HomeView()
             }
-            Tab("Drinks", systemImage: "drink") {
-                //I'm not quite sure how to use systemImage, but i imagine
-                //Once I figure it out its over for you hoes (1 dislike on this comment)
+            Tab("Drinks", systemImage: "wineglass") {
                 DrinksView()
             }
             Tab("Account", systemImage: "person") {
