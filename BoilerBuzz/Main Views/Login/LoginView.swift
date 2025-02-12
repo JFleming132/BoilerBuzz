@@ -11,6 +11,7 @@ struct LoginView: View {
     @State private var username = ""
     @State private var password = ""
     @State private var showFailedLogin = false
+    @State private var errorMessage: String = "Invalid Credentials"
     @Binding var isLoggedIn: Bool
     
     // Function to perform the login request
@@ -49,13 +50,18 @@ struct LoginView: View {
             
             // Check if the response contains the expected message
             if let data = data, let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                if let message = jsonResponse["message"] as? String, message == "Got user login request!" {
+                if let message = jsonResponse["message"] as? String, message == "Login successful" {
                     print("Login successful: \(message)")
                     DispatchQueue.main.async {
                         isLoggedIn = true
                     }
                 } else {
                     DispatchQueue.main.async {
+                        if let message = jsonResponse["message"] as? String {
+                            errorMessage = message
+                        } else {
+                            errorMessage = "Unknown error occurred"
+                        }
                         showFailedLogin = true
                     }
                 }
@@ -102,7 +108,7 @@ struct LoginView: View {
                 .padding()
                 
                 if showFailedLogin {
-                    Text("Login failed. Please check your username and password.")
+                    Text("\(errorMessage). Please try again.")
                         .foregroundColor(.red)
                 }
                 
