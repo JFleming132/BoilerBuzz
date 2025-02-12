@@ -21,7 +21,7 @@ struct ContentView: View {
             }
             Tab("Drinks", systemImage: "drink") {
                 //I'm not quite sure how to use systemImage, but i imagine
-                //Once I figure it out its over for you hoes
+                //Once I figure it out its over for you hoes (1 dislike on this comment)
                 DrinksView()
             }
             Tab("Account", systemImage: "person") {
