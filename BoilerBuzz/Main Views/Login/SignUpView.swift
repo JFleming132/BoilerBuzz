@@ -18,6 +18,10 @@ struct SignUpView: View {
             Text("Sign Up")
                 .font(.largeTitle)
                 .padding()
+            
+            NavigationLink(destination: VerificationView()) {
+                
+            }
 
             TextField("Username", text: $newUsername)
                 .padding()
