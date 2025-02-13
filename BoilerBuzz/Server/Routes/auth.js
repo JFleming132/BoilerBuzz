@@ -120,4 +120,34 @@ router.post('/login', async (req, res) => {
     }
 });
 
+//verification route
+router.post('/verify', async (req, res) => {
+    const { email, verificationToken } = req.body;
+    console.log(`got verification request with email: ${email} and verification: ${verificationToken}`);
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'No user found with that email' });
+        }
+        
+        console.log(user.verificationToken)
+
+        // Check if the verification token matches
+        if (user.verificationToken !== verificationToken) {
+            return res.status(400).json({ message: 'Invalid verification token' });
+        }
+
+        // Mark the user as verified
+        user.emailVerified = true;
+        user.verificationToken = null; // Remove token after successful verification
+        await user.save();
+
+        return res.status(200).json({ message: 'Account verified successfully!' });
+    } catch (error) {
+        console.error('Verification error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 module.exports = router;

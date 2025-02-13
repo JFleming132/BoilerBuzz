@@ -21,6 +21,11 @@ struct SignUpView: View {
                 .font(.largeTitle)
                 .padding()
             
+            NavigationLink(destination: VerificationView()) {
+                Text("Click here to verify your account")
+                    .foregroundColor(.green)
+            }
+            
             TextField("Email", text: $newEmail)
                 .padding()
                 .textFieldStyle(RoundedBorderTextFieldStyle())
