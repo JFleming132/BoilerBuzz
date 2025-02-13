@@ -133,7 +133,6 @@ router.post('/verify', async (req, res) => {
         
         console.log(user.verificationToken)
 
-
         // Mark the user as verified
         user.emailVerified = true;
         user.verificationToken = null; // Remove token after successful verification
@@ -190,6 +189,7 @@ router.post('/forgotPasswordCode', async (req, res) => {
         user.forgotPasswordToken = forgotPasswordToken;
         await user.save();
 
+
         return res.status(200).json({ message: 'Password Reset Has Been Sent to Your Email!' });
     } catch (error) {
         console.error('Verification error:', error);
@@ -229,6 +229,7 @@ router.post('/changePassword', async (req, res) => {
     }
 });
 
+
 // Drinks route
 router.get('/drinks', async (req, res) => {
     try {
@@ -248,5 +249,6 @@ router.get('/drinks', async (req, res) => {
         res.status(500).json({ error: "Failed to fetch drinks. Please try again later." });
     }
 });
+
 
 module.exports = router;
