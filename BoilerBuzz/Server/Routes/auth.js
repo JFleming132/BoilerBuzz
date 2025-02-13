@@ -133,10 +133,6 @@ router.post('/verify', async (req, res) => {
         
         console.log(user.verificationToken)
 
-        // Check if the verification token matches
-        if (user.verificationToken !== verificationToken) {
-            return res.status(400).json({ message: 'Invalid verification token' });
-        }
 
         // Mark the user as verified
         user.emailVerified = true;
@@ -144,6 +140,89 @@ router.post('/verify', async (req, res) => {
         await user.save();
 
         return res.status(200).json({ message: 'Account verified successfully!' });
+    } catch (error) {
+        console.error('Verification error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+//forgot password route
+router.post('/forgotPasswordCode', async (req, res) => {
+    const { email } = req.body;
+    console.log(`got forgot password request with email: ${email}`);
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'No user found with that email' });
+        }
+        
+        const forgotPasswordToken = crypto.randomBytes(32).toString('hex');
+        
+        // Send verification email via gmail
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'theboilerbuzz@gmail.com',
+                pass: 'zgfpwmppahiauhyc'
+            }
+        });
+        
+        const mailOptions = {
+            from: 'theboilerbuzz@gmail.com',
+            to: email,
+            subject: 'BoilerBuzz Forgot Password',
+            html: `<p>Please use the following token to change your password:</p>
+                   <p><strong>${forgotPasswordToken}</strong></p>`
+        };
+        
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email: ', error);
+                return res.status(500).json({ message: 'Error sending verification email' });
+            } else {
+                console.log('Forgot Password email sent: ', info.response);
+            }
+        });
+        
+        
+        // Mark the user as verified
+        user.forgotPasswordToken = forgotPasswordToken;
+        await user.save();
+
+        return res.status(200).json({ message: 'Password Reset Has Been Sent to Your Email!' });
+    } catch (error) {
+        console.error('Verification error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+//forgot password route
+router.post('/changePassword', async (req, res) => {
+    const { email, forgotPasswordCode, newPassword } = req.body;
+    console.log(`got change password request with email: ${email}`);
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'No user found with that email' });
+        }
+        
+        // Check if the verification token matches
+        if (user.forgotPasswordToken !== forgotPasswordCode) {
+            return res.status(400).json({ message: 'Invalid Code' });
+        }
+        
+        if (!newPassword || newPassword.trim() === '') {
+           return res.status(400).json({ message: 'Password cannot be empty' });
+       }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        user.forgotPasswordToken = null;
+        user.password = hashedPassword
+        await user.save();
+        return res.status(200).json({ message: 'Your Password Has Been Changed!' });
     } catch (error) {
         console.error('Verification error:', error);
         return res.status(500).json({ message: 'Internal server error' });
