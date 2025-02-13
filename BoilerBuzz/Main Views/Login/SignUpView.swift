@@ -7,10 +7,12 @@
 import SwiftUI
 
 struct SignUpView: View {
+    @State private var newEmail = ""
     @State private var newUsername = ""
     @State private var newPassword = ""
     @State private var confirmPassword = ""
     @State private var showError = false
+    @State private var errorMessage: String? = "Error during sign up"
     @State private var isSignupSuccess = false
 
     var body: some View {
@@ -19,9 +21,11 @@ struct SignUpView: View {
                 .font(.largeTitle)
                 .padding()
             
-            NavigationLink(destination: VerificationView()) {
-                
-            }
+            TextField("Email", text: $newEmail)
+                .padding()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
 
             TextField("Username", text: $newUsername)
                 .padding()
@@ -38,10 +42,16 @@ struct SignUpView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
             Button(action: {
-                if !newUsername.isEmpty && newPassword == confirmPassword {
+                if !newEmail.isEmpty && !newUsername.isEmpty && newPassword == confirmPassword {
                     // Make a sign-up request to the backend
-                    signupRequest(username: newUsername, password: newPassword)
+                    signupRequest(email: newEmail, username: newUsername, password: newPassword)
                 } else {
+                    if newUsername.isEmpty {
+                        errorMessage = "Username is required."
+                    }
+                    else {
+                        errorMessage = "Passwords do not match."
+                    }
                     showError = true
                 }
             }) {
@@ -54,12 +64,12 @@ struct SignUpView: View {
             .padding()
 
             if showError {
-                Text("Passwords do not match or fields are empty.")
+                Text("\(errorMessage ?? "Unknown error")")
                     .foregroundColor(.red)
             }
 
             if isSignupSuccess {
-                Text("Sign-up successful!")
+                Text("Signup successful! Check your email for a verification code.")
                     .foregroundColor(.green)
             }
         }
@@ -67,18 +77,19 @@ struct SignUpView: View {
     }
 
     // Function to handle sign-up request
-    func signupRequest(username: String, password: String) {
+    func signupRequest(email: String, username: String, password: String) {
         guard let url = URL(string: "http://localhost:3000/api/auth/signup") else { return }
-        
+
         let body: [String: Any] = [
+            "email": email,
             "username": username,
             "password": password
         ]
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
         } catch {
@@ -92,19 +103,42 @@ struct SignUpView: View {
                 return
             }
             guard let data = data else { return }
-            
-            do {
-                let responseJSON = try JSONSerialization.jsonObject(with: data, options: [])
-                print("Response: \(responseJSON)")
-                DispatchQueue.main.async {
-                    isSignupSuccess = true  // Update the success message
+
+            // Check the response status code
+            if let httpResponse = response as? HTTPURLResponse {
+                if httpResponse.statusCode == 201 {
+                    // Successful response, check the message
+                    do {
+                        let responseJSON = try JSONSerialization.jsonObject(with: data, options: [])
+                        if let jsonResponse = responseJSON as? [String: Any], let message = jsonResponse["message"] as? String {
+                            if message == "User registered successfully!" {
+                                print("Signup successful: \(message)")
+                                DispatchQueue.main.async {
+                                    isSignupSuccess = true // Update success flag
+                                }
+                            }
+                        }
+                    } catch {
+                        print("Error parsing response: \(error)")
+                    }
+                } else {
+                    // Failed response, handle error message
+                    do {
+                        let responseJSON = try JSONSerialization.jsonObject(with: data, options: [])
+                        if let jsonResponse = responseJSON as? [String: Any], let message = jsonResponse["message"] as? String {
+                            print("Signup failed: \(message)")
+                            DispatchQueue.main.async {
+                                errorMessage = message
+                                showError = true
+                            }
+                        }
+                    } catch {
+                        print("Error parsing failed response: \(error)")
+                    }
                 }
-            } catch {
-                print("Error parsing response: \(error)")
             }
         }
-        
+
         task.resume()
     }
 }
-
