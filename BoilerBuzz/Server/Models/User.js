@@ -1,39 +1,39 @@
 //
-//  server.js
+//  User.js
 //  BoilerBuzz
 //
 //  Created by Matt Zlatniski on 2/12/25.
 //
-const express = require('express');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const authRoutes = require('./Routes/auth');
 
-const app = express();
-const port = 3000;
-
-const cors = require('cors');
-app.use(cors());
-
-// Middleware to parse incoming JSON requests
-app.use(express.json());
-
-// MongoDB connection URI
-const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
-// Connect to MongoDB
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("\nMongoDB connected successfully"))
-.catch(err => console.log("\nMongoDB connection error:", err));
-
-// Routes for authentication
-app.use('/api/auth', authRoutes);
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+const userSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,  // email is required
+        unique: true,    // email should be unique
+        match: [         // regex pattern to validate email format
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            'Please enter a valid email address'
+        ],
+    },
+    username: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    emailVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String
+    }
 });
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

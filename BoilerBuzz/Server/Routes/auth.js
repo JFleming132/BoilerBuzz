@@ -8,7 +8,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../Models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
