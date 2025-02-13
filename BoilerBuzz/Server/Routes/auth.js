@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 

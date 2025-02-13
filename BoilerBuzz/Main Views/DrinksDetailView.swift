@@ -18,6 +18,7 @@ struct Drink: Identifiable, Codable {
     let category: [String]
     let calories: Int
 }
+
 struct DrinksDetailView: View {
     @State private var drinks: [Drink] = []       // List of drinks
     @State private var selectedDrink: Drink? = nil // Currently selected drink for the popup
@@ -79,7 +80,7 @@ struct DrinksDetailView: View {
         }
     }
 
-    // Fetch drinks from your Node.js API and filter out drinks with `image_id`
+    // Fetch drinks from your Node.js API and randomize the order
     func fetchDrinks() {
         guard let url = URL(string: "http://localhost:3000/api/auth/drinks") else {
             errorMessage = "Invalid URL"
@@ -109,7 +110,10 @@ struct DrinksDetailView: View {
                     let filteredData = try JSONSerialization.data(withJSONObject: filteredJson, options: [])
 
                     // Decode filtered JSON into Drink objects
-                    let decodedDrinks = try JSONDecoder().decode([Drink].self, from: filteredData)
+                    var decodedDrinks = try JSONDecoder().decode([Drink].self, from: filteredData)
+
+                    // Randomize the drinks order
+                    decodedDrinks.shuffle()
 
                     DispatchQueue.main.async {
                         self.drinks = decodedDrinks
@@ -236,7 +240,7 @@ struct DrinkDetailsPopup: View {
         case "nine irish brothers":
             return "globe.americas.fill"
         case "cider":
-            return "applelogo"
+            return "leaf.fill"
         default:
             return "questionmark.circle"
         }
