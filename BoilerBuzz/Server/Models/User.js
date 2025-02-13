@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     },
     verificationToken: {
         type: String
+    },
+    forgotPasswordToken: {
+        type: String,
+        default: null
     }
 });
 
