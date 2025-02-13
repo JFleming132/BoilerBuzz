@@ -133,7 +133,6 @@ router.post('/verify', async (req, res) => {
         
         console.log(user.verificationToken)
 
-
         // Mark the user as verified
         user.emailVerified = true;
         user.verificationToken = null; // Remove token after successful verification
@@ -190,6 +189,7 @@ router.post('/forgotPasswordCode', async (req, res) => {
         user.forgotPasswordToken = forgotPasswordToken;
         await user.save();
 
+
         return res.status(200).json({ message: 'Password Reset Has Been Sent to Your Email!' });
     } catch (error) {
         console.error('Verification error:', error);
@@ -228,5 +228,27 @@ router.post('/changePassword', async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
+// Drinks route
+router.get('/drinks', async (req, res) => {
+    try {
+        // Explicitly switch to the `Boiler_Buzz` database
+        const db = mongoose.connection.client.db('Boiler_Buzz');
+        
+        // Access the `drinks` collection in the `Boiler_Buzz` database
+        const drinks = await db.collection('drinks').find().toArray();
+
+        if (drinks.length === 0) {
+            return res.status(404).json({ error: "Drinks could not be found" });
+        }
+
+        res.json(drinks); // Return the list of drinks
+    } catch (error) {
+        console.error("Error fetching drinks:", error.message);
+        res.status(500).json({ error: "Failed to fetch drinks. Please try again later." });
+    }
+});
+
 
 module.exports = router;
