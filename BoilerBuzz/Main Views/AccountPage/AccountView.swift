@@ -10,6 +10,7 @@ import SwiftUI
 struct AccountView: View {
     @State private var profileName: String = "Loading..."
     @State private var profileBio: String = "Loading..."
+    @State private var userId: String = ""
     
     var body: some View {
         NavigationView {
@@ -17,7 +18,7 @@ struct AccountView: View {
                 // Settings
                 HStack {
                     Spacer()
-                    NavigationLink(destination: SettingsView()) {
+                    NavigationLink(destination: SettingsView(username: profileName, bio: profileBio, userId: userId)) {
                         Image(systemName: "gearshape.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
@@ -116,12 +117,14 @@ struct AccountView: View {
     
     // Function to fetch user data from backend
     func fetchUserProfile() {
-        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
+        guard let StoreduserId = UserDefaults.standard.string(forKey: "userId") else {
                 print("No userId stored, user may not be logged in")
                 return
             }
+
+            self.userId = StoreduserId
             
-            guard let url = URL(string: "http://localhost:3000/api/profile/\(userId)") else {
+        guard let url = URL(string: "http://localhost:3000/api/profile/\(self.userId)") else {
                 print("Invalid URL")
                 return
             }

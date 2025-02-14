@@ -8,10 +8,15 @@
 import SwiftUI
 
 struct SettingsView: View {
+
+    @State var username: String
+    @State var bio: String
+    @State var userId: String
+
     var body: some View {
         List {
             Section {
-                NavigationLink(destination: AccountSettingsView()) {
+                NavigationLink(destination: AccountSettingsView(username: username, bio: bio, userId: userId)) {
                     SettingsRow(icon: "person.fill", title: "Account")
                 }
                 NavigationLink(destination: NotificationsSettingsView()) {
@@ -52,6 +57,6 @@ struct SettingsRow: View {
 
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView()
+        SettingsView(username: "Patrick", bio: "I am a student at Purdue University.", userId: "12345")
     }
 }
