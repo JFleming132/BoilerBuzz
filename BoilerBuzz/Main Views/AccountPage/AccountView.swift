@@ -110,6 +110,7 @@ struct AccountView: View {
                 .padding()
             }
             .padding()
+            .navigationTitle("Account")
         }
     }
     
