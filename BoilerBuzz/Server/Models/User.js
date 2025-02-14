@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["user", "admin"],
         default: "user"
+    },
+    forgotPasswordToken: {
+        type: String,
+        default: null
     }
 });
 
