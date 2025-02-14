@@ -1,2 +1,9 @@
+# Node Modules
 node_modules/
+
+# macOS system files
 .DS_Store
+
+# Xcode user-specific data
+*.xcuserdatad
+xcuserdata/
