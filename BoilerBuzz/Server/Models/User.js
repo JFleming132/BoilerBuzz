@@ -31,8 +31,34 @@ const userSchema = new mongoose.Schema({
     },
     verificationToken: {
         type: String
+    },
+    // Profile info
+    bio: {
+        type: String,
+        default: "No bio yet."
+    },
+    profilePicture: {
+        type: String, // URL to the profile picture
+        default: "https://example.com/default-profile.png"
+    },
+    favoriteDrinks: [{
+        type: String
+    }], 
+    pastEvents: [{
+        type: String
+    }], 
+    rating: {
+        type: Number,
+        default: 0
+    },
+
+    status: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user"
     }
 });
+
 
 const User = mongoose.model('User', userSchema);
 

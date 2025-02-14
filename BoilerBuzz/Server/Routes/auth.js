@@ -79,7 +79,10 @@ router.post('/signup', async (req, res) => {
             }
         });
         
-        res.status(201).json({ message: 'User registered successfully!' });
+        res.status(201).json({ 
+            message: 'User registered successfully!',
+            userId: newUser._id
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error registering user' });
@@ -113,7 +116,10 @@ router.post('/login', async (req, res) => {
         // this is the jwt token for once the login fully works
         //const token = jwt.sign({ userId: user._id }, 'boilerbuzzjwt', { expiresIn: '1h' });
 
-        res.status(200).json({ message: 'Login successful' });
+        res.status(200).json({ 
+            message: 'Login successful',
+            userId: user._id,
+         });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error logging in user' });

@@ -9,6 +9,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authRoutes = require('./Routes/auth');
+const profileRoutes = require('./Routes/profile');
+
 
 const app = express();
 const port = 3000;
@@ -23,19 +25,19 @@ app.use(express.json());
 const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Connect to MongoDB
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("\nMongoDB connected successfully"))
-.catch(err => console.log("\nMongoDB connection error:", err));
+mongoose.connect(mongoURI)
+    .then(() => console.log("\nMongoDB connected successfully"))
+    .catch(err => console.log("\nMongoDB connection error:", err));
+
 
 // Routes for authentication
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
+
 
 

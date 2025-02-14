@@ -48,26 +48,41 @@ struct LoginView: View {
                 return
             }
             
-            // Check if the response contains the expected message
-            if let data = data, let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                if let message = jsonResponse["message"] as? String, message == "Login successful" {
-                    print("Login successful: \(message)")
-                    DispatchQueue.main.async {
-                        isLoggedIn = true
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        if let message = jsonResponse["message"] as? String {
-                            errorMessage = message
+            guard let data = data else { return }
+                    
+                    do {
+                        let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
+                        if loginResponse.message == "Login successful" {
+                            // Store the userId and token in UserDefaults
+                            UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
+                            if let token = loginResponse.token {
+                                UserDefaults.standard.set(token, forKey: "token")
+                            }
+                            print("Login successful: \(loginResponse.message)")
+                            DispatchQueue.main.async {
+                                isLoggedIn = true
+                            }
                         } else {
-                            errorMessage = "Unknown error occurred"
+                            DispatchQueue.main.async {
+                                errorMessage = loginResponse.message
+                                showFailedLogin = true
+                            }
                         }
-                        showFailedLogin = true
+                    } catch {
+                        print("Error decoding login response: \(error)")
+                        DispatchQueue.main.async {
+                            showFailedLogin = true
+                        }
                     }
-                }
+                }.resume()
+        
+        
+        struct LoginResponse: Codable {
+            let message: String
+            let userId: String
+            let token: String?
+        }
             }
-        }.resume()
-    }
     
     var body: some View {
         NavigationView {
