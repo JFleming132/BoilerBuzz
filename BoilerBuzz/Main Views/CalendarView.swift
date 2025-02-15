@@ -9,6 +9,9 @@ import SwiftUI
 
 struct CalendarView: View {
     var body: some View {
-        Text("This is supposed to be the Calendar page")
+        ZStack{
+            bgColor.ignoresSafeArea(edges: .all)
+            Text("This is supposed to be the Calendar page")
+        }
     }
 }

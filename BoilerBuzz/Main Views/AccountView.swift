@@ -9,6 +9,9 @@ import SwiftUI
 
 struct AccountView: View {
     var body: some View {
-        Text("This is supposed to be the Account page")
+        ZStack {
+            bgColor.ignoresSafeArea()
+            Text("This is supposed to be the Account page")
+        }
     }
 }
