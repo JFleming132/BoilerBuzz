@@ -39,8 +39,8 @@ struct VerificationView: View {
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
+                    .background(primaryColor)
+                    .foregroundColor(tertiaryColor)
                     .cornerRadius(10)
             }
             .padding()

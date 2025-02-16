@@ -36,8 +36,8 @@ struct ForgotPasswordView: View {
                     Text("Send Reset Code")
                         .fontWeight(.bold)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+                        .background(primaryColor)
+                        .foregroundColor(tertiaryColor)
                         .cornerRadius(10)
                 }
                 .padding()

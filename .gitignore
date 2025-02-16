@@ -7,3 +7,6 @@ node_modules/
 # Xcode user-specific data
 *.xcuserdatad
 xcuserdata/
+
+# Xcode project files
+BoilerBuzz.xcodeproj

@@ -86,60 +86,63 @@ struct LoginView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("BoilerBuzz Login")
-                    .font(.largeTitle)
-                    .padding()
-                
-                TextField("Username", text: $username)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .onTapGesture {
-                        showFailedLogin = false
-                    }
-                
-                SecureField("Password", text: $password)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .onTapGesture {
-                        showFailedLogin = false
-                    }
-                
-                Button(action: {
-                    if !username.isEmpty && !password.isEmpty {
-                        loginRequest()  // Call loginRequest function
-                    } else {
-                        showFailedLogin = true
-                    }
-                }) {
-                    Text("Login")
+            ZStack {
+                bgColor.ignoresSafeArea(edges: .all)
+                VStack {
+                    Text("BoilerBuzz Login")
+                        .font(.largeTitle)
                         .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    
+                    TextField("Username", text: $username)
+                        .padding()
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .onTapGesture {
+                            showFailedLogin = false
+                        }
+                    
+                    SecureField("Password", text: $password)
+                        .padding()
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onTapGesture {
+                            showFailedLogin = false
+                        }
+                    
+                    Button(action: {
+                        if !username.isEmpty && !password.isEmpty {
+                            loginRequest()  // Call loginRequest function
+                        } else {
+                            showFailedLogin = true
+                        }
+                    }) {
+                        Text("Login")
+                            .padding()
+                            .background(primaryColor)
+                            .foregroundColor(tertiaryColor)
+                            .cornerRadius(10)
+                    }
+                    .padding()
+                    
+                    if showFailedLogin {
+                        Text("\(errorMessage). Please try again.")
+                            .foregroundColor(.red)
+                    }
+                    
+                    NavigationLink(destination: SignUpView()) {
+                        Text("New to BoilerBuzz? Sign Up!")
+                            .foregroundColor(tertiaryColor)
+                            .padding()
+                    }
+                    
+                    NavigationLink(destination: ForgotPasswordView()) {
+                        Text("Forgot password?")
+                            .foregroundColor(tertiaryColor)
+                            .padding()
+                    }
                 }
                 .padding()
-                
-                if showFailedLogin {
-                    Text("\(errorMessage). Please try again.")
-                        .foregroundColor(.red)
-                }
-                
-                NavigationLink(destination: SignUpView()) {
-                    Text("New to BoilerBuzz? Sign Up!")
-                        .foregroundColor(.blue)
-                        .padding()
-                }
-                
-                NavigationLink(destination: ForgotPasswordView()) {
-                    Text("Forgot password?")
-                        .foregroundColor(.blue)
-                        .padding()
-                }
             }
-            .padding()
         }
     }
 }

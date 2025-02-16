@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SpendingView: View {
     var body: some View {
-        Text("This is supposed to be the spending page")
+        VStack {
+            Text("This is supposed to be the spending page")
+        }
     }
 }

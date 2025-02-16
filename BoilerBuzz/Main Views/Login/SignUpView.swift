@@ -16,69 +16,72 @@ struct SignUpView: View {
     @State private var isSignupSuccess = false
 
     var body: some View {
-        VStack {
-            Text("Sign Up")
-                .font(.largeTitle)
-                .padding()
-            
-            NavigationLink(destination: VerificationView()) {
-                Text("Click here to verify your account")
-                    .foregroundColor(.green)
-            }
-            
-            TextField("Email", text: $newEmail)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-
-            TextField("Username", text: $newUsername)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-
-            SecureField("Password", text: $newPassword)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-
-            SecureField("Confirm Password", text: $confirmPassword)
-                .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-
-            Button(action: {
-                if !newEmail.isEmpty && !newUsername.isEmpty && newPassword == confirmPassword {
-                    // Make a sign-up request to the backend
-                    signupRequest(email: newEmail, username: newUsername, password: newPassword)
-                } else {
-                    if newUsername.isEmpty {
-                        errorMessage = "Username is required."
-                    }
-                    else {
-                        errorMessage = "Passwords do not match."
-                    }
-                    showError = true
-                }
-            }) {
-                Text("Create Account")
+        ZStack {
+            bgColor.ignoresSafeArea(edges: .all)
+            VStack {
+                Text("Sign Up")
+                    .font(.largeTitle)
                     .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                
+                NavigationLink(destination: VerificationView()) {
+                    Text("Click here to verify your account")
+                        .foregroundColor(tertiaryColor)
+                }
+                
+                TextField("Email", text: $newEmail)
+                    .padding()
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                
+                TextField("Username", text: $newUsername)
+                    .padding()
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                
+                SecureField("Password", text: $newPassword)
+                    .padding()
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                SecureField("Confirm Password", text: $confirmPassword)
+                    .padding()
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Button(action: {
+                    if !newEmail.isEmpty && !newUsername.isEmpty && newPassword == confirmPassword {
+                        // Make a sign-up request to the backend
+                        signupRequest(email: newEmail, username: newUsername, password: newPassword)
+                    } else {
+                        if newUsername.isEmpty {
+                            errorMessage = "Username is required."
+                        }
+                        else {
+                            errorMessage = "Passwords do not match."
+                        }
+                        showError = true
+                    }
+                }) {
+                    Text("Create Account")
+                        .padding()
+                        .background(primaryColor)
+                        .foregroundColor(tertiaryColor)
+                        .cornerRadius(10)
+                }
+                .padding()
+                
+                if showError {
+                    Text("\(errorMessage ?? "Unknown error")")
+                        .foregroundColor(.red)
+                }
+                
+                if isSignupSuccess {
+                    Text("Signup successful! Check your email for a verification code.")
+                        .foregroundColor(.green)
+                }
             }
             .padding()
-
-            if showError {
-                Text("\(errorMessage ?? "Unknown error")")
-                    .foregroundColor(.red)
-            }
-
-            if isSignupSuccess {
-                Text("Signup successful! Check your email for a verification code.")
-                    .foregroundColor(.green)
-            }
         }
-        .padding()
     }
 
     // Function to handle sign-up request

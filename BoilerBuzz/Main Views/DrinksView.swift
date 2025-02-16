@@ -17,7 +17,7 @@ struct DrinksView: View {
                 }) {
                     Text("Drinks")
                         .font(.headline)
-                        .foregroundColor(selectedTab == "Drinks" ? .black : .gray)
+                        .foregroundColor(selectedTab == "Drinks" ? tertiaryColor : secondaryColor)
                         .padding(.vertical, 12)
                         .frame(maxWidth: .infinity) // Make tabs fill space equally
                 }
@@ -26,14 +26,14 @@ struct DrinksView: View {
                 }) {
                     Text("Spending")
                         .font(.headline)
-                        .foregroundColor(selectedTab == "Spending" ? .black : .gray)
+                        .foregroundColor(selectedTab == "Spending" ? tertiaryColor : secondaryColor)
                         .padding(.vertical, 12)
                         .frame(maxWidth: .infinity) // Make tabs fill space equally
                 }
             }
             .padding(.top, 44) // Add padding to push tabs below the clock
-            .background(Color.white) // White background for the tabs
-            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2) // Subtle shadow for tab separator
+            .background(primaryColor) // Black background for the tabs
+            .shadow(color: secondaryColor.opacity(0.1), radius: 2, x: 0, y: 2) // Subtle shadow for tab separator
 
             // Dynamic content based on selected tab
             Spacer()
@@ -46,6 +46,6 @@ struct DrinksView: View {
         }
         .edgesIgnoringSafeArea(.top) // Extend the view to the very top
         .frame(maxHeight: .infinity, alignment: .top) // Push everything to the top
-        .background(Color.white) // Ensure the entire background is white
+        .background(bgColor) // Ensure the entire background is white
     }
 }

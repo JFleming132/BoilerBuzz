@@ -6,7 +6,10 @@
 //
 
 import SwiftUI
-
+let primaryColor = Color.black
+let secondaryColor = Color.gray
+let tertiaryColor = Color.yellow
+let bgColor = Color.black.opacity(0.7)
 @main
 struct BoilerBuzzApp: App {
     @State var isLoggedIn: Bool = false

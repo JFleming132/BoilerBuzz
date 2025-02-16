@@ -9,6 +9,9 @@ import SwiftUI
 
 struct HomeView: View {
     var body: some View {
-        Text("This is supposed to be the Home page")
+        ZStack {
+            bgColor.ignoresSafeArea(edges: .all)
+            Text("This is supposed to be the Home page")
+        }
     }
 }
