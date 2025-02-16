@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authRoutes = require('./Routes/auth');
 const profileRoutes = require('./Routes/profile');
+const drinksRoutes = require('./Routes/drinks');
 
 
 const app = express();
@@ -33,6 +34,7 @@ mongoose.connect(mongoURI)
 // Routes for authentication
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/drinks', drinksRoutes);
 
 // Start the server
 app.listen(port, () => {
