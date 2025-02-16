@@ -163,10 +163,26 @@ struct DrinksDetailView: View {
 struct DrinkDetailsPopup: View {
     let drink: Drink
     @Environment(\.dismiss) var dismiss // Access the dismiss environment action
+    @State private var isChecked: Bool = false // Track the checked state
 
     var body: some View {
         ScrollView { // Make the entire popup scrollable
             VStack(alignment: .center, spacing: 16) {
+                HStack {
+                    Spacer()
+                    // Checkmark button in the top-right corner
+                    Button(action: {
+                        isChecked.toggle() // Toggle the checked state
+                    }) {
+                        Image(systemName: isChecked ? "checkmark.circle.fill" : "checkmark.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(isChecked ? .green : .gray)
+                    }
+                }
+                .padding(.top, 10)
+                
                 // Add a hero category icon
                 Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
                     .resizable()

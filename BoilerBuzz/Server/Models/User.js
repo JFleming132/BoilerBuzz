@@ -60,7 +60,11 @@ const userSchema = new mongoose.Schema({
     forgotPasswordToken: {
         type: String,
         default: null
-    }
+    },
+    triedDrinks: [{
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'drinks' // References the Drink collection
+      }]
 });
 
 

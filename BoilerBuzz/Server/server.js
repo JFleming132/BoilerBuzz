@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection URI
-const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/Boiler_Buzz?retryWrites=true&w=majority&appName=Cluster0";
 
 // Connect to MongoDB
 mongoose.connect(mongoURI)
