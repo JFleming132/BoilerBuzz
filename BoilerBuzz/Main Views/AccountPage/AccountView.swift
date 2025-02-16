@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct AccountView: View {
-    @State private var profileName: String = "Loading..."
-    @State private var profileBio: String = "Loading..."
-    @State private var userId: String = ""
+    @StateObject var profileData = ProfileViewModel()
     
     var body: some View {
         NavigationView {
@@ -18,7 +16,7 @@ struct AccountView: View {
                 // Settings
                 HStack {
                     Spacer()
-                    NavigationLink(destination: SettingsView(username: profileName, bio: profileBio, userId: userId)) {
+                    NavigationLink(destination: SettingsView(profileData: profileData)) {
                         Image(systemName: "gearshape.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
@@ -48,18 +46,17 @@ struct AccountView: View {
                 .padding(.top, 5)
                 
                 // Profile Name & Bio
-            VStack {
-                Text(profileName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Text(profileBio)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
-            .onAppear {
-                fetchUserProfile()
-            }
+                VStack {
+                    Text(profileData.username)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text(profileData.bio)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                .onAppear {
+                    profileData.fetchUserProfile()
+                }
                 
                 // Buttons Row
                 HStack {
@@ -114,46 +111,10 @@ struct AccountView: View {
             .navigationTitle("Account")
         }
     }
-    
-    // Function to fetch user data from backend
-    func fetchUserProfile() {
-        guard let StoreduserId = UserDefaults.standard.string(forKey: "userId") else {
-                print("No userId stored, user may not be logged in")
-                return
-            }
 
-            self.userId = StoreduserId
-            
-        guard let url = URL(string: "http://localhost:3000/api/profile/\(self.userId)") else {
-                print("Invalid URL")
-                return
-            }
-            
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Error fetching profile data: \(error)")
-                return
-            }
-            guard let data = data else { return }
-            do {
-                let decodedResponse = try JSONDecoder().decode(Profile.self, from: data)
-                DispatchQueue.main.async {
-                    self.profileName = decodedResponse.username
-                    self.profileBio = decodedResponse.bio
-                }
-            } catch {
-                print("Error decoding profile data: \(error)")
-            }
-        }.resume()
-    }
 }
     struct AccountView_Previews: PreviewProvider {
         static var previews: some View {
             AccountView()
         }
     }
-
-struct Profile: Codable {
-    let username: String
-    let bio: String
-}

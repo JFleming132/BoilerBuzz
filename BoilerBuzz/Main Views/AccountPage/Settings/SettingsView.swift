@@ -9,14 +9,12 @@ import SwiftUI
 
 struct SettingsView: View {
 
-    @State var username: String
-    @State var bio: String
-    @State var userId: String
-
+    @ObservedObject var profileData: ProfileViewModel
+    
     var body: some View {
         List {
             Section {
-                NavigationLink(destination: AccountSettingsView(username: username, bio: bio, userId: userId)) {
+                NavigationLink(destination: AccountSettingsView(profileData: profileData)) {
                     SettingsRow(icon: "person.fill", title: "Account")
                 }
                 NavigationLink(destination: NotificationsSettingsView()) {
@@ -57,6 +55,6 @@ struct SettingsRow: View {
 
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView(username: "Patrick", bio: "I am a student at Purdue University.", userId: "12345")
+        SettingsView(profileData: ProfileViewModel())
     }
 }
