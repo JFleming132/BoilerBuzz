@@ -242,6 +242,7 @@ router.get('/drinks', async (req, res) => {
     try {
         // Explicitly switch to the `Boiler_Buzz` database
         const db = mongoose.connection.client.db('Boiler_Buzz');
+        console.log("get drinks");
         
         // Access the `drinks` collection in the `Boiler_Buzz` database
         const drinks = await db.collection('drinks').find().toArray();

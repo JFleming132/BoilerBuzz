@@ -39,10 +39,14 @@ struct VerificationView: View {
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(primaryColor)
+                    .background(.black)
                     .foregroundColor(tertiaryColor)
                     .cornerRadius(10)
             }
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(tertiaryColor, lineWidth: 2)
+            )
             .padding()
             .disabled(email.isEmpty || verificationCode.isEmpty)
         }

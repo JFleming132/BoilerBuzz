@@ -10,6 +10,7 @@ import ConfettiSwiftUI
 
 struct Drink: Identifiable, Codable {
     let id = UUID() // Unique ID for SwiftUI
+    let objectID: String
     let drinkID: Int
     let name: String
     let description: String
@@ -18,17 +19,30 @@ struct Drink: Identifiable, Codable {
     let barServed: String
     let category: [String]
     let calories: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case objectID = "_id" // Map the _id from JSON to objectID in the struct
+        case drinkID
+        case name
+        case description
+        case ingredients
+        case averageRating
+        case barServed
+        case category
+        case calories
+    }
 }
 
 
 struct DrinksDetailView: View {
+
     @State private var drinks: [Drink] = [] // List of drinks fetched
     @State private var selectedDrink: Drink? = nil // Currently selected drink for the popup
     @State private var randomDrink: Drink? = nil // Random drink to display
     @State private var showRandomDrink: Bool = false // Show random drink popup
     @State private var confettiTrigger: Int = 0 // Confetti trigger
     @State private var errorMessage: String? = nil // Error message for API failures
-
+    @State private var triedDrinks: Set<String> = [] // Track selected drinks by objectID
     var body: some View {
         ZStack {
             VStack {
@@ -45,6 +59,7 @@ struct DrinksDetailView: View {
                             ForEach(drinks) { drink in
                                 Button(action: {
                                     selectedDrink = drink // Show drink details popup
+
                                 }) {
                                     VStack(spacing: 8) {
                                         Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
@@ -53,6 +68,7 @@ struct DrinksDetailView: View {
                                             .frame(width: 40, height: 40)
                                             .foregroundColor(.white)
                                             .shadow(color: .yellow, radius: 10, x: 0, y: 0) // Glow effect
+
 
                                         Text(drink.name)
                                             .font(.headline)
@@ -71,6 +87,18 @@ struct DrinksDetailView: View {
                                     )
                                     .cornerRadius(12)
                                     .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 4)
+                                    .shadow(radius: 5)
+                                }
+
+                                Button(action: {
+                                    toggleDrinkSelection(objectID: drink.objectID)
+                                }) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 20, height: 20)
+                                        .foregroundColor(triedDrinks.contains(drink.objectID) ? .green : .gray)
+                                        .padding(5)
                                 }
                             }
                         }
@@ -138,6 +166,7 @@ struct DrinksDetailView: View {
                 }
             }
         }
+
         .background(ShakeDetector {
             showRandomDrinkAnimation() // Handle the shake gesture
         })
@@ -149,8 +178,108 @@ struct DrinksDetailView: View {
         randomDrink = drinks.randomElement()
         withAnimation {
             showRandomDrink = true
+
+        .onAppear {
+            fetchDrinks()
+            fetchTriedDrinks()
+        }
+        .sheet(item: $selectedDrink) { drink in
+            DrinkDetailsPopup(drink: drink)
+
         }
     }
+    
+    func getUserId() -> String? {
+        return UserDefaults.standard.string(forKey: "userId")
+    }
+    
+    func toggleDrinkSelection(objectID: String) {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+
+        let url = URL(string: "http://localhost:3000/api/drinks/toggleTriedDrink")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["userId": userId, "objectID": objectID] // Use objectID
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Failed to serialize JSON:", error)
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error toggling drink:", error)
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response:", response ?? "No response")
+                return
+            }
+
+            DispatchQueue.main.async {
+                if self.triedDrinks.contains(objectID) {
+                    self.triedDrinks.remove(objectID)
+                } else {
+                    self.triedDrinks.insert(objectID)
+                }
+            }
+        }
+
+        task.resume()
+    }
+    
+    func fetchTriedDrinks() {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+
+        // Define the URL for fetching tried drinks
+        guard let url = URL(string: "http://localhost:3000/api/drinks/triedDrinks/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to fetch tried drinks: \(error.localizedDescription)"
+                }
+                return
+            }
+
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    errorMessage = "No data received from the server."
+                }
+                return
+            }
+
+            do {
+                // Decode the response into a dictionary with a triedDrinks key
+                let response = try JSONDecoder().decode([String: [String]].self, from: data)
+                if let responseDrinks = response["triedDrinks"] {
+                    DispatchQueue.main.async {
+                        // Update the selectedDrinks set with the objectIDs from the triedDrinks
+                        self.triedDrinks = Set(responseDrinks)
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to decode tried drinks: \(error.localizedDescription)"
+                }
+            }
+        }.resume()
+    }
+
 
     func fetchDrinks() {
         guard let url = URL(string: "http://localhost:3000/api/auth/drinks") else {
@@ -174,9 +303,17 @@ struct DrinksDetailView: View {
             }
 
             do {
-                let decodedDrinks = try JSONDecoder().decode([Drink].self, from: data)
-                DispatchQueue.main.async {
-                    self.drinks = decodedDrinks.shuffled()
+                // Decode JSON into a general structure first
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                    // Decode filtered JSON into Drink objects
+                    var decodedDrinks = try JSONDecoder().decode([Drink].self, from: filteredData)
+
+                    // Sort the drinks array alphabetically by name
+                    decodedDrinks.sort { $0.name.lowercased() < $1.name.lowercased() }
+
+                    DispatchQueue.main.async {
+                        self.drinks = decodedDrinks
+                    }
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -185,6 +322,7 @@ struct DrinksDetailView: View {
             }
         }.resume()
     }
+
 
     func getCategoryIcon(for category: String) -> String {
         switch category.lowercased() {
