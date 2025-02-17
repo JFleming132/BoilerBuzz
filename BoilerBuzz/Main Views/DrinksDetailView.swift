@@ -103,12 +103,12 @@ struct DrinksDetailView: View {
         }
     }
     
-    func getUserID() -> String? {
-        return UserDefaults.standard.string(forKey: "userID")
+    func getUserId() -> String? {
+        return UserDefaults.standard.string(forKey: "userId")
     }
     
     func toggleDrinkSelection(objectID: String) {
-        guard let userID = getUserID() else {
+        guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
@@ -118,7 +118,7 @@ struct DrinksDetailView: View {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let body: [String: Any] = ["userID": userID, "objectID": objectID] // Use objectID
+        let body: [String: Any] = ["userId": userId, "objectID": objectID] // Use objectID
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
@@ -151,13 +151,13 @@ struct DrinksDetailView: View {
     }
     
     func fetchTriedDrinks() {
-        guard let userID = getUserID() else {
+        guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
 
         // Define the URL for fetching tried drinks
-        guard let url = URL(string: "http://localhost:3000/api/drinks/triedDrinks/\(userID)") else {
+        guard let url = URL(string: "http://localhost:3000/api/drinks/triedDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }

@@ -15,14 +15,14 @@ const mongoose = require('mongoose');
 const router = express.Router();
 
 router.post('/toggleTriedDrink', async (req, res) => {
-    const { userID, objectID } = req.body;
+    const { userId, objectID } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(userID)) {
-        return res.status(400).json({ error: 'Invalid user ID' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: 'Invalid user Id' });
     }
 
     try {
-        const user = await User.findById(userID);
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -48,15 +48,15 @@ router.post('/toggleTriedDrink', async (req, res) => {
 });
 
 // Fetch tried drinks for a user
-router.get('/triedDrinks/:userID', async (req, res) => {
-    const { userID } = req.params;
+router.get('/triedDrinks/:userId', async (req, res) => {
+    const { userId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(userID)) {
-        return res.status(400).json({ error: 'Invalid user ID' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: 'Invalid user Id' });
     }
 
     try {
-        const user = await User.findById(userID);
+        const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });

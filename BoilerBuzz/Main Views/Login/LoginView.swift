@@ -54,7 +54,7 @@ struct LoginView: View {
                         let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
                         if loginResponse.message == "Login successful" {
                             // Store the userID and token in UserDefaults
-                            UserDefaults.standard.set(loginResponse.userID, forKey: "userID")
+                            UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
                             if let token = loginResponse.token {
                                 UserDefaults.standard.set(token, forKey: "token")
                             }
@@ -79,7 +79,7 @@ struct LoginView: View {
         
         struct LoginResponse: Codable {
             let message: String
-            let userID: String
+            let userId: String
             let token: String?
         }
     }
