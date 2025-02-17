@@ -17,16 +17,17 @@ struct SignUpView: View {
 
     var body: some View {
         ZStack {
-            bgColor.ignoresSafeArea(edges: .all)
+            Color.white.ignoresSafeArea(edges: .all)
             VStack {
                 Text("Sign Up")
                     .font(.largeTitle)
-                    .padding()
+                    .fontWeight(.bold)
                 
-                NavigationLink(destination: VerificationView()) {
-                    Text("Click here to verify your account")
-                        .foregroundColor(tertiaryColor)
-                }
+                Rectangle()
+                    .fill(tertiaryColor)
+                    .frame(width: 150, height: 4)
+                    .padding(.horizontal)
+                    .cornerRadius(2)
                 
                 TextField("Email", text: $newEmail)
                     .padding()
@@ -69,6 +70,11 @@ struct SignUpView: View {
                         .cornerRadius(10)
                 }
                 .padding()
+                
+                NavigationLink(destination: VerificationView()) {
+                    Text("Click here to verify your account")
+                        .foregroundColor(.blue)
+                }
                 
                 if showError {
                     Text("\(errorMessage ?? "Unknown error")")

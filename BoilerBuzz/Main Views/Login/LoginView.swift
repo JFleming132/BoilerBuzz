@@ -1,10 +1,3 @@
-//
-//  LoginView.swift
-//  BoilerBuzz
-//
-//  Created by Matt Zlatniski on 2/10/25.
-//
-
 import SwiftUI
 
 struct LoginView: View {
@@ -50,32 +43,31 @@ struct LoginView: View {
             
             guard let data = data else { return }
                     
-                    do {
-                        let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
-                        if loginResponse.message == "Login successful" {
-                            // Store the userID and token in UserDefaults
-                            UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
-                            if let token = loginResponse.token {
-                                UserDefaults.standard.set(token, forKey: "token")
-                            }
-                            print("Login successful: \(loginResponse.message)")
-                            DispatchQueue.main.async {
-                                isLoggedIn = true
-                            }
-                        } else {
-                            DispatchQueue.main.async {
-                                errorMessage = loginResponse.message
-                                showFailedLogin = true
-                            }
-                        }
-                    } catch {
-                        print("Error decoding login response: \(error)")
-                        DispatchQueue.main.async {
-                            showFailedLogin = true
-                        }
+            do {
+                let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
+                if loginResponse.message == "Login successful" {
+                    // Store the userID and token in UserDefaults
+                    UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
+                    if let token = loginResponse.token {
+                        UserDefaults.standard.set(token, forKey: "token")
                     }
-                }.resume()
-        
+                    print("Login successful: \(loginResponse.message)")
+                    DispatchQueue.main.async {
+                        isLoggedIn = true
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        errorMessage = loginResponse.message
+                        showFailedLogin = true
+                    }
+                }
+            } catch {
+                print("Error decoding login response: \(error)")
+                DispatchQueue.main.async {
+                    showFailedLogin = true
+                }
+            }
+        }.resume()
         
         struct LoginResponse: Codable {
             let message: String
@@ -87,12 +79,19 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                bgColor.ignoresSafeArea(edges: .all)
+                Color.white.ignoresSafeArea(edges: .all) // Background in light mode
+                
                 VStack {
                     Text("BoilerBuzz Login")
                         .font(.largeTitle)
-                        .padding()
+                        .fontWeight(.bold)
                     
+                    Rectangle()
+                        .fill(tertiaryColor)
+                        .frame(width: 150, height: 4)
+                        .padding(.horizontal)
+                        .cornerRadius(2)
+
                     TextField("Username", text: $username)
                         .padding()
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -118,8 +117,8 @@ struct LoginView: View {
                     }) {
                         Text("Login")
                             .padding()
-                            .background(primaryColor)
-                            .foregroundColor(tertiaryColor)
+                            .background(Color.black) // Black background
+                            .foregroundColor(tertiaryColor) // Gold text
                             .cornerRadius(10)
                     }
                     .padding()
@@ -131,13 +130,13 @@ struct LoginView: View {
                     
                     NavigationLink(destination: SignUpView()) {
                         Text("New to BoilerBuzz? Sign Up!")
-                            .foregroundColor(tertiaryColor)
+                            .foregroundColor(Color.blue) // iOS Blue color
                             .padding()
                     }
                     
                     NavigationLink(destination: ForgotPasswordView()) {
                         Text("Forgot password?")
-                            .foregroundColor(tertiaryColor)
+                            .foregroundColor(Color.blue) // iOS Blue color
                             .padding()
                     }
                 }
