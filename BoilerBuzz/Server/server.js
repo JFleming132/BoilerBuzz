@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const authRoutes = require('./Routes/auth');
 const profileRoutes = require('./Routes/profile');
+const drinksRoutes = require('./Routes/drinks');
 
 
 const app = express();
@@ -22,7 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection URI
-const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = "mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/Boiler_Buzz?retryWrites=true&w=majority&appName=Cluster0";
 
 // Connect to MongoDB
 mongoose.connect(mongoURI)
@@ -33,6 +34,7 @@ mongoose.connect(mongoURI)
 // Routes for authentication
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/drinks', drinksRoutes);
 
 // Start the server
 app.listen(port, () => {

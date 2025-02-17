@@ -60,7 +60,10 @@ const userSchema = new mongoose.Schema({
     forgotPasswordToken: {
         type: String,
         default: null
-    }
+    },
+    triedDrinks: [{ 
+          type: String
+      }]
 });
 
 
