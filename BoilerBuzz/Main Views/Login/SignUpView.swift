@@ -5,11 +5,7 @@
 //  Created by Matt Zlatniski on 2/10/25.
 //
 //
-//  SignUpView.swift
-//  BoilerBuzz
-//
-//  Created by Matt Zlatniski on 2/10/25.
-//
+
 import SwiftUI
 
 struct SignUpView: View {
@@ -151,10 +147,20 @@ struct OnboardingView: View {
                         .font(.title)
                         .multilineTextAlignment(.center)
                         .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(step == 0 ? Color.yellow.opacity(0.8) : Color.clear) // Yellow background for first step
+                    
                     Text(getDescription())
                         .multilineTextAlignment(.center)
                         .padding()
-                    Button("Next") { advanceStep() }
+                    
+                    Button(step == 6 ? "Finish" : "Next") {
+                        advanceStep()
+                    }
+                    .padding()
+                    .background(primaryColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -215,3 +221,4 @@ struct OnboardingView: View {
         }
     }
 }
+
