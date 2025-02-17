@@ -14,7 +14,7 @@ struct ForgotPasswordView: View {
         VStack {
             Text("Forgot Password")
                 .font(.largeTitle)
-                .padding()
+                .fontWeight(.bold)
 
             // Step 1: Email input view
             if !isCodeSent {
@@ -36,10 +36,14 @@ struct ForgotPasswordView: View {
                     Text("Send Reset Code")
                         .fontWeight(.bold)
                         .padding()
-                        .background(primaryColor)
+                        .background(.black)
                         .foregroundColor(tertiaryColor)
                         .cornerRadius(10)
                 }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(tertiaryColor, lineWidth: 2)
+                )
                 .padding()
                 .disabled(email.isEmpty || isRequestInProgress)
 

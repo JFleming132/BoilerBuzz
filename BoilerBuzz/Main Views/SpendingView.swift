@@ -22,8 +22,8 @@ struct SpendingView: View {
                     
                     ProgressView(value: currentSpent, total: spendLimit)
                         .progressViewStyle(LinearProgressViewStyle())
-                        .scaleEffect(y: 2) // Thicker bar
-                        .accentColor(.gold)
+                        .scaleEffect(y: 2)
+                        .accentColor(tertiaryColor)
                     
                     HStack {
                         Text("$\(currentSpent, specifier: "%.2f") spent")
@@ -49,7 +49,7 @@ struct SpendingView: View {
                             .padding()
                             .background(.ultraThinMaterial)
                             .cornerRadius(10)
-                            .foregroundColor(.black)
+                            .foregroundColor(secondaryColor)
                     }
                     
                     Button(action: { showChangeLimitSheet = true }) {
@@ -58,7 +58,7 @@ struct SpendingView: View {
                             .padding()
                             .background(.ultraThinMaterial)
                             .cornerRadius(10)
-                            .foregroundColor(.black)
+                            .foregroundColor(secondaryColor)
                     }
                 }
                 .buttonStyle(.bordered)
@@ -76,7 +76,7 @@ struct SpendingView: View {
                                 Text(expense.name)
                                 Spacer()
                                 Text("$\(expense.amount, specifier: "%.2f")")
-                                    .foregroundColor(.gold)
+                                    .foregroundColor(tertiaryColor)
                             }
                             .padding(.vertical, 5)
                         }

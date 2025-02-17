@@ -79,7 +79,6 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.white.ignoresSafeArea(edges: .all) // Background in light mode
                 
                 VStack {
                     Text("BoilerBuzz Login")
@@ -117,10 +116,14 @@ struct LoginView: View {
                     }) {
                         Text("Login")
                             .padding()
-                            .background(Color.black) // Black background
-                            .foregroundColor(tertiaryColor) // Gold text
-                            .cornerRadius(10)
+                            .foregroundColor(tertiaryColor)
                     }
+                    .background(.black)
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10) // Same corner radius as the button
+                            .stroke(tertiaryColor, lineWidth: 2) // Border with the desired color and width
+                    )
                     .padding()
                     
                     if showFailedLogin {

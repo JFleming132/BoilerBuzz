@@ -17,7 +17,6 @@ struct SignUpView: View {
 
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea(edges: .all)
             VStack {
                 Text("Sign Up")
                     .font(.largeTitle)
@@ -69,6 +68,12 @@ struct SignUpView: View {
                         .foregroundColor(tertiaryColor)
                         .cornerRadius(10)
                 }
+                .background(.black)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(tertiaryColor, lineWidth: 2)
+                )
                 .padding()
                 
                 NavigationLink(destination: VerificationView()) {
