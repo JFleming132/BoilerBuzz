@@ -10,3 +10,7 @@ xcuserdata/
 
 # Xcode project files
 BoilerBuzz.xcodeproj
+
+#GoogleMaps api keys
+APIKeys.swift
+

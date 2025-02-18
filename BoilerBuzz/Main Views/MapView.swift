@@ -1,17 +1,15 @@
-//
-//  MapView.swift
-//  BoilerBuzz
-//
-//  Created by user269394 on 2/7/25.
-//
-
 import SwiftUI
+import GoogleMaps
+import GooglePlaces
 
 struct MapView: View {
+    @StateObject private var locationManager = LocationManager()
+
     var body: some View {
-        ZStack {
-            bgColor.ignoresSafeArea(edges: .all)
-            Text("This is supposed to be the map page")
-        }
+        GoogleMapViewRepresentable(location: locationManager.location)
+            .ignoresSafeArea()
+            .onAppear {
+                locationManager.requestWhenInUseAuthorization()
+            }
     }
 }
