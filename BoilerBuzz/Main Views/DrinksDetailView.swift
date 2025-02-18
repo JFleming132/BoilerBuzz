@@ -279,58 +279,160 @@ struct DrinksDetailView: View {
 struct DrinkDetailsPopup: View {
     let drink: Drink
     @Environment(\.dismiss) var dismiss // Access the dismiss environment action
+    @State private var isFavorited: Bool = false
 
     var body: some View {
         ScrollView { // Make the entire popup scrollable
-            VStack(alignment: .center, spacing: 16) {
-                // Add a hero category icon
-                Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(Color.blue)
+            ZStack(alignment: .topLeading) {
+                VStack(alignment: .center, spacing: 16) {
+                    // Add a hero category icon
+                    Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+                        .foregroundColor(Color.blue)
 
-                Text(drink.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    Text(drink.name)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
 
-                Text("Description:")
-                    .font(.headline)
-                Text(drink.description)
-                    .font(.body)
-                    .fixedSize(horizontal: false, vertical: true) // Ensures text wraps
+                    Text("Description:")
+                        .font(.headline)
+                    Text(drink.description)
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true) // Ensures text wraps
 
-                Text("Calories: \(drink.calories)")
-                Text("Average Rating: \(drink.averageRating)")
+                    Text("Calories: \(drink.calories)")
+                    Text("Average Rating: \(drink.averageRating)")
 
-                Text("Ingredients:")
-                    .font(.headline)
-                ForEach(drink.ingredients, id: \.self) { ingredient in
-                    Text("- \(ingredient)")
+                    Text("Ingredients:")
+                        .font(.headline)
+                    ForEach(drink.ingredients, id: \.self) { ingredient in
+                        Text("- \(ingredient)")
+                    }
+
+                    Spacer()
+
+                    Button(action: {
+                        dismiss() // Close the popup
+                    }) {
+                        Text("Close")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red)
+                            .cornerRadius(8)
+                    }
                 }
+                .padding()
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(16)
+                .shadow(radius: 10)
+                .padding()
 
-                Spacer()
 
                 Button(action: {
-                    dismiss() // Close the popup
+                    toggleFavorite()
                 }) {
-                    Text("Close")
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red)
-                        .cornerRadius(8)
+                    Image(systemName: isFavorited ? "heart.fill" : "heart")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(isFavorited ? .red : .gray)
+                        .padding(8)
+                        .background(Color(UIColor.systemBackground).opacity(0.8))
+                        .clipShape(Circle())
                 }
+                .padding([.top, .leading], 24)
             }
-            .padding()
-            .background(Color(UIColor.systemBackground))
-            .cornerRadius(16)
-            .shadow(radius: 10)
-            .padding()
+        }
+        .onAppear {
+            fetchFavoriteStatus()
         }
     }
 
-    // Get an appropriate SF Symbol for the drink's category
+    func fetchFavoriteStatus() {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching favorite drinks: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received from server.")
+                return
+            }
+            
+            do {
+                let favoriteDrinks = try JSONDecoder().decode([Drink].self, from: data)
+                DispatchQueue.main.async {
+                    // Check if the current drink's drinkID is in the fetched favorites
+                    self.isFavorited = favoriteDrinks.contains(where: { $0.drinkID == drink.drinkID })
+                }
+            } catch {
+                print("Error decoding favorite drinks: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
+        
+    func toggleFavorite() {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/drinks/toggleFavoriteDrink") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Build the JSON body with the userId and the current drink's drinkID
+        let body: [String: Any] = ["userId": userId, "drinkId": drink.drinkID]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error toggling favorite: \(error)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response toggling favorite: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.isFavorited.toggle()
+                NotificationCenter.default.post(name: Notification.Name("FavoriteDrinksUpdated"), object: nil)
+            }
+        }.resume()
+    }
+
+    func getUserId() -> String? {
+        return UserDefaults.standard.string(forKey: "userId")
+    }
+
     func getCategoryIcon(for category: String) -> String {
         switch category.lowercased() {
         case "vodka-based":

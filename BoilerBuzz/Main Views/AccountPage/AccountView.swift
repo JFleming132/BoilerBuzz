@@ -8,7 +8,13 @@
 import SwiftUI
 
 struct AccountView: View {
+    
     @StateObject var profileData = ProfileViewModel()
+    @State private var showFavoritedDrinks = false
+
+    // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
+    var viewedUserId: String? = nil
+    
     
     var body: some View {
         NavigationView {
@@ -16,16 +22,18 @@ struct AccountView: View {
                 // Settings
                 HStack {
                     Spacer()
-                    NavigationLink(destination: SettingsView(profileData: profileData)) {
-                        Image(systemName: "gearshape.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .foregroundColor(.primary)
-                            .padding(14)
-                            .clipShape(Circle())
-                            .contentShape(Circle())
+                    if viewedUserId == nil {
+                        NavigationLink(destination: SettingsView(profileData: profileData)) {
+                            Image(systemName: "gearshape.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.primary)
+                                .padding(14)
+                                .clipShape(Circle())
+                                .contentShape(Circle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal)
                 
@@ -55,13 +63,19 @@ struct AccountView: View {
                         .foregroundColor(.gray)
                 }
                 .onAppear {
-                    profileData.fetchUserProfile()
+                    // If a specific user is passed in, fetch that profile; otherwise, fetch your own.
+                    if let uid = viewedUserId {
+                        profileData.fetchUserProfile(userId: uid)
+                    } else {
+                        profileData.fetchUserProfile()
+                    }
                 }
                 
                 // Buttons Row
                 HStack {
                     Button(action: {
                         // Should show your favorited drinks
+                        showFavoritedDrinks = true
                     }) {
                         Image(systemName: "wineglass.fill")
                             .resizable()
@@ -95,6 +109,15 @@ struct AccountView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 30)
                 
+                // For TESTING
+//                if viewedUserId == nil {
+//                    NavigationLink(destination: AccountView(viewedUserId: "67b35d6d3870c11743371286" /* GET RANDOM PROFILE */)) {
+//                        Text("View Random Profile")
+//                            .foregroundColor(.blue)
+//                    }
+//                    .padding()
+//                }
+                
                 // Grid for posts/favorites
                 // Right now just empty boxes. dont know what to have at the beginning
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
@@ -105,10 +128,22 @@ struct AccountView: View {
                     }
                 }
                 .padding()
-                .padding()
+
             }
             .padding()
-            .navigationTitle("Account")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text(viewedUserId == nil ? "Account" : "Profile")
+                    .font(.system(size: 18, weight: .semibold))
+                }
+            }
+            .sheet(isPresented: $showFavoritedDrinks) {
+                FavoritedDrinksPopup(isMyProfile: viewedUserId == nil, userId: profileData.userId)
+                    .presentationDetents([.medium, .large])
+            }
+            
         }
     }
 
