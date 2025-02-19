@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F014CC362D63E3DB001635B5 /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = F014CC352D63E3DB001635B5 /* GooglePlaces */; };
-		F014CC382D63E3DF001635B5 /* GooglePlacesSwift in Frameworks */ = {isa = PBXBuildFile; productRef = F014CC372D63E3DF001635B5 /* GooglePlacesSwift */; };
-		F014CC3A2D63E3E3001635B5 /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = F014CC392D63E3E3001635B5 /* GoogleMaps */; };
-		F014CC3C2D63E3FD001635B5 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F014CC3B2D63E3FD001635B5 /* CoreLocation.framework */; };
 		85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */; };
 /* End PBXBuildFile section */
 
@@ -35,7 +31,6 @@
 		8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BoilerBuzz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A402C2D5444C1001C0A7D /* BoilerBuzzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F014CC3B2D63E3FD001635B5 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -43,7 +38,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				BoilerBuzzTests/BoilerBuzzTests.swift,
-				Info.plist,
 			);
 			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
@@ -78,10 +72,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F014CC3C2D63E3FD001635B5 /* CoreLocation.framework in Frameworks */,
-				F014CC362D63E3DB001635B5 /* GooglePlaces in Frameworks */,
-				F014CC382D63E3DF001635B5 /* GooglePlacesSwift in Frameworks */,
-				F014CC3A2D63E3E3001635B5 /* GoogleMaps in Frameworks */,
 				85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,7 +105,6 @@
 			children = (
 				8B0A401E2D5444BF001C0A7D /* BoilerBuzz */,
 				8B0A40392D5444C1001C0A7D /* BoilerBuzzUITests */,
-				F014CC342D63E3DB001635B5 /* Frameworks */,
 				85C9F1E52D62774800A93BC2 /* Frameworks */,
 				8B0A401D2D5444BF001C0A7D /* Products */,
 			);
@@ -129,14 +118,6 @@
 				8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F014CC342D63E3DB001635B5 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F014CC3B2D63E3FD001635B5 /* CoreLocation.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -159,9 +140,6 @@
 			);
 			name = BoilerBuzz;
 			packageProductDependencies = (
-				F014CC352D63E3DB001635B5 /* GooglePlaces */,
-				F014CC372D63E3DF001635B5 /* GooglePlacesSwift */,
-				F014CC392D63E3E3001635B5 /* GoogleMaps */,
 				85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */,
 			);
 			productName = BoilerBuzz;
@@ -244,8 +222,6 @@
 			mainGroup = 8B0A40132D5444BF001C0A7D;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F014CC322D63E338001635B5 /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
-				F014CC332D63E345001635B5 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
 				85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -450,10 +426,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = U2N9Q646JX;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BoilerBuzz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -481,10 +456,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = U2N9Q646JX;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BoilerBuzz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -613,20 +587,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F014CC322D63E338001635B5 /* XCRemoteSwiftPackageReference "ios-places-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googlemaps/ios-places-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 9.3.0;
-			};
-		};
-		F014CC332D63E345001635B5 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googlemaps/ios-maps-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 9.3.0;
 		85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
@@ -638,20 +598,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F014CC352D63E3DB001635B5 /* GooglePlaces */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F014CC322D63E338001635B5 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
-			productName = GooglePlaces;
-		};
-		F014CC372D63E3DF001635B5 /* GooglePlacesSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F014CC322D63E338001635B5 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
-			productName = GooglePlacesSwift;
-		};
-		F014CC392D63E3E3001635B5 /* GoogleMaps */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F014CC332D63E345001635B5 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
-			productName = GoogleMaps;
 		85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
