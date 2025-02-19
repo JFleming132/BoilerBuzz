@@ -35,7 +35,6 @@
 		8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BoilerBuzz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A402C2D5444C1001C0A7D /* BoilerBuzzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F014CC3B2D63E3FD001635B5 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -128,14 +127,6 @@
 				8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F014CC342D63E3DB001635B5 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F014CC3B2D63E3FD001635B5 /* CoreLocation.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -449,10 +440,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = U2N9Q646JX;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BoilerBuzz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -480,10 +470,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = U2N9Q646JX;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BoilerBuzz/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
