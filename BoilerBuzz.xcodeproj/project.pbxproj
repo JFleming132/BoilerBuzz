@@ -41,6 +41,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				BoilerBuzzTests/BoilerBuzzTests.swift,
+				Info.plist,
 			);
 			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
@@ -439,7 +440,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
 				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				"INFOPLIST_FILE[sdk=*]" = "$(SRCROOT)/BoilerBuzz/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -469,7 +471,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
 				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				"INFOPLIST_FILE[sdk=*]" = "$(SRCROOT)/BoilerBuzz/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

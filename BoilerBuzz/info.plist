@@ -2,9 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>need your location even in background</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>need your location</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.Patrick.BoilerBuzz</string>
+    <key>CFBundleDisplayName</key>
+    <string>BoilerBuzz</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>need your location even in background</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>need your location</string>
 </dict>
 </plist>
+

@@ -1,4 +1,3 @@
-//
 //  MapView.swift
 //  BoilerBuzz
 //
@@ -13,10 +12,14 @@ struct MapView: View {
     @StateObject private var locationManager = LocationManager()
 
     var body: some View {
-        GoogleMapViewRepresentable(location: locationManager.location)
-            .ignoresSafeArea()
-            .onAppear {
-                locationManager.requestWhenInUseAuthorization()
-            }
+        GeometryReader { geometry in
+            GoogleMapViewRepresentable(location: locationManager.location)
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .edgesIgnoringSafeArea(.all)
+        }
+        .ignoresSafeArea()
+        .onAppear {
+            locationManager.requestWhenInUseAuthorization()
+        }
     }
 }

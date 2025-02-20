@@ -19,8 +19,7 @@ struct ContentView: View {
             VStack {
                 TabView {
                     Tab("Map", systemImage: "map") {
-                        MapView()
-                    }
+                        MapView()}
                     Tab("Calendar", systemImage: "calendar") {
                         CalendarView()
                     }
