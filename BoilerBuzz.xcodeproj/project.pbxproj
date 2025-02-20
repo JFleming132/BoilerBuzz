@@ -627,6 +627,8 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 9.3.0;
+			};
+		};
 		85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
@@ -652,6 +654,7 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F014CC332D63E345001635B5 /* XCRemoteSwiftPackageReference "ios-maps-sdk" */;
 			productName = GoogleMaps;
+		};
 		85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
