@@ -33,46 +33,112 @@ struct Drink: Identifiable, Codable {
     }
 }
 
+
 struct DrinksDetailView: View {
-    @State private var drinks: [Drink] = [] // List of drinks fetched
-    @State private var selectedDrink: Drink? = nil // Currently selected drink for the popup
-    @State private var randomDrink: Drink? = nil // Random drink to display
-    @State private var showRandomDrink: Bool = false // Show random drink popup
-    @State private var confettiTrigger: Int = 0 // Confetti trigger
-    @State private var errorMessage: String? = nil // Error message for API failures
-    @State private var triedDrinks: Set<String> = [] // Track selected drinks by objectID
-
+    @State private var drinks: [Drink] = []
+    @State private var selectedDrink: Drink? = nil
+    @State private var randomDrink: Drink? = nil
+    @State private var showRandomDrink: Bool = false
+    @State private var confettiTrigger: Int = 0
+    @State private var errorMessage: String? = nil
+    @State private var triedDrinks: Set<String> = []
+    
+    // Filter states
+    @State private var selectedCategory: String? = nil
+    @State private var selectedBase: String? = nil
+    @State private var minCalories: Int? = nil
+    @State private var maxCalories: Int? = nil
+    @State private var minRating: Int? = nil
+    @State private var showFilterPopup: Bool = false
+    
+    var filteredDrinks: [Drink] {
+        drinks.filter { drink in
+            (selectedCategory == nil || drink.category.contains(selectedCategory!)) &&
+            (selectedBase == nil || drink.category.contains(selectedBase!)) &&
+            (minCalories == nil || drink.calories >= minCalories!) &&
+            (maxCalories == nil || drink.calories <= maxCalories!) &&
+            (minRating == nil || drink.averageRating >= minRating!)
+        }
+    }
+    
     var body: some View {
-            ZStack {
-                VStack {
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .padding()
-                    } else {
-                        drinksGrid
-                    }
-                }
-                .onAppear {
-                    fetchDrinks()
-                    fetchTriedDrinks()
-                }
-                .sheet(item: $selectedDrink) { drink in
-                    DrinkDetailsPopup(drink: drink)
-                }
-
-                if showRandomDrink, let randomDrink = randomDrink {
-                    randomDrinkPopup(drink: randomDrink)
+        VStack {
+            HStack {
+                Spacer()
+                Button(action: { showFilterPopup.toggle() }) {
+                    Image(systemName: "slider.horizontal.3")
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .padding()
                 }
             }
-            .background(ShakeDetector { showRandomDrinkAnimation() })
+            
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .padding()
+            } else {
+                drinksGrid
+            }
         }
-
+        .onAppear {
+            fetchDrinks()
+            fetchTriedDrinks()
+        }
+        .sheet(isPresented: $showFilterPopup) {
+            filterOptions
+        }
+        .sheet(item: $selectedDrink) { drink in
+            DrinkDetailsPopup(drink: drink)
+        }
+    }
+    
+    private var filterOptions: some View {
+        VStack {
+            HStack {
+                Picker("Category", selection: $selectedCategory) {
+                    Text("All").tag(nil as String?)
+                    ForEach(["Cocktail", "Beer", "Shot", "Whiskey", "Vodka-based"], id: \ .self) { category in
+                        Text(category).tag(category as String?)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                
+                Picker("Base", selection: $selectedBase) {
+                    Text("All").tag(nil as String?)
+                    ForEach(["Vodka-based", "Gin-based", "Rum-based", "Tequila-based", "Scotch-based"], id: \ .self) { base in
+                        Text(base).tag(base as String?)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+            }
+            
+            HStack {
+                TextField("Min Calories", value: $minCalories, format: .number)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Max Calories", value: $maxCalories, format: .number)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            }
+            
+            HStack {
+                TextField("Min Rating", value: $minRating, format: .number)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+            }
+            
+            Button("Apply Filters") {
+                showFilterPopup = false
+            }
+            .padding()
+        }
+        .padding()
+    }
+    
     private var drinksGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160))], spacing: 16) {
-                ForEach(drinks) { drink in
-                    drinkButton(drink: drink) // Each button contains the checkmark
+                ForEach(filteredDrinks) { drink in
+                    drinkButton(drink: drink)
                 }
             }
             .padding()
