@@ -26,7 +26,7 @@ router.get('/:userId', async (req, res) => {
 
 // Route to UPDATE user profile (Username & Bio) not pic yet
 router.put('/:userId', async (req, res) => {
-    const { username, bio } = req.body;
+    const { username, bio, profilePicture } = req.body;
     console.log(`Received profile update request for user ${req.params.userId}`);
 
     try {
@@ -41,9 +41,11 @@ router.put('/:userId', async (req, res) => {
             return res.status(400).json({ message: "Username cannot be empty" });
         }
 
+        /* if error checking for the base64 pfp exists, it should go here */
+        
         const updatedUser = await User.findByIdAndUpdate(
             req.params.userId,
-            { username, bio },
+            { username, bio, profilePicture },
             { new: true, runValidators: true }
         );
 

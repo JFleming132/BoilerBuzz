@@ -7,6 +7,23 @@
 
 import SwiftUI
 
+// image and string extentions to allow for base64 encoding and decoding
+extension UIImage {
+    var base64: String? {
+        self.jpegData(compressionQuality: 1)?.base64EncodedString() //encoding function
+    }
+}
+
+extension String {
+    var imageFromBase64: UIImage? {
+        guard let imageData = Data(base64Encoded: self, options: .ignoreUnknownCharacters) else { //decoding function
+            return nil
+        }
+        return UIImage(data: imageData)
+    }
+}
+
+
 struct AccountSettingsView: View {
 
     @Environment(\.presentationMode) var presentationMode
@@ -120,7 +137,7 @@ struct AccountSettingsView: View {
             "username": profileData.username,
             "bio": profileData.bio,
             //properly encode and save profilePicture to database
-            //"profilePicture": profileData.profilePicture
+            "profilePicture": profileData.profilePicture.base64 ?? ""
         ]
         
         do {

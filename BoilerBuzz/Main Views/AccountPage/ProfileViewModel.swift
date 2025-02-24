@@ -43,15 +43,7 @@ class ProfileViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.username = decodedResponse.username
                     self.bio = decodedResponse.bio
-                    /* retrieve base64 encoded string from user doc and decode the profile photo */
-                    /* profile photos have an inherent 16kb max limit imposed by mongoDB */
-                    guard let stringData = Data(base64Encoded: decodedResponse.profilePicture),
-                          let uiImage = UIImage(data: stringData) else {
-                              print("Error: couldn't create UIImage")
-                              return
-                          }
-                    /* set current profile pic to be the one we decoded */
-                    self.profilePicture = uiImage
+                    self.profilePicture = decodedResponse.profilePicture.imageFromBase64 ?? UIImage(systemName: "x")!
                 }
             } catch {
                 print("Error decoding profile data: \(error)")
