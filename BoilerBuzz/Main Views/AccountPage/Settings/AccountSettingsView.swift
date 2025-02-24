@@ -11,14 +11,21 @@ struct AccountSettingsView: View {
 
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var profileData: ProfileViewModel
-    @State private var selectedImage: UIImage? = nil // Should be profileData.profilePicture eventually once we start storing them
+    @State private var selectedImage: UIImage? = nil// Should be profileData.profilePicture eventually once we start storing them
     @State private var isImagePickerPresented = false
     @State private var errorMessage: String? = nil
     
+    init(profileData: ProfileViewModel) {
+        self.selectedImage = profileData.profilePicture
+        self.profileData = profileData
+    }
+    
     var body: some View {
+        
         NavigationView {
             VStack {
                 HStack {
+                    
                     Button("Cancel") {
                         presentationMode.wrappedValue.dismiss()
                     }
@@ -111,7 +118,9 @@ struct AccountSettingsView: View {
         
         let parameters: [String: Any] = [
             "username": profileData.username,
-            "bio": profileData.bio
+            "bio": profileData.bio,
+            //properly encode and save profilePicture to database
+            //"profilePicture": profileData.profilePicture
         ]
         
         do {
