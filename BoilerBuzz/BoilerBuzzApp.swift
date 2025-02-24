@@ -18,8 +18,8 @@ struct BoilerBuzzApp: App {
     @State var isLoggedIn: Bool = false
     
     init() {
-        GMSServices.provideAPIKey("AIzaSyD9fysUB7FOQTQILo0TEdTOo59cL-4weVM")
-        GMSPlacesClient.provideAPIKey("AIzaSyD9fysUB7FOQTQILo0TEdTOo59cL-4weVM")
+        GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
+        GMSPlacesClient.provideAPIKey(APIKeys.googleMapsAPIKey)
     }
     
     var body: some Scene {

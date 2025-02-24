@@ -12,11 +12,16 @@
     <string>1</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>need your location even in background</string>
+
+    <!-- Required for Location Access -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>need your location</string>
+    <string>We need your location to show your current position on the map.</string>
+
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>We need your location to show your current position on the map.</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need your location to show your current position on the map.</string>
 </dict>
 </plist>
-
 
