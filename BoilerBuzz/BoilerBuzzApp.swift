@@ -1,14 +1,6 @@
-//
-//  BoilerBuzzApp.swift
-//  BoilerBuzz
-//
-//  Created by user269394 on 2/5/25.
-//
-
 import SwiftUI
 import GoogleMaps
 import GooglePlaces
-
 let primaryColor = Color.black
 let secondaryColor = Color.gray
 let tertiaryColor = Color.yellow
@@ -18,10 +10,10 @@ struct BoilerBuzzApp: App {
     @State var isLoggedIn: Bool = false
     
     init() {
-        GMSServices.provideAPIKey("AIzaSyD9fysUB7FOQTQILo0TEdTOo59cL-4weVM")
-        GMSPlacesClient.provideAPIKey("AIzaSyD9fysUB7FOQTQILo0TEdTOo59cL-4weVM")
-    }
-    
+            GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
+            GMSPlacesClient.provideAPIKey(APIKeys.googleMapsAPIKey)
+        
+        }
     var body: some Scene {
         WindowGroup {
             if isLoggedIn {
