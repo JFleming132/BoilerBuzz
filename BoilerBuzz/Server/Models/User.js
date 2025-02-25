@@ -9,9 +9,9 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: true,  // email is required
-        unique: true,    // email should be unique
-        match: [         // regex pattern to validate email format
+        required: true,
+        unique: true,
+        match: [
             /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
             'Please enter a valid email address'
         ],
@@ -43,15 +43,14 @@ const userSchema = new mongoose.Schema({
     },
     favoriteDrinks: [{
         type: String
-    }], 
+    }],
     pastEvents: [{
         type: String
-    }], 
+    }],
     rating: {
         type: Number,
         default: 0
     },
-
     status: {
         type: String,
         enum: ["user", "admin"],
@@ -63,7 +62,7 @@ const userSchema = new mongoose.Schema({
     },
     triedDrinks: [{ 
           type: String
-      }],
+    }],
     friends: [{ 
         type: String
     }],
@@ -74,9 +73,21 @@ const userSchema = new mongoose.Schema({
     isBanned: {
         type: Boolean,
         default: false
-    }
+    },
+    spendLimit: {
+        type: Number,
+        default: 200.0
+    },
+    currentSpent: {
+        type: Number,
+        default: 0.0
+    },
+    expenses: [{
+        name: String,
+        amount: Number,
+        date: { type: Date, default: Date.now }
+    }]
 });
-
 
 const User = mongoose.model('User', userSchema);
 

@@ -1,18 +1,22 @@
 import SwiftUI
 
+import SwiftUI
+
 struct SpendingView: View {
     @State private var spendLimit: Double = 200.0
     @State private var currentSpent: Double = 0.0
     @State private var expenses: [(name: String, amount: Double)] = []
-    
+
     // Modal states
     @State private var showAddExpenseSheet = false
     @State private var showChangeLimitSheet = false
+
+    @State private var errorMessage: String?
+    @State private var showError: Bool = false
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                
                 // Progress Bar Card
                 VStack(spacing: 12) {
                     Text("Monthly Spending")
@@ -23,7 +27,8 @@ struct SpendingView: View {
                     ProgressView(value: currentSpent, total: spendLimit)
                         .progressViewStyle(LinearProgressViewStyle())
                         .scaleEffect(y: 2)
-                        .accentColor(tertiaryColor)
+                        .accentColor(currentSpent > spendLimit ? .red : tertiaryColor)
+
                     
                     HStack {
                         Text("$\(currentSpent, specifier: "%.2f") spent")
@@ -71,7 +76,7 @@ struct SpendingView: View {
                         .foregroundColor(.primary)
                     
                     List {
-                        ForEach(expenses, id: \.name) { expense in
+                        ForEach(expenses.reversed(), id: \.name) { expense in
                             HStack {
                                 Text(expense.name)
                                 Spacer()
@@ -95,19 +100,110 @@ struct SpendingView: View {
             .sheet(isPresented: $showChangeLimitSheet) {
                 ChangeLimitView(spendLimit: $spendLimit)
             }
+            .onAppear {
+                fetchUserDetails()
+            }
+            .alert(isPresented: $showError) {
+                Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
     }
+
+    func fetchUserDetails() {
+        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
+            errorMessage = "User not found."
+            showError = true
+            return
+        }
+
+        let url = URL(string: "http://localhost:3000/api/spending/getUserDetails/\(userId)")!
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to fetch user details: \(error.localizedDescription)"
+                    showError = true
+                }
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    errorMessage = "Invalid server response."
+                    showError = true
+                }
+                return
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let data = data {
+                    do {
+                        if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                           let message = json["message"] as? String {
+                            DispatchQueue.main.async {
+                                errorMessage = "Failed to fetch details: \(message)"
+                                showError = true
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                errorMessage = "Server error."
+                                showError = true
+                            }
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            errorMessage = "Error parsing response."
+                            showError = true
+                        }
+                    }
+                }
+                return
+            }
+
+            // Parse response data
+            if let data = data {
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                        if let limit = json["limit"] as? Double,
+                           let currentSpent = json["currentSpent"] as? Double,
+                           let expenses = json["expenses"] as? [[String: Any]] {
+                            // Update the UI with fetched data
+                            DispatchQueue.main.async {
+                                self.spendLimit = limit
+                                self.currentSpent = currentSpent
+                                self.expenses = expenses.map { expense in
+                                    (name: expense["name"] as? String ?? "", amount: expense["amount"] as? Double ?? 0.0)
+                                }
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                errorMessage = "Invalid data format."
+                                showError = true
+                            }
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        errorMessage = "Failed to parse response."
+                        showError = true
+                    }
+                }
+            }
+        }.resume()
+    }
 }
+
 
 // Add Expense View (iOS Modal)
 struct AddExpenseView: View {
     @Binding var currentSpent: Double
     @Binding var expenses: [(name: String, amount: Double)]
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var expenseName: String = ""
     @State private var expenseAmount: String = ""
-    
+    @State private var errorMessage: String?
+    @State private var showError: Bool = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -125,25 +221,107 @@ struct AddExpenseView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         if let amount = Double(expenseAmount), amount > 0 {
-                            expenses.append((name: expenseName, amount: amount))
-                            currentSpent += amount
+                            let newExpense = (name: expenseName, amount: amount)
+                            addExpenseAPI(expense: newExpense)
+                        } else {
+                            errorMessage = "Please enter a valid amount."
+                            showError = true
                         }
-                        dismiss()
                     }
                     .bold()
                 }
             }
+            .alert(isPresented: $showError) {
+                Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
     }
+
+    func addExpenseAPI(expense: (name: String, amount: Double)) {
+        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
+            errorMessage = "User not found."
+            showError = true
+            return
+        }
+
+        let url = URL(string: "http://localhost:3000/api/spending/addExpense/\(userId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "name": expense.name,
+            "amount": expense.amount
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to add expense: \(error.localizedDescription)"
+                    showError = true
+                }
+                return
+            }
+
+            // Check if response is valid and has a non-200 status code
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    errorMessage = "Invalid server response."
+                    showError = true
+                }
+                return
+            }
+
+            // If status code is not 200, try to parse the error message from the API
+            if httpResponse.statusCode != 200 {
+                if let data = data {
+                    do {
+                        // Try to decode the response data for an error message
+                        if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                           let message = json["message"] as? String {
+                            DispatchQueue.main.async {
+                                errorMessage = "Failed to add expense: \(message)"
+                                showError = true
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                errorMessage = "Failed to add expense: Server error."
+                                showError = true
+                            }
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            errorMessage = "Failed to add expense: Parsing error."
+                            showError = true
+                        }
+                    }
+                }
+                return
+            }
+
+            // If the response is successful, update UI
+            DispatchQueue.main.async {
+                expenses.append(expense)
+                currentSpent += expense.amount
+                dismiss()
+            }
+        }.resume()
+    }
 }
+
+
 
 // Change Limit View (iOS Modal)
 struct ChangeLimitView: View {
     @Binding var spendLimit: Double
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var newLimit: String = ""
-    
+    @State private var errorMessage: String?
+    @State private var showError: Bool = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -160,23 +338,88 @@ struct ChangeLimitView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         if let amount = Double(newLimit), amount > 0 {
-                            spendLimit = amount
+                            updateLimitAPI(newLimit: amount)
+                        } else {
+                            errorMessage = "Please enter a valid limit."
+                            showError = true
                         }
-                        dismiss()
                     }
                     .bold()
                 }
             }
+            .alert(isPresented: $showError) {
+                Alert(title: Text("Error"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
+    }
+
+    func updateLimitAPI(newLimit: Double) {
+        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
+            errorMessage = "User not found."
+            showError = true
+            return
+        }
+
+        let url = URL(string: "http://localhost:3000/api/spending/editLimit/\(userId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "newLimit": newLimit
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: [])
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to update limit: \(error.localizedDescription)"
+                    showError = true
+                }
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    errorMessage = "Invalid server response."
+                    showError = true
+                }
+                return
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let data = data {
+                    do {
+                        if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                           let message = json["message"] as? String {
+                            DispatchQueue.main.async {
+                                errorMessage = "Failed to update limit: \(message)"
+                                showError = true
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                errorMessage = "Server error."
+                                showError = true
+                            }
+                        }
+                    } catch {
+                        DispatchQueue.main.async {
+                            errorMessage = "Error parsing response."
+                            showError = true
+                        }
+                    }
+                }
+                return
+            }
+
+            // If the response is successful, update UI
+            DispatchQueue.main.async {
+                self.spendLimit = newLimit
+                dismiss()
+            }
+        }.resume()
     }
 }
 
-// Custom Color Extension
-extension Color {
-    static let gold = Color(red: 0.85, green: 0.65, blue: 0.13)
-}
-
-#Preview {
-    SpendingView()
-}
 
