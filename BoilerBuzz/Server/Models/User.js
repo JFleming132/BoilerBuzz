@@ -63,7 +63,18 @@ const userSchema = new mongoose.Schema({
     },
     triedDrinks: [{ 
           type: String
-      }]
+      }],
+    friends: [{ 
+        type: String
+    }],
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    isBanned: {
+        type: Boolean,
+        default: false
+    }
 });
 
 

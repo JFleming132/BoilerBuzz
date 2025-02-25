@@ -120,6 +120,7 @@ router.post('/login', async (req, res) => {
         res.status(200).json({ 
             message: 'Login successful',
             userId: user._id,
+            isAdmin: user.isAdmin,
          });
     } catch (err) {
         console.error(err);

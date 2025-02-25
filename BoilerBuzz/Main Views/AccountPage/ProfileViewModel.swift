@@ -13,6 +13,7 @@ class ProfileViewModel: ObservableObject {
     @Published var username: String = "Loading..."
     @Published var bio: String = "Loading..."
     @Published var userId: String = ""
+    @Published var isAdmin: Bool = false
     
     // Function to fetch user data from the backend.
     func fetchUserProfile(userId: String? = nil) {
@@ -45,6 +46,7 @@ class ProfileViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.username = decodedResponse.username
                     self.bio = decodedResponse.bio
+                    self.isAdmin = decodedResponse.isAdmin ?? false
                 }
             } catch {
                 print("Error decoding profile data: \(error)")
@@ -57,4 +59,5 @@ class ProfileViewModel: ObservableObject {
 struct Profile: Codable {
     let username: String
     let bio: String
+    let isAdmin: Bool?
 }
