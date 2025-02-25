@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const authRoutes = require('./Routes/auth');
 const profileRoutes = require('./Routes/profile');
 const drinksRoutes = require('./Routes/drinks');
+const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
 
 
@@ -36,6 +37,7 @@ mongoose.connect(mongoURI)
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/drinks', drinksRoutes);
+app.use('/api/friends', friendsRoutes);
 app.use('/api/spending', spendingRoutes);
 
 // Start the server

@@ -13,18 +13,24 @@ class ProfileViewModel: ObservableObject {
     @Published var username: String = "Loading..."
     @Published var bio: String = "Loading..."
     @Published var userId: String = ""
+    @Published var isAdmin: Bool = false
     
     // Function to fetch user data from the backend.
-    func fetchUserProfile() {
-        print("here")
-        guard let storedUserId = UserDefaults.standard.string(forKey: "userId") else {
-            print("No userId stored, user may not be logged in")
-            return
+    func fetchUserProfile(userId: String? = nil) {
+        var idToFetch: String
+        if let provided = userId {
+            idToFetch = provided
+        } else {
+            guard let storedUserId = UserDefaults.standard.string(forKey: "userId") else {
+                print("No userId stored, user may not be logged in")
+                return
+            }
+            idToFetch = storedUserId
         }
         
-        self.userId = storedUserId
+        self.userId = idToFetch
         
-        guard let url = URL(string: "http://localhost:3000/api/profile/\(storedUserId)") else {
+        guard let url = URL(string: "http://localhost:3000/api/profile/\(idToFetch)") else {
             print("Invalid URL")
             return
         }
@@ -40,6 +46,7 @@ class ProfileViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.username = decodedResponse.username
                     self.bio = decodedResponse.bio
+                    self.isAdmin = decodedResponse.isAdmin ?? false
                 }
             } catch {
                 print("Error decoding profile data: \(error)")
@@ -52,4 +59,5 @@ class ProfileViewModel: ObservableObject {
 struct Profile: Codable {
     let username: String
     let bio: String
+    let isAdmin: Bool?
 }

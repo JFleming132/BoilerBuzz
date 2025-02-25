@@ -60,10 +60,20 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    triedDrinks: [{
+    triedDrinks: [{ 
+          type: String
+    }],
+    friends: [{ 
         type: String
     }],
-
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    isBanned: {
+        type: Boolean,
+        default: false
+    },
     spendLimit: {
         type: Number,
         default: 200.0
