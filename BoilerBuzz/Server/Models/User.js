@@ -38,8 +38,8 @@ const userSchema = new mongoose.Schema({
         default: "No bio yet."
     },
     profilePicture: {
-        type: String, // base64 Encoding of pfp
-        default: ""
+        type: String, // URL to the profile picture
+        default: "https://example.com/default-profile.png"
     },
     favoriteDrinks: [{
         type: String
