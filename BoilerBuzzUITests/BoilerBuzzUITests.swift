@@ -60,4 +60,39 @@ final class BoilerBuzzUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
     }
-}
+    
+    @MainActor
+       func testLiveLocationDisplaysCorrectly() throws {
+           let app = XCUIApplication()
+           app.launch()
+
+           // Ensure login is successful and navigate to the map
+           let usernameField = app.textFields["UsernameField"]
+           let passwordField = app.secureTextFields["PasswordField"]
+           let loginButton = app.buttons["LoginButton"]
+
+           XCTAssertTrue(usernameField.waitForExistence(timeout: 5), "Username field should exist")
+           XCTAssertTrue(passwordField.exists, "Password field should exist")
+           XCTAssertTrue(loginButton.exists, "Login button should exist")
+
+           usernameField.tap()
+           usernameField.typeText("test")
+
+           passwordField.tap()
+           passwordField.typeText("test")
+
+           loginButton.tap()
+
+           // Navigate to the map page
+           let mapTab = app.buttons["Map"]
+           XCTAssertTrue(mapTab.waitForExistence(timeout: 5), "Map tab should exist after login")
+           mapTab.tap()
+
+           // Verify if the Map appears
+           let mapElement = app.otherElements["MapView"]
+           XCTAssertTrue(mapElement.waitForExistence(timeout: 5), "MapView should be visible on the map page.")
+
+           // Check for user’s live location (assuming it's represented by an element with identifier "UserLocationDot")
+           let userLocation = app.otherElements["UserLocationDot"]
+           XCTAssertTrue(userLocation.waitForExistence(timeout: 5), "User's live location should appear on the map.")
+       }}
