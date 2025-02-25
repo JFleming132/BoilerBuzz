@@ -10,3 +10,5 @@ xcuserdata/
 
 # Xcode project files
 BoilerBuzz.xcodeproj
+.DS_Store
+/BoilerBuzz.xcodeproj
