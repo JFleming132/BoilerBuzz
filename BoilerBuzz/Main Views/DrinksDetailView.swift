@@ -123,8 +123,13 @@ struct DrinksDetailView: View {
             if showRatingPopup {
                 drinkRatingPopup
             }
+            
+            if showRandomDrink, let randomDrink = randomDrink {
+                randomDrinkPopup(drink: randomDrink)
+            }
         }
         .animation(.easeInOut, value: showFilterSidebar)
+        .background(ShakeDetector{ showRandomDrinkAnimation() })
     }
     
     private var filterSidebar: some View {
