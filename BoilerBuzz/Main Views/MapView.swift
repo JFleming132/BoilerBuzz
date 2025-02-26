@@ -1,10 +1,3 @@
-//
-//  MapView.swift
-//  BoilerBuzz
-//
-//  Created by user269394 on 2/7/25.
-//
-
 import SwiftUI
 import GoogleMaps
 import GooglePlaces
@@ -20,3 +13,5 @@ struct MapView: View {
             }
     }
 }
+//test
+//test
