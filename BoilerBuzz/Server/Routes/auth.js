@@ -14,6 +14,37 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 const router = express.Router();
+router.post('/update-password', async (req, res) => {
+    const { userId, oldPassword, newPassword } = req.body;
+
+    try {
+        // Find the user by userId
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        // Check if the old password matches
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect old password' });
+        }
+
+        // Update the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        user.password = hashedPassword;
+
+        // Save the updated user
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully!' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error updating password' });
+    }
+});
+
 
 // Sign-up route
 router.post('/signup', async (req, res) => {
@@ -120,6 +151,7 @@ router.post('/login', async (req, res) => {
         res.status(200).json({ 
             message: 'Login successful',
             userId: user._id,
+            isAdmin: user.isAdmin,
          });
     } catch (err) {
         console.error(err);
