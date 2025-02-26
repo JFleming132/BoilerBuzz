@@ -53,7 +53,7 @@ class ProfileViewModel: ObservableObject {
                     self.username = decodedResponse.username
                     self.bio = decodedResponse.bio
 
-                    self.profilePicture = decodedResponse.profilePicture.imageFromBase64!
+                    self.profilePicture = decodedResponse.profilePicture.imageFromBase64 ?? UIImage(systemName: "person.crop.circle.fill")!
 
                     self.isAdmin = decodedResponse.isAdmin ?? false
 
