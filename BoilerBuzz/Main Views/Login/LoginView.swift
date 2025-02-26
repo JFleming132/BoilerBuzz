@@ -17,7 +17,7 @@ struct LoginView: View {
         
         let parameters = [
             "username": username,
-            "password": password
+            "password": password,
         ]
         
         // Serialize parameters to JSON
@@ -51,6 +51,7 @@ struct LoginView: View {
                     if let token = loginResponse.token {
                         UserDefaults.standard.set(token, forKey: "token")
                     }
+                    UserDefaults.standard.set(loginResponse.isAdmin, forKey: "isAdmin")
                     print("Login successful: \(loginResponse.message)")
                     DispatchQueue.main.async {
                         isLoggedIn = true
@@ -72,6 +73,7 @@ struct LoginView: View {
         struct LoginResponse: Codable {
             let message: String
             let userId: String
+            let isAdmin: Bool
             let token: String?
         }
     }

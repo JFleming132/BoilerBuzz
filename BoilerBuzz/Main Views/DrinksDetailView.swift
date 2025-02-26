@@ -34,50 +34,201 @@ struct Drink: Identifiable, Codable {
 }
 
 struct DrinksDetailView: View {
-    @State private var drinks: [Drink] = [] // List of drinks fetched
-    @State private var selectedDrink: Drink? = nil // Currently selected drink for the popup
-    @State private var randomDrink: Drink? = nil // Random drink to display
-    @State private var showRandomDrink: Bool = false // Show random drink popup
-    @State private var confettiTrigger: Int = 0 // Confetti trigger
-    @State private var errorMessage: String? = nil // Error message for API failures
-    @State private var triedDrinks: Set<String> = [] // Track selected drinks by objectID
+    @State private var drinks: [Drink] = []
+    @State private var selectedDrink: Drink? = nil
+    @State private var randomDrink: Drink? = nil
+    @State private var showRandomDrink: Bool = false
+    @State private var confettiTrigger: Int = 0
+    @State private var errorMessage: String? = nil
+    @State private var triedDrinks: Set<String> = []
 
+    // Filter states
+    @State private var selectedCategory: String? = nil
+    @State private var selectedBase: String? = nil
+    @State private var minCalories: Int? = nil
+    @State private var maxCalories: Int? = nil
+    @State private var minRating: Int? = nil
+    @State private var showFilterSidebar: Bool = false
+
+    // Temporary filter states
+    @State private var tempSelectedCategory: String? = nil
+    @State private var tempSelectedBase: String? = nil
+    @State private var tempMinCalories: Int? = nil
+    @State private var tempMaxCalories: Int? = nil
+    @State private var tempMinRating: Int? = nil
+    @State private var selectedBar: Int = 0
+    let barOptions = ["All Bars", "The Tap", "Neon Cactus", "Where Else", "Brothers", "9irish", "Harry's"]
+
+    let drinkCategories: [String: [String]] = [
+        "Cocktail": ["Vodka-Based", "Gin-Based", "Rum-Based", "Whiskey-Based", "Scotch-Based", "Tequila-Based", "Brandy-Based", "Champagne-Based", "Other"],
+        "Beer": ["IPA", "Stout", "Porter", "Lager", "Pilsner", "Pale Ale", "Brown Ale", "Belgian", "Sour", "Light", "Fruit"],
+        "Cider": ["Fruity", "Dry", "Berry Cider"],
+        "Shot": ["High-Energy", "Citrus", "Layered", "Whiskey", "Fruity", "Herbal"]
+    ]
+    
+    var filteredDrinks: [Drink] {
+            drinks.filter { drink in
+                (selectedCategory == nil || selectedCategory == "All" || drink.category.contains(selectedCategory!)) &&
+                (selectedBase == nil || selectedBase == "All" || drink.category.contains(selectedBase!)) &&
+                (minCalories == nil || drink.calories >= minCalories!) &&
+                (maxCalories == nil || drink.calories <= maxCalories!) &&
+                (minRating == nil || drink.averageRating >= minRating!) &&
+                // NEW: Bar filter logic
+                (selectedBar == 0 || (drink.barServed.count >= selectedBar && drink.barServed[drink.barServed.index(drink.barServed.startIndex, offsetBy: selectedBar - 1)] == "1"))
+            }
+    }
     var body: some View {
-            ZStack {
-                VStack {
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
+        ZStack {
+            VStack {
+                HStack {
+                    Button(action: { showFilterSidebar.toggle() }) {
+                        Image(systemName: "line.horizontal.3.decrease.circle")
+                            .resizable()
+                            .frame(width: 24, height: 24)
                             .padding()
-                    } else {
-                        drinksGrid
+                    }
+                    Spacer()
+                }
+                
+                Picker("Select Bar", selection: $selectedBar) {
+                    ForEach(barOptions.indices, id: \.self) { index in
+                        Text(barOptions[index]).tag(index)
                     }
                 }
-                .onAppear {
-                    fetchDrinks()
-                    fetchTriedDrinks()
-                }
-                .sheet(item: $selectedDrink) { drink in
-                    DrinkDetailsPopup(drink: drink)
-                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(.horizontal)
 
-                if showRandomDrink, let randomDrink = randomDrink {
-                    randomDrinkPopup(drink: randomDrink)
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .padding()
+                } else {
+                    drinksGrid
                 }
             }
-            .background(ShakeDetector { showRandomDrinkAnimation() })
+            .onAppear {
+                fetchDrinks()
+                fetchTriedDrinks()
+            }
+            .sheet(item: $selectedDrink) { drink in
+                DrinkDetailsPopup(drink: drink)
+            }
+            
+            // Sidebar Filter Menu
+            if showFilterSidebar {
+                filterSidebar
+            }
         }
+        .animation(.easeInOut, value: showFilterSidebar)
+    }
+    
+    private var filterSidebar: some View {
+        ZStack {
+            
+            // Sidebar content
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Filters")
+                        .font(.headline)
+                    Spacer()
+                    Button(action: { showFilterSidebar = false }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                            .imageScale(.large)
+                    }
+                }
+                .padding()
+                
+                Divider()
+                
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Drink Type")
+                        .font(.subheadline)
+                        .bold()
+                    Picker("Drink Type", selection: $tempSelectedCategory) {
+                        Text("All").tag(nil as String?)
+                        ForEach(drinkCategories.keys.sorted(), id: \.self) { category in
+                            Text(category).tag(category as String?)
+                                .lineLimit(1)
+                        }
+                    }
+                    .pickerStyle(DefaultPickerStyle())
+                    .frame(maxWidth: .infinity)
+                    
+                    if let category = tempSelectedCategory, let bases = drinkCategories[category] {
+                        Text("Base")
+                            .font(.subheadline)
+                            .bold()
+                        Picker("Base", selection: $tempSelectedBase) {
+                            Text("All").tag(nil as String?)
+                            ForEach(bases, id: \.self) { base in
+                                Text(base).tag(base as String?)
+                                    .lineLimit(1)  // Prevent wrapping in the options
+                            }
+                        }
+                        .pickerStyle(DefaultPickerStyle())  // Use DefaultPickerStyle here
+                        .frame(maxWidth: .infinity)  // Make Picker fill available space
+                    }
+                    
+                    Text("Calories")
+                        .font(.subheadline)
+                        .bold()
+                    HStack {
+                        TextField("Min", value: $tempMinCalories, format: .number)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        TextField("Max", value: $tempMaxCalories, format: .number)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                    
+                    Text("Minimum Rating")
+                        .font(.subheadline)
+                        .bold()
+                    TextField("Min Rating", value: $tempMinRating, format: .number)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    
+                    Button(action: {
+                        // Save the temporary filter values to the actual filter state
+                        selectedCategory = tempSelectedCategory
+                        selectedBase = tempSelectedBase
+                        minCalories = tempMinCalories
+                        maxCalories = tempMaxCalories
+                        minRating = tempMinRating
+                        
+                        showFilterSidebar = false
+                    }) {
+                        Text("Save Filters")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(.black)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(tertiaryColor, lineWidth: 2)
+                            )
+                        }
+                    }
+                .padding()
+                
+                Spacer()
+            }
+            .frame(width: 300, height: 500)
+            .background(Color(.systemBackground))
+            .cornerRadius(10)
+            .shadow(radius: 10)
+        }
+    }
 
     private var drinksGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160))], spacing: 16) {
-                ForEach(drinks) { drink in
-                    drinkButton(drink: drink) // Each button contains the checkmark
+                ForEach(filteredDrinks) { drink in
+                    drinkButton(drink: drink)
                 }
             }
             .padding()
         }
     }
+
 
 
     private func drinkButton(drink: Drink) -> some View {
@@ -354,75 +505,173 @@ struct DrinksDetailView: View {
 struct DrinkDetailsPopup: View {
     let drink: Drink
     @Environment(\.dismiss) var dismiss
+    @State private var isFavorited: Bool = false
 
     var body: some View {
         ZStack {
             Color.gray.opacity(0.7)
                 .edgesIgnoringSafeArea(.all)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .foregroundColor(Color.black)
+            ScrollView { // Make the entire popup scrollable
+                ZStack(alignment: .topLeading) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Add a hero category icon
+                        Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 80)
 
-                    Text(drink.name)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color.black)
+                        Text(drink.name)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
 
-                    Divider()
+                        Divider()
 
-                    Text("Description:")
-                        .font(.headline)
-                        .foregroundColor(Color.black)
-                    Text(drink.description)
-                        .font(.body)
-                        .foregroundColor(Color.black)
-
-                    Text("Calories: \(drink.calories)")
-                        .font(.subheadline)
-                        .foregroundColor(Color.black)
-                    Text("Average Rating: \(drink.averageRating)")
-                        .font(.subheadline)
-                        .foregroundColor(Color.black)
-
-                    Text("Ingredients:")
-                        .font(.headline)
-                        .foregroundColor(Color.black)
-                    ForEach(drink.ingredients, id: \.self) { ingredient in
-                        Text("- \(ingredient)")
-                            .font(.body)
-                            .foregroundColor(Color.black)
-                    }
-
-                    Spacer()
-
-                    Button(action: { dismiss() }) {
-                        Text("Close")
+                        Text("Description:")
                             .font(.headline)
-                            .foregroundColor(.black)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.yellow)
-                            .cornerRadius(8)
-                            .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 2)
+                        Text(drink.description)
+                            .font(.body)
+
+                        Text("Calories: \(drink.calories)")
+                            .font(.subheadline)
+                        Text("Average Rating: \(drink.averageRating)")
+                            .font(.subheadline)
+
+                        Text("Ingredients:")
+                            .font(.headline)
+                        ForEach(drink.ingredients, id: \.self) { ingredient in
+                            Text("- \(ingredient)")
+                                .font(.body)
+                        }
+
+                            Spacer()
+
+                        Button(action: {
+                            dismiss() // Close the popup
+                        }) {
+                            Text("Close")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.yellow)
+                                .cornerRadius(8)
+                                .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 2)
+                        }
                     }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color(UIColor.systemGray6))
+                            .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
+                    )
+                    .padding()
+
+                    Button(action: {
+                        toggleFavorite()
+                    }) {
+                        Image(systemName: isFavorited ? "heart.fill" : "heart")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(isFavorited ? .red : .gray)
+                            .padding(8)
+                            .background(Color(UIColor.systemBackground).opacity(0.8))
+                            .clipShape(Circle())
+                    }
+                    .padding([.top, .leading], 24)
                 }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(UIColor.systemGray6))
-                        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
-                )
-                .padding()
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
+        }
+        .onAppear {
+            fetchFavoriteStatus()
         }
     }
 
+    func fetchFavoriteStatus() {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching favorite drinks: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received from server.")
+                return
+            }
+            
+            do {
+                let favoriteDrinks = try JSONDecoder().decode([Drink].self, from: data)
+                DispatchQueue.main.async {
+                    // Check if the current drink's drinkID is in the fetched favorites
+                    self.isFavorited = favoriteDrinks.contains(where: { $0.drinkID == drink.drinkID })
+                }
+            } catch {
+                print("Error decoding favorite drinks: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+
+        
+    func toggleFavorite() {
+        guard let userId = getUserId() else {
+            print("User ID not found")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/drinks/toggleFavoriteDrink") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Build the JSON body with the userId and the current drink's drinkID
+        let body: [String: Any] = ["userId": userId, "drinkId": drink.drinkID]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error toggling favorite: \(error)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response toggling favorite: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.isFavorited.toggle()
+                NotificationCenter.default.post(name: Notification.Name("FavoriteDrinksUpdated"), object: nil)
+            }
+        }.resume()
+    }
+
+    func getUserId() -> String? {
+        return UserDefaults.standard.string(forKey: "userId")
+    }
+
+    // Get an appropriate SF Symbol for the drink's category
     func getCategoryIcon(for category: String) -> String {
         switch category.lowercased() {
         case "vodka-based": return "drop.fill"
