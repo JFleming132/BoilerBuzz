@@ -7,6 +7,23 @@
 
 import SwiftUI
 
+//UI Image extension with method (function? field?) for base64 encoding
+extension UIImage {
+    var base64: String? {
+        self.jpegData(compressionQuality: 1)?.base64EncodedString() //encoding function
+    }
+}
+
+//String extension with method (?) for base64 decoding into a UIImage
+extension String {
+    var imageFromBase64: UIImage? {
+        guard let imageData = Data(base64Encoded: self, options: .ignoreUnknownCharacters) else {
+            return nil
+        }
+        return UIImage(data: imageData)
+    }
+}
+
 struct AccountView: View {
     
     @StateObject var profileData = ProfileViewModel()
@@ -107,7 +124,7 @@ struct AccountView: View {
                 
                 
                 // Profile Picture
-                Image(systemName: "person.crop.circle.fill")
+                Image(uiImage: profileData.profilePicture)
                     .resizable()
                     .frame(width: 100, height: 100)
                     .padding(.top, -30)
