@@ -65,8 +65,17 @@ const userSchema = new mongoose.Schema({
             min: 0,
             max: 5
         }
+    friends: [{ 
+        type: String
     }],
-
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    isBanned: {
+        type: Boolean,
+        default: false
+    },
     spendLimit: {
         type: Number,
         default: 200.0

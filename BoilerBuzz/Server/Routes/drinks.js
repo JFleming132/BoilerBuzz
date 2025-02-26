@@ -11,6 +11,7 @@ const User = require('../Models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 const Drink = require('../Models/Drink');
 
@@ -137,5 +138,78 @@ router.get('/triedDrinks/:userId', async (req, res) => {
     }
 });
 
+
+// GET endpoint to retrieve favorite drinks for a given user
+router.get('/favoriteDrinks/:userId', async (req, res) => {
+    try {
+      // Use the same database as your /drinks endpoint
+      const db = mongoose.connection.client.db('Boiler_Buzz');
+      
+      // Retrieve the user document by the given userId
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Extract the favorite drink IDs from the user document
+      const favoriteDrinkIds = user.favoriteDrinks || [];
+      
+      // If no favorites, return an empty array
+      if (favoriteDrinkIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+
+      const convertedIDs = favoriteDrinkIds.map(item => parseInt(item, 10));
+      // Query the drinks collection for drinks whose drinkID (which is stored as an integer) is in the favoriteDrinkIds array
+      const drinks = await db.collection('drinks').find({ drinkID: { $in: convertedIDs } }).toArray();
+      
+      // Return the retrieved drinks as JSON
+      res.status(200).json(drinks);
+    } catch (error) {
+      console.error("Error fetching favorite drinks:", error.message);
+      res.status(500).json({ error: "Failed to fetch favorite drinks. Please try again later." });
+    }
+  });
+  
+
+// POST endpoint to add a drink to a user's favorites
+router.post('/toggleFavoriteDrink', async (req, res) => {
+    const { userId, drinkId } = req.body;
+    const drinkIdStr = drinkId.toString();
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: 'Invalid user Id' });
+    }
+
+    try {
+        // Use the same database as your /drinks endpoint
+        const db = mongoose.connection.client.db('Boiler_Buzz');
+      
+        // Retrieve the user document by the given userId
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+      
+        // Extract the favorite drink IDs from the user document
+        const favoriteDrinkIds = user.favoriteDrinks || [];
+        // If the drinkId is already in the favorites, remove it
+        if (favoriteDrinkIds.includes(drinkIdStr)) {
+          user.favoriteDrinks = favoriteDrinkIds.filter(id => id !== drinkIdStr);
+        } else {
+          // Otherwise, add the drinkId to the favorites
+          user.favoriteDrinks.push(drinkIdStr);
+        }
+      
+        // Update the user document in the database
+        await user.save();
+        // Return a success message
+        return res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Error toggling favorite drink:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 module.exports = router;

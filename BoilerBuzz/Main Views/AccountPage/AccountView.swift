@@ -8,7 +8,38 @@
 import SwiftUI
 
 struct AccountView: View {
+    
     @StateObject var profileData = ProfileViewModel()
+    @State private var showFavoritedDrinks = false
+    @State private var showFriendsList = false
+    @State private var isFriend: Bool = false
+    @State private var showDeleteConfirmation = false
+    @State private var showBanConfirmation = false
+    
+    /* TESTING */
+    @State private var randomProfileId: String? = nil
+    @State private var showRandomProfile: Bool = false
+    /* TESTING */
+
+
+    // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
+    var viewedUserId: String? = nil
+    var adminStatus: Bool? = nil  // If passed, use this value for isAdmin
+    
+    var isOwnProfile: Bool {
+        if let viewed = viewedUserId,
+           let stored = UserDefaults.standard.string(forKey: "userId") {
+            return viewed == stored
+        }
+        return true
+    }
+
+    var isAdmin: Bool {
+        let stored = UserDefaults.standard.bool(forKey: "isAdmin")
+        print("adminStatus = \(adminStatus ?? stored)")
+        return adminStatus ?? stored
+    }
+    
     
     var body: some View {
         NavigationView {
@@ -16,18 +47,63 @@ struct AccountView: View {
                 // Settings
                 HStack {
                     Spacer()
-                    NavigationLink(destination: SettingsView(profileData: profileData)) {
-                        Image(systemName: "gearshape.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .foregroundColor(.primary)
-                            .padding(14)
-                            .clipShape(Circle())
-                            .contentShape(Circle())
+                    if isOwnProfile {
+                        NavigationLink(destination: SettingsView(profileData: profileData)) {
+                            Image(systemName: "gearshape.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.primary)
+                                .padding(14)
+                                .clipShape(Circle())
+                                .contentShape(Circle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        // print("Own profile: showing settings gear")
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    else if !isOwnProfile && isAdmin {
+                            HStack(spacing: 12) {
+                                Button(action: {
+                                    showDeleteConfirmation = true
+                                }) {
+                                    Text("Delete User")
+                                        .foregroundColor(.red)
+                                        .padding(8)
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(8)
+                                }
+                                Button(action: {
+                                    showBanConfirmation = true
+                                }) {
+                                    Text("Ban User")
+                                        .foregroundColor(.orange)
+                                        .padding(8)
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(8)
+                                }
+                            }
+                            .padding(.top, 20)
+                            .offset(y: -20)
+                    }
                 }
                 .padding(.horizontal)
+                .alert("Delete User", isPresented: $showDeleteConfirmation) {
+                    Button("Confirm", role: .destructive) {
+                        // TODO: Call backend to delete user
+                        print("User deleted")
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("Are you sure you want to delete this user?")
+                }
+                .alert("Ban User", isPresented: $showBanConfirmation) {
+                    Button("Confirm", role: .destructive) {
+                        // TODO: Call backend to ban user
+                        print("User banned")
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("Are you sure you want to ban this user from posting events?")
+                }
                 
                 
                 // Profile Picture
@@ -47,21 +123,37 @@ struct AccountView: View {
                 
                 // Profile Name & Bio
                 VStack {
-                    Text(profileData.username)
-                        .font(.title2)
-                        .fontWeight(.bold)
+                    HStack {
+                        Text(profileData.username)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        if profileData.isAdmin {
+                            Text("Admin")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(4)
+                                .background(Color.red)
+                                .cornerRadius(4)
+                        }
+                    }
                     Text(profileData.bio)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
                 .onAppear {
-                    profileData.fetchUserProfile()
+                    // If a specific user is passed in, fetch that profile; otherwise, fetch your own.
+                    if let uid = viewedUserId {
+                        profileData.fetchUserProfile(userId: uid)
+                    } else {
+                        profileData.fetchUserProfile()
+                    }
                 }
                 
                 // Buttons Row
                 HStack {
                     Button(action: {
                         // Should show your favorited drinks
+                        showFavoritedDrinks = true
                     }) {
                         Image(systemName: "wineglass.fill")
                             .resizable()
@@ -84,9 +176,17 @@ struct AccountView: View {
                     
                     Button(action: {
                         // Friend request action
-                        // Own profile should show list of friends
+                        if isOwnProfile {
+                                // Action: Show your friends list
+                            showFriendsList = true
+                        } else {
+                                // Action: Add friend
+                            if !isFriend {
+                                addFriend()
+                            }
+                        }
                     }) {
-                        Image(systemName: "person.badge.plus.fill")
+                        Image(systemName: isOwnProfile ? "person.2.fill" : (isFriend ? "checkmark" : "person.badge.plus.fill"))
                             .resizable()
                             .frame(width: 40, height: 40)
                             .padding()
@@ -94,6 +194,25 @@ struct AccountView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 30)
+                
+               //  For TESTING
+                if isOwnProfile {
+                    Button("View Random Profile") {
+                        fetchRandomProfile { id in
+                            if let id = id {
+                                self.randomProfileId = id
+                                self.showRandomProfile = true
+                            }
+                        }
+                    }
+                    .foregroundColor(.blue)
+                    .padding()
+
+
+                    NavigationLink(destination: AccountView(viewedUserId: randomProfileId, adminStatus: adminStatus), isActive: $showRandomProfile) {
+                        EmptyView()
+                    }
+                }
                 
                 // Grid for posts/favorites
                 // Right now just empty boxes. dont know what to have at the beginning
@@ -105,12 +224,111 @@ struct AccountView: View {
                     }
                 }
                 .padding()
-                .padding()
+
             }
             .padding()
-            .navigationTitle("Account")
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text(viewedUserId == nil ? "Account" : "Profile")
+                    .font(.system(size: 18, weight: .semibold))
+                }
+            }
+            .sheet(isPresented: $showFavoritedDrinks) {
+                FavoritedDrinksPopup(isMyProfile: viewedUserId == nil, userId: profileData.userId)
+                    .presentationDetents([.medium, .large])
+            }
+            // Present FriendsListPopup sheet when the friend button is tapped on own profile
+            .sheet(isPresented: $showFriendsList) {
+                FriendsListPopup(isMyProfile: isOwnProfile, userId: profileData.userId, adminStatus: adminStatus)
+                    .presentationDetents([.medium, .large])
+            }
+            
         }
     }
+
+    func addFriend() {
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
+            print("My user ID not found")
+            return
+        }
+        guard let friendId = viewedUserId else {
+            print("Friend ID is missing")
+            return
+        }
+        guard let url = URL(string: "http://localhost:3000/api/friends/addFriend") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["userId": myUserId, "friendId": friendId]
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error adding friend: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response adding friend: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                print("Friend added successfully!")
+                // Optionally, show a confirmation message or update local state
+                isFriend = true
+            }
+        }.resume()
+    }
+
+    func fetchRandomProfile(completion: @escaping (String?) -> Void) {
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
+            let url = URL(string: "http://localhost:3000/api/profile/random?exclude=\(myUserId)") else {
+            completion(nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching random profile: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received for random profile")
+                completion(nil)
+                return
+            }
+            
+            do {
+                // Assume the endpoint returns { "_id": "...", "username": "..." }
+                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                let randomId = json["_id"] as? String {
+                    completion(randomId)
+                } else {
+                    completion(nil)
+                }
+            } catch {
+                print("Error decoding random profile: \(error.localizedDescription)")
+                completion(nil)
+            }
+        }.resume()
+    }
+
+
 
 }
     struct AccountView_Previews: PreviewProvider {
