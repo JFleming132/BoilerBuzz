@@ -15,7 +15,7 @@ const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
 
 const cron = require('node-cron');
-const User = require('./Models/User'); // Ensure correct path to your User model
+const User = require('./Models/User');
 
 
 
