@@ -48,12 +48,12 @@ router.get('/random', async (req, res) => {
 // Route to GET user profile details (Username & Bio) using the MongoDB _id
 router.get('/:userId', async (req, res) => {
     try {
-        console.log("Why are we here")
-        const user = await User.findById(req.params.userId).select('username bio isAdmin');
+        console.log("Why are we here") //...like existentially?
+        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        console.log(user)
+        //console.log(user) < spams console, but useful debug msg
         res.status(200).json(user);
     } catch (error) {
         console.error("Error fetching profile:", error);
@@ -63,7 +63,7 @@ router.get('/:userId', async (req, res) => {
 
 // Route to UPDATE user profile (Username & Bio) not pic yet
 router.put('/:userId', async (req, res) => {
-    const { username, bio } = req.body;
+    const { username, bio, profilePicture } = req.body;
     console.log(`Received profile update request for user ${req.params.userId}`);
 
     try {
@@ -77,10 +77,10 @@ router.put('/:userId', async (req, res) => {
         if (!username || username.trim() === '') {
             return res.status(400).json({ message: "Username cannot be empty" });
         }
-
+        //console.log(`attempting to update userid ${req.params.userId} with ${req.body.profilePicture}`)
         const updatedUser = await User.findByIdAndUpdate(
             req.params.userId,
-            { username, bio },
+            { username, bio, profilePicture },
             { new: true, runValidators: true }
         );
 

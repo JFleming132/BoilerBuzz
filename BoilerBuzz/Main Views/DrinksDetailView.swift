@@ -65,8 +65,13 @@ struct DrinksDetailView: View {
     @State private var tempMinCalories: Int? = nil
     @State private var tempMaxCalories: Int? = nil
     @State private var tempMinRating: Int? = nil
+
     
     @State private var triedDrinksRatings: [String: Int] = [:]
+
+
+    @State private var selectedBar: Int = 0
+    let barOptions = ["All Bars", "The Tap", "Neon Cactus", "Where Else", "Brothers", "9irish", "Harry's"]
 
 
     let drinkCategories: [String: [String]] = [
@@ -77,15 +82,16 @@ struct DrinksDetailView: View {
     ]
     
     var filteredDrinks: [Drink] {
-        drinks.filter { drink in
-            (selectedCategory == nil || selectedCategory == "All" || drink.category.contains(selectedCategory!)) &&
-            (selectedBase == nil || selectedBase == "All" || drink.category.contains(selectedBase!)) &&
-            (minCalories == nil || drink.calories >= minCalories!) &&
-            (maxCalories == nil || drink.calories <= maxCalories!) &&
-            (minRating == nil || drink.averageRating >= minRating!)
-        }
+            drinks.filter { drink in
+                (selectedCategory == nil || selectedCategory == "All" || drink.category.contains(selectedCategory!)) &&
+                (selectedBase == nil || selectedBase == "All" || drink.category.contains(selectedBase!)) &&
+                (minCalories == nil || drink.calories >= minCalories!) &&
+                (maxCalories == nil || drink.calories <= maxCalories!) &&
+                (minRating == nil || drink.averageRating >= minRating!) &&
+                // NEW: Bar filter logic
+                (selectedBar == 0 || (drink.barServed.count >= selectedBar && drink.barServed[drink.barServed.index(drink.barServed.startIndex, offsetBy: selectedBar - 1)] == "1"))
+            }
     }
-
     var body: some View {
         ZStack {
             VStack {
@@ -99,6 +105,14 @@ struct DrinksDetailView: View {
                     Spacer()
                 }
                 
+                Picker("Select Bar", selection: $selectedBar) {
+                    ForEach(barOptions.indices, id: \.self) { index in
+                        Text(barOptions[index]).tag(index)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(.horizontal)
+
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
