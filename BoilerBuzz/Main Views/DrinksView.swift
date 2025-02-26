@@ -32,7 +32,7 @@ struct DrinksView: View {
                 }
             }
             .padding(.top, 44) // Add padding to push tabs below the clock
-            .background(primaryColor) // Black background for the tabs
+            .background(Color(.systemBackground))
             .shadow(color: secondaryColor.opacity(0.1), radius: 2, x: 0, y: 2) // Subtle shadow for tab separator
 
             // Dynamic content based on selected tab
@@ -46,6 +46,6 @@ struct DrinksView: View {
         }
         .edgesIgnoringSafeArea(.top) // Extend the view to the very top
         .frame(maxHeight: .infinity, alignment: .top) // Push everything to the top
-        .background(bgColor) // Ensure the entire background is white
+        .background(Color(.systemBackground))
     }
 }
