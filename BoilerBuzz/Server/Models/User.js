@@ -1,3 +1,9 @@
+//
+//  User.js
+//  BoilerBuzz
+//
+//  Created by Matt Zlatniski on 2/12/25.
+//
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -54,17 +60,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    triedDrinks: [{
-        objectId: {
-            type: String,
-            required: true
-        },
-        rating: {
-            type: Number,
-            required: true,
-            min: 0,
-            max: 5
-        }
+    triedDrinks: [{ 
+          type: String
+    }],
     friends: [{ 
         type: String
     }],
