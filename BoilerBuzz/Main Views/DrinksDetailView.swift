@@ -373,58 +373,67 @@ struct DrinksDetailView: View {
         }
     }
 
-        private func randomDrinkPopup(drink: Drink) -> some View {
-            VStack(spacing: 16) {
-                Text("Drink!")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color.yellow)
-                Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(Color(UIColor.darkGray))
-                Text(drink.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(UIColor.darkGray))
-                Text(drink.description)
-                    .font(.body)
-                    .foregroundColor(Color(UIColor.darkGray))
-                    .multilineTextAlignment(.center)
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
-            )
-            .onTapGesture { withAnimation { showRandomDrink = false } }
-            .confettiCannon(
-                trigger: $confettiTrigger,
-                num: 50,
-                confettis: [.text("🍹"), .text("🍸"), .text("🍺"), .text("🥂")],
-                confettiSize: 35,
-                radius: 300.0
-            )
-            .transition(.scale)
-            .onAppear {
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.success)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    confettiTrigger += 1
-                }
+    private func randomDrinkPopup(drink: Drink) -> some View {
+        let isDarkMode = UITraitCollection.current.userInterfaceStyle == .dark // Manually detect Dark Mode
+        
+        return VStack(spacing: 16) {
+            Text("Drink!")
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(Color.yellow)
+            
+            Image(systemName: getCategoryIcon(for: drink.category.first ?? "default"))
+                .resizable()
+                .scaledToFit()
+                .frame(width: 80, height: 80)
+                .foregroundColor(isDarkMode ? Color.white : Color(UIColor.darkGray)) // Adaptive icon color
+            
+            Text(drink.name)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(isDarkMode ? Color.white : Color(UIColor.darkGray)) // Adaptive text color
+            
+            Text(drink.description)
+                .font(.body)
+                .foregroundColor(isDarkMode ? Color.gray : Color(UIColor.darkGray))
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isDarkMode ? Color.black : Color.white) // Adaptive background
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
+        )
+        .onTapGesture { withAnimation { showRandomDrink = false } }
+        .confettiCannon(
+            trigger: $confettiTrigger,
+            num: 50,
+            confettis: [.text("🍹"), .text("🍸"), .text("🍺"), .text("🥂")],
+            confettiSize: 35,
+            radius: 300.0
+        )
+        .transition(.scale)
+        .onAppear {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                confettiTrigger += 1
             }
         }
+    }
+
 
     private func showRandomDrinkAnimation() {
-        guard !drinks.isEmpty else { return }
+        let availableDrinks = filteredDrinks.isEmpty ? drinks : filteredDrinks // Use filtered drinks if available, otherwise use all drinks
+        
+        guard !availableDrinks.isEmpty else { return } // Ensure there are drinks to choose from
 
-        randomDrink = drinks.randomElement()
+        randomDrink = availableDrinks.randomElement() // Pick a random drink from the available list
         withAnimation {
             showRandomDrink = true
         }
     }
+
 
     func getUserId() -> String? {
         return UserDefaults.standard.string(forKey: "userId")

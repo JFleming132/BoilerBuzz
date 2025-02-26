@@ -172,39 +172,73 @@ struct SignUpView: View {
 
 struct OnboardingView: View {
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme // Detect system color scheme
     @Binding var currentStepView: AnyView
     @State private var step = 0
     
     var body: some View {
         ZStack {
-            currentStepView
-                .edgesIgnoringSafeArea(.all)
-            ScrollView {
-                VStack(spacing: 20) {
-                    Text(getTitle())
-                        .font(.title)
-                        .multilineTextAlignment(.center)
+            // Set Yellow Background for the first onboarding step
+            if step == 0 {
+                Color.yellow.edgesIgnoringSafeArea(.all)
+            } else {
+                currentStepView.edgesIgnoringSafeArea(.all)
+            }
+            
+            VStack {
+                if step == 0 {
+                    // Centered pop-up for first step
+                    VStack(spacing: 20) {
+                        Text(getTitle())
+                            .font(.title)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        
+                        Text(getDescription())
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        
+                        Button("Next") {
+                            advanceStep()
+                        }
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(step == 0 ? Color.yellow.opacity(0.8) : Color.clear) // Yellow background for first step
-                    
-                    Text(getDescription())
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    Button(step == 6 ? "Finish" : "Next") {
-                        advanceStep()
+                        .background(primaryColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     }
                     .padding()
-                    .background(primaryColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .background(colorScheme == .dark ? Color.black : Color.white) // Adaptive pop-up color
+                    .cornerRadius(15)
+                    .shadow(radius: 10)
+                    .frame(maxWidth: 300) // Keeps the pop-up centered
+                    .frame(maxHeight: .infinity, alignment: .center)
+                } else {
+                    // Rest of the onboarding steps
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            Text(getTitle())
+                                .font(.title)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            
+                            Text(getDescription())
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            
+                            Button(step == 6 ? "Finish" : "Next") {
+                                advanceStep()
+                            }
+                            .padding()
+                            .background(primaryColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                        }
+                        .padding()
+                        .background(colorScheme == .dark ? Color.black : Color.white)
+                        .cornerRadius(15)
+                        .shadow(radius: 10)
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .shadow(radius: 10)
             }
         }
         .onAppear {
@@ -259,4 +293,3 @@ struct OnboardingView: View {
         }
     }
 }
-
