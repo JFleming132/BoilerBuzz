@@ -45,8 +45,8 @@ func filterDrinks(
     selectedBase: String?,
     minCalories: Int?,
     maxCalories: Int?,
-    minRating: Int?
-) -> [Drink] {
+    minRating: Int?,
+    selectedBar: String?) -> [Drink] {
     return drinks.filter { drink in
         let categoryMatches = selectedCategory == nil ||
             selectedCategory == "All" ||
@@ -59,8 +59,10 @@ func filterDrinks(
         let minCaloriesMatches = minCalories.map { drink.calories >= $0 } ?? true
         let maxCaloriesMatches = maxCalories.map { drink.calories <= $0 } ?? true
         let ratingMatches = minRating.map { drink.averageRating >= $0 } ?? true
-        
-        return categoryMatches && baseMatches && minCaloriesMatches && maxCaloriesMatches && ratingMatches
+        let barMatches = selectedBar == nil ||
+                    selectedBar == "All" ||
+                    drink.barServed == selectedBar
+        return categoryMatches && baseMatches && minCaloriesMatches && maxCaloriesMatches && ratingMatches && barMatches
     }
 }
 
