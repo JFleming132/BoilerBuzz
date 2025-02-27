@@ -20,7 +20,7 @@ const router = express.Router();
 router.post('/toggleTriedDrink', async (req, res) => {
     const { userId, objectId, rating } = req.body;
 
-    console.log(`Got toggle drink request with userId: ${userId}, objectId: ${objectId}, rating: ${rating}`);
+   
 
     const session = await mongoose.startSession(); // Start transaction session
     session.startTransaction();
@@ -28,14 +28,12 @@ router.post('/toggleTriedDrink', async (req, res) => {
     try {
         const user = await User.findById(userId).session(session);
         if (!user) {
-            console.log("User not found");
             await session.abortTransaction();
             return res.status(404).json({ error: 'User not found' });
         }
 
         const drink = await Drink.findById(objectId).session(session);
         if (!drink) {
-            console.log("Drink not found");
             await session.abortTransaction();
             return res.status(404).json({ error: 'Drink not found' });
         }
@@ -48,7 +46,6 @@ router.post('/toggleTriedDrink', async (req, res) => {
 
         if (existingDrinkIndex !== -1) {
             // If the drink exists, remove it and its rating
-            console.log("Removing drink rating");
             removedRating = user.triedDrinks[existingDrinkIndex].rating;
             user.triedDrinks.splice(existingDrinkIndex, 1);
 
@@ -60,7 +57,6 @@ router.post('/toggleTriedDrink', async (req, res) => {
             );
         } else {
             // If the drink does not exist, add it and its rating
-            console.log("Adding drink rating");
             user.triedDrinks.push({ objectId: objectId, rating: rating });
 
             // Add rating to drink's rating list
@@ -93,7 +89,6 @@ router.post('/toggleTriedDrink', async (req, res) => {
         await session.commitTransaction();
         session.endSession();
         
-        console.log(newAverageRating)
 
         return res.json({
             success: true,
@@ -114,7 +109,6 @@ router.post('/toggleTriedDrink', async (req, res) => {
 // Fetch tried drinks for a user
 router.get('/triedDrinks/:userId', async (req, res) => {
     const { userId } = req.params;
-    console.log("Fetch tried drinks")
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ error: 'Invalid user Id' });
@@ -127,7 +121,7 @@ router.get('/triedDrinks/:userId', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         
-        console.log(user.triedDrinks)
+
 
         // Return the full triedDrinks array with name + rating
         return res.json({ triedDrinks: user.triedDrinks });

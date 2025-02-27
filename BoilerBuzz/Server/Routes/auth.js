@@ -49,7 +49,6 @@ router.post('/update-password', async (req, res) => {
 // Sign-up route
 router.post('/signup', async (req, res) => {
     const { email, username, password } = req.body;
-    console.log(`got signup request with username: ${username} and password: ${password}`);
     
     if (!password || password.trim() === '') {
        return res.status(400).json({ message: 'Password cannot be empty' });
@@ -125,7 +124,6 @@ router.post('/signup', async (req, res) => {
 // Login route
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log(`got login request with username: ${username} and password: ${password}`);
     
     try {
         // Check if the user exists
@@ -162,7 +160,6 @@ router.post('/login', async (req, res) => {
 //verification route
 router.post('/verify', async (req, res) => {
     const { email, verificationToken } = req.body;
-    console.log(`got verification request with email: ${email} and verification: ${verificationToken}`);
     try {
         // Check if the user exists
         const user = await User.findOne({ email });
@@ -187,7 +184,6 @@ router.post('/verify', async (req, res) => {
 //forgot password route
 router.post('/forgotPasswordCode', async (req, res) => {
     const { email } = req.body;
-    console.log(`got forgot password request with email: ${email}`);
     try {
         // Check if the user exists
         const user = await User.findOne({ email });
@@ -239,7 +235,6 @@ router.post('/forgotPasswordCode', async (req, res) => {
 //forgot password route
 router.post('/changePassword', async (req, res) => {
     const { email, forgotPasswordCode, newPassword } = req.body;
-    console.log(`got change password request with email: ${email}`);
     try {
         // Check if the user exists
         const user = await User.findOne({ email });

@@ -1,0 +1,18 @@
+{
+  "configurations" : [
+    {
+      "id" : "99EE6236-DEBA-499D-88D3-8CE96C700650",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+
+  ],
+  "version" : 1
+}
