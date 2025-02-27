@@ -9,7 +9,7 @@ import SwiftUI
 import ConfettiSwiftUI
 
 struct Drink: Identifiable, Codable {
-    let id = UUID() // Unique ID for SwiftUI
+    let id = UUID()
     let objectID: String
     let drinkID: Int
     let name: String
@@ -21,7 +21,7 @@ struct Drink: Identifiable, Codable {
     let calories: Int
     
     enum CodingKeys: String, CodingKey {
-        case objectID = "_id" // Map the _id from JSON to objectID in the struct
+        case objectID = "_id"
         case drinkID
         case name
         case description
@@ -67,6 +67,9 @@ struct DrinksDetailView: View {
     @State private var tempMinRating: Int? = nil
     
     @State private var triedDrinksRatings: [String: Int] = [:]
+    
+    @State private var showSortingSidebar: Bool = false
+    @State private var selectedSortOption: String? = nil
 
 
     let drinkCategories: [String: [String]] = [
@@ -96,8 +99,18 @@ struct DrinksDetailView: View {
                             .frame(width: 24, height: 24)
                             .padding()
                     }
+                    
                     Spacer()
+
+                    Button(action: { showSortingSidebar.toggle() }) {
+                        Image(systemName: "arrow.up.arrow.down.circle")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                            .padding()
+                    }
                 }
+
+
                 
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
@@ -124,33 +137,38 @@ struct DrinksDetailView: View {
                 drinkRatingPopup
             }
             
+            if showSortingSidebar {
+                sortingSidebar
+            }
+            
             if showRandomDrink, let randomDrink = randomDrink {
                 randomDrinkPopup(drink: randomDrink)
             }
         }
         .animation(.easeInOut, value: showFilterSidebar)
+        .animation(.easeInOut, value: showSortingSidebar)
         .background(ShakeDetector{ showRandomDrinkAnimation() })
     }
     
     private var filterSidebar: some View {
         ZStack {
-            
-            // Sidebar content
+            Color.black.opacity(0.3)
+                .edgesIgnoringSafeArea(.all)
+                .onTapGesture {
+                    showFilterSidebar = false
+                }
+
             VStack(alignment: .leading) {
                 HStack {
                     Text("Filters")
                         .font(.headline)
+                        .foregroundColor(Color.primary)
                     Spacer()
-                    Button(action: { showFilterSidebar = false }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray)
-                            .imageScale(.large)
-                    }
                 }
                 .padding()
-                
+
                 Divider()
-                
+
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Drink Type")
                         .font(.subheadline)
@@ -165,21 +183,6 @@ struct DrinksDetailView: View {
                     .pickerStyle(DefaultPickerStyle())
                     .frame(maxWidth: .infinity)
                     
-                    if let category = tempSelectedCategory, let bases = drinkCategories[category] {
-                        Text("Base")
-                            .font(.subheadline)
-                            .bold()
-                        Picker("Base", selection: $tempSelectedBase) {
-                            Text("All").tag(nil as String?)
-                            ForEach(bases, id: \.self) { base in
-                                Text(base).tag(base as String?)
-                                    .lineLimit(1)  // Prevent wrapping in the options
-                            }
-                        }
-                        .pickerStyle(DefaultPickerStyle())  // Use DefaultPickerStyle here
-                        .frame(maxWidth: .infinity)  // Make Picker fill available space
-                    }
-                    
                     Text("Calories")
                         .font(.subheadline)
                         .bold()
@@ -189,44 +192,137 @@ struct DrinksDetailView: View {
                         TextField("Max", value: $tempMaxCalories, format: .number)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
-                    
-                    Text("Minimum Rating")
-                        .font(.subheadline)
-                        .bold()
-                    TextField("Min Rating", value: $tempMinRating, format: .number)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
+
                     Button(action: {
-                        // Save the temporary filter values to the actual filter state
                         selectedCategory = tempSelectedCategory
-                        selectedBase = tempSelectedBase
                         minCalories = tempMinCalories
                         maxCalories = tempMaxCalories
-                        minRating = tempMinRating
-                        
                         showFilterSidebar = false
                     }) {
-                        Text("Save Filters")
+                        Text("Apply Filters")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(.black)
                             .cornerRadius(10)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(tertiaryColor, lineWidth: 2)
+                                    .stroke(Color.primary, lineWidth: 2)
                             )
-                        }
                     }
+                }
                 .padding()
-                
+
                 Spacer()
             }
-            .frame(width: 300, height: 500)
+            .frame(width: 300, height: 450)
             .background(Color(.systemBackground))
             .cornerRadius(10)
             .shadow(radius: 10)
+            .gesture(
+                DragGesture()
+                    .onEnded { gesture in
+                        if gesture.translation.height > 100 {
+                            showFilterSidebar = false
+                        }
+                    }
+            )
         }
     }
+
+    
+    var sortedDrinks: [Drink] {
+        let sorted = filteredDrinks
+        switch selectedSortOption {
+        case "A to Z":
+            return sorted.sorted { $0.name < $1.name }
+        case "Z to A":
+            return sorted.sorted { $0.name > $1.name }
+        case "Lowest Calorie First":
+            return sorted.sorted { $0.calories < $1.calories }
+        case "Highest Calorie First":
+            return sorted.sorted { $0.calories > $1.calories }
+        case "Lowest Average Rating First":
+            return sorted.sorted { $0.averageRating < $1.averageRating }
+        case "Highest Average Rating First":
+            return sorted.sorted { $0.averageRating > $1.averageRating }
+        case "Tried Drinks First":
+            return sorted.sorted { triedDrinks.contains($0.objectID) && !triedDrinks.contains($1.objectID) }
+        case "Tried Drinks Last":
+            return sorted.sorted { !triedDrinks.contains($0.objectID) && triedDrinks.contains($1.objectID) }
+        default:
+            return sorted
+        }
+    }
+    
+    private var sortingSidebar: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .edgesIgnoringSafeArea(.all)
+                .onTapGesture {
+                    showSortingSidebar = false
+                }
+
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Sort Drinks")
+                        .font(.headline)
+                        .foregroundColor(Color.primary)
+                    Spacer()
+                }
+                .padding()
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach([
+                        "A to Z",
+                        "Z to A",
+                        "Lowest Calorie First",
+                        "Highest Calorie First",
+                        "Lowest Average Rating First",
+                        "Highest Average Rating First",
+                        "Tried Drinks First",
+                        "Tried Drinks Last"
+                    ], id: \.self) { option in
+                        Button(action: {
+                            selectedSortOption = option
+                            drinks = sortedDrinks
+                            showSortingSidebar = false
+                        }) {
+                            HStack {
+                                Text(option)
+                                    .font(.body)
+                                    .foregroundColor(Color.primary)
+                                Spacer()
+                                if selectedSortOption == option {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .padding()
+
+                Spacer()
+            }
+            .frame(width: 300, height: 450)
+            .background(Color(.systemBackground))
+            .cornerRadius(10)
+            .shadow(radius: 10)
+            .gesture(
+                DragGesture()
+                    .onEnded { gesture in
+                        if gesture.translation.height > 100 {
+                            showSortingSidebar = false
+                        }
+                    }
+            )
+        }
+    }
+
+
 
     private var drinksGrid: some View {
         ScrollView {
