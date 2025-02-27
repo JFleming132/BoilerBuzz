@@ -12,7 +12,13 @@
 
   },
   "testTargets" : [
-
+    {
+      "target" : {
+        "containerPath" : "container:BoilerBuzz.xcodeproj",
+        "identifier" : "8B0A402B2D5444C1001C0A7D",
+        "name" : "BoilerBuzzTests"
+      }
+    }
   ],
   "version" : 1
 }

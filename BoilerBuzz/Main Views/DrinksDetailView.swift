@@ -122,6 +122,8 @@ struct DrinksDetailView: View {
     @State private var triedDrinks: Set<String> = []
     @State private var showRatingPopup = false
     @State private var drinkToRate: Drink? = nil
+    @State private var tempRating: Int = 0
+    
 
     // Filter states
     @State private var selectedCategory: String? = nil
@@ -474,7 +476,7 @@ struct DrinksDetailView: View {
                     print("User ID not found")
                     return
                 }
-                toggleDrinkSelection(objectID: drink.objectID, userId: userId, tempRating: 0)
+                toggleDrinkSelection(objectID: drink.objectID, userId: userId)
             }
         }) {
             Image(systemName: "checkmark.circle.fill")
@@ -503,8 +505,6 @@ struct DrinksDetailView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                var tempRating = 0
-                
                 // Star rating input (5 stars max)
                 HStack {
                     ForEach(1...5, id: \.self) { i in
@@ -530,7 +530,7 @@ struct DrinksDetailView: View {
                             print("User ID not found")
                             return
                         }
-                        toggleDrinkSelection(objectID: drink.objectID, userId: userId, tempRating: tempRating)
+                        toggleDrinkSelection(objectID: drink.objectID, userId: userId)
                     }
                 }) {
                     Text("Submit")
@@ -613,7 +613,7 @@ struct DrinksDetailView: View {
     }
 
     
-    func toggleDrinkSelection(objectID: String, userId: String, tempRating: Int) {
+    func toggleDrinkSelection(objectID: String, userId: String) {
         let url = URL(string: "http://localhost:3000/api/drinks/toggleTriedDrink")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
