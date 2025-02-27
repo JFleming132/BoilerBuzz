@@ -38,6 +38,79 @@ struct TriedDrink: Codable {
     let rating: Int
 }
 
+//test filter logic
+func filterDrinks(
+    from drinks: [Drink],
+    selectedCategory: String?,
+    selectedBase: String?,
+    minCalories: Int?,
+    maxCalories: Int?,
+    minRating: Int?
+) -> [Drink] {
+    return drinks.filter { drink in
+        let categoryMatches = selectedCategory == nil ||
+            selectedCategory == "All" ||
+            drink.category.contains(selectedCategory!)
+        
+        let baseMatches = selectedBase == nil ||
+            selectedBase == "All" ||
+            drink.category.contains(selectedBase!)
+        
+        let minCaloriesMatches = minCalories.map { drink.calories >= $0 } ?? true
+        let maxCaloriesMatches = maxCalories.map { drink.calories <= $0 } ?? true
+        let ratingMatches = minRating.map { drink.averageRating >= $0 } ?? true
+        
+        return categoryMatches && baseMatches && minCaloriesMatches && maxCaloriesMatches && ratingMatches
+    }
+}
+
+//test sort logic
+func sortDrinks(
+    from drinks: [Drink],
+    withSortOption sortOption: String?,
+    triedDrinks: Set<String>
+) -> [Drink] {
+    switch sortOption {
+    case "A to Z":
+        return drinks.sorted { $0.name < $1.name }
+    case "Z to A":
+        return drinks.sorted { $0.name > $1.name }
+    case "Lowest Calorie First":
+        return drinks.sorted { $0.calories < $1.calories }
+    case "Highest Calorie First":
+        return drinks.sorted { $0.calories > $1.calories }
+    case "Lowest Average Rating First":
+        return drinks.sorted { $0.averageRating < $1.averageRating }
+    case "Highest Average Rating First":
+        return drinks.sorted { $0.averageRating > $1.averageRating }
+    case "Tried Drinks First":
+        // Drinks that are tried should appear before those that are not tried.
+        return drinks.sorted {
+            let firstTried = triedDrinks.contains($0.objectID)
+            let secondTried = triedDrinks.contains($1.objectID)
+            // If one is tried and the other isn't, the tried one comes first.
+            if firstTried != secondTried {
+                return firstTried && !secondTried
+            }
+            // Otherwise, keep the original order or sort by name.
+            return $0.name < $1.name
+        }
+    case "Tried Drinks Last":
+        // Drinks that are tried should appear after those that are not tried.
+        return drinks.sorted {
+            let firstTried = triedDrinks.contains($0.objectID)
+            let secondTried = triedDrinks.contains($1.objectID)
+            if firstTried != secondTried {
+                return !firstTried && secondTried
+            }
+            return $0.name < $1.name
+        }
+    default:
+        return drinks
+    }
+}
+
+
 
 struct DrinksDetailView: View {
     @State private var drinks: [Drink] = []
@@ -48,8 +121,9 @@ struct DrinksDetailView: View {
     @State private var errorMessage: String? = nil
     @State private var triedDrinks: Set<String> = []
     @State private var showRatingPopup = false
-    @State private var tempRating = 0
     @State private var drinkToRate: Drink? = nil
+    @State private var tempRating: Int = 0
+    
 
     // Filter states
     @State private var selectedCategory: String? = nil
@@ -385,7 +459,9 @@ struct DrinksDetailView: View {
         }
     }
 
-
+    func getUserId() -> String? {
+        return UserDefaults.standard.string(forKey: "userId")
+    }
 
     private func checkmarkButton(drink: Drink) -> some View {
         Button(action: {
@@ -396,7 +472,11 @@ struct DrinksDetailView: View {
                 showRatingPopup = true
             }
             else {
-                toggleDrinkSelection(objectID: drink.objectID)
+                guard let userId = getUserId() else {
+                    print("User ID not found")
+                    return
+                }
+                toggleDrinkSelection(objectID: drink.objectID, userId: userId)
             }
         }) {
             Image(systemName: "checkmark.circle.fill")
@@ -446,7 +526,11 @@ struct DrinksDetailView: View {
                     
                     
                     if let drink = drinkToRate {
-                        toggleDrinkSelection(objectID: drink.objectID)
+                        guard let userId = getUserId() else {
+                            print("User ID not found")
+                            return
+                        }
+                        toggleDrinkSelection(objectID: drink.objectID, userId: userId)
                     }
                 }) {
                     Text("Submit")
@@ -522,9 +606,6 @@ struct DrinksDetailView: View {
         }
     }
 
-    func getUserId() -> String? {
-        return UserDefaults.standard.string(forKey: "userId")
-    }
     
     struct ToggleDrinkResponse: Codable {
         let success: Bool
@@ -532,12 +613,7 @@ struct DrinksDetailView: View {
     }
 
     
-    func toggleDrinkSelection(objectID: String) {
-        guard let userId = getUserId() else {
-            print("User ID not found")
-            return
-        }
-
+    func toggleDrinkSelection(objectID: String, userId: String) {
         let url = URL(string: "http://localhost:3000/api/drinks/toggleTriedDrink")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -551,6 +627,7 @@ struct DrinksDetailView: View {
             print("Failed to serialize JSON:", error)
             return
         }
+        
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -585,7 +662,6 @@ struct DrinksDetailView: View {
                         self.drinks[index].averageRating = response.averageRating
                     }
 
-                    tempRating = 0
                 }
             } catch {
                 print("Failed to decode response:", error)

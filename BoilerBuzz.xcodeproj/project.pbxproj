@@ -32,6 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		179E62522D70BE6400B7C919 /* BoilerBuzzTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = BoilerBuzzTests.xctestplan; sourceTree = "<group>"; };
 		8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BoilerBuzz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A402C2D5444C1001C0A7D /* BoilerBuzzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A40362D5444C1001C0A7D /* BoilerBuzzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -39,28 +40,45 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		8BCF6A4B2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+		179E624F2D70B9BB00B7C919 /* Exceptions for "BoilerBuzzTests" folder in "BoilerBuzz" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				BoilerBuzzTests/BoilerBuzzTests.swift,
+				BoilerBuzzTests.swift,
+				DrinksDetailViewTests.swift,
 			);
 			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
-		8BCF6A4C2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzzTests" target */ = {
+		179E62502D70B9BB00B7C919 /* Exceptions for "BoilerBuzzTests" folder in "BoilerBuzzTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				BoilerBuzzTests/BoilerBuzzTests.swift,
+				BoilerBuzzTests.swift,
+				DrinksDetailViewTests.swift,
 			);
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
+		};
+		179E62672D70C1FD00B7C919 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		179E624C2D70B9BB00B7C919 /* BoilerBuzzTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				179E624F2D70B9BB00B7C919 /* Exceptions for "BoilerBuzzTests" folder in "BoilerBuzz" target */,
+				179E62502D70B9BB00B7C919 /* Exceptions for "BoilerBuzzTests" folder in "BoilerBuzzTests" target */,
+			);
+			path = BoilerBuzzTests;
+			sourceTree = "<group>";
+		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				8BCF6A4B2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
-				8BCF6A4C2D56A47F00994A2F /* Exceptions for "BoilerBuzz" folder in "BoilerBuzzTests" target */,
+				179E62672D70C1FD00B7C919 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
 			);
 			path = BoilerBuzz;
 			sourceTree = "<group>";
@@ -113,6 +131,8 @@
 		8B0A40132D5444BF001C0A7D = {
 			isa = PBXGroup;
 			children = (
+				179E62522D70BE6400B7C919 /* BoilerBuzzTests.xctestplan */,
+				179E624C2D70B9BB00B7C919 /* BoilerBuzzTests */,
 				8B0A401E2D5444BF001C0A7D /* BoilerBuzz */,
 				8B0A40392D5444C1001C0A7D /* BoilerBuzzUITests */,
 				85C9F1E52D62774800A93BC2 /* Frameworks */,
@@ -146,6 +166,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				179E624C2D70B9BB00B7C919 /* BoilerBuzzTests */,
 				8B0A401E2D5444BF001C0A7D /* BoilerBuzz */,
 			);
 			name = BoilerBuzz;
@@ -347,6 +368,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -410,6 +432,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
