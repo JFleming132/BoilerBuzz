@@ -45,6 +45,7 @@
 			membershipExceptions = (
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
+				GoogleMapViewRepresentableTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 			);
 			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
@@ -54,6 +55,7 @@
 			membershipExceptions = (
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
+				GoogleMapViewRepresentableTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 			);
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
