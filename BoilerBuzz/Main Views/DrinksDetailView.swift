@@ -145,7 +145,9 @@ struct DrinksDetailView: View {
     @State private var showSortingSidebar: Bool = false
     @State private var selectedSortOption: String? = nil
 
-
+    @State private var selectedBar: Int = 0
+    let barOptions = ["All Bars", "The Tap", "Neon Cactus", "Where Else", "Brothers", "9irish", "Harry's"]
+    
     let drinkCategories: [String: [String]] = [
         "Cocktail": ["Vodka-Based", "Gin-Based", "Rum-Based", "Whiskey-Based", "Scotch-Based", "Tequila-Based", "Brandy-Based", "Champagne-Based", "Other"],
         "Beer": ["IPA", "Stout", "Porter", "Lager", "Pilsner", "Pale Ale", "Brown Ale", "Belgian", "Sour", "Light", "Fruit"],
@@ -159,7 +161,9 @@ struct DrinksDetailView: View {
             (selectedBase == nil || selectedBase == "All" || drink.category.contains(selectedBase!)) &&
             (minCalories == nil || drink.calories >= minCalories!) &&
             (maxCalories == nil || drink.calories <= maxCalories!) &&
-            (minRating == nil || drink.averageRating >= minRating!)
+            (minRating == nil || drink.averageRating >= minRating!) &&
+            //new filter logic
+            (selectedBar == 0 || (drink.barServed.count >= selectedBar && drink.barServed[drink.barServed.index(drink.barServed.startIndex, offsetBy: selectedBar - 1)] == "1"))
         }
     }
 
@@ -175,7 +179,14 @@ struct DrinksDetailView: View {
                     }
                     
                     Spacer()
-
+                    Picker("Select Bar", selection: $selectedBar) {
+                        ForEach(barOptions.indices, id: \.self) { index in
+                            Text(barOptions[index]).tag(index)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .padding(.horizontal)
+                    Spacer()
                     Button(action: { showSortingSidebar.toggle() }) {
                         Image(systemName: "arrow.up.arrow.down.circle")
                             .resizable()
