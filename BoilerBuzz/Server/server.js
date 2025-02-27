@@ -37,7 +37,7 @@ mongoose.connect(mongoURI)
 
 
 // Schedule a cron job to run at midnight on the 1st of every month
-cron.schedule('0 0 1 * *', async () => { // Runs every minute (adjust as needed)
+cron.schedule('0 0 1 * *', async () => {
     try {
         console.log("Resetting currentSpent and clearing expenses for all users...");
         
