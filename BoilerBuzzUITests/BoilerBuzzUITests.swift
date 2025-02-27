@@ -61,4 +61,43 @@ final class BoilerBuzzUITests: XCTestCase {
         add(attachment)
     }
     
+    func testPasswordUpdate() throws {
+        XCUIDevice.shared.orientation = .portrait
+        let app = XCUIApplication()
+        app.launch()
+
+        // Login process
+        let usernameField = app.textFields["UsernameField"]
+        let passwordField = app.secureTextFields["PasswordField"]
+        let loginButton = app.buttons["LoginButton"]
+
+        XCTAssertTrue(usernameField.waitForExistence(timeout: 5), "Username field should exist")
+        XCTAssertTrue(passwordField.exists, "Password field should exist")
+        XCTAssertTrue(loginButton.exists, "Login button should exist")
+
+        usernameField.tap()
+        usernameField.typeText("testing69@purdue.edu")
+
+        passwordField.tap()
+        passwordField.typeText("test")
+
+        loginButton.tap()
+
+        // Navigate to the profile or settings page
+        let profileButton = app.buttons["Account"]
+        XCTAssertTrue(profileButton.waitForExistence(timeout: 5), "Account button should exist")
+        profileButton.tap()
+
+        // Find and tap the "Change Password" button
+        let changePasswordButton = app.buttons["Settings"]
+        XCTAssertTrue(changePasswordButton.waitForExistence(timeout: 5), "Change Password button should exist")
+        changePasswordButton.tap()
+        
+        // Find and tap the "Change Password" button
+        let changePasswordButton2 = app.buttons["Password"]
+        XCTAssertTrue(changePasswordButton2.waitForExistence(timeout: 5), "Change Password button should exist")
+        changePasswordButton2.tap()
+
+    }
+
     }

@@ -57,6 +57,7 @@ struct AccountView: View {
                                 .clipShape(Circle())
                                 .contentShape(Circle())
                         }
+                        .accessibilityIdentifier("Settings")
                         .buttonStyle(PlainButtonStyle())
                         // print("Own profile: showing settings gear")
                     }

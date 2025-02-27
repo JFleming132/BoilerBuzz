@@ -29,6 +29,7 @@ struct SettingsView: View {
                 NavigationLink(destination: PrivacySecuritySettingsView()) {
                     SettingsRow(icon: "lock.fill", title: "Privacy & Security")
                 }
+                .accessibilityIdentifier("Password")
                 NavigationLink(destination: HelpSupportSettingsView()) {
                     SettingsRow(icon: "questionmark.circle.fill", title: "Help & Support")
                 }
