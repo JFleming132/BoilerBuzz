@@ -76,6 +76,7 @@ struct AccountSettingsView: View {
                                     .foregroundColor(.gray)
                                 TextField("Enter username", text: $profileData.username)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .textInputAutocapitalization(.never)
                             }
                             // Bio
                             VStack(alignment: .leading, spacing: 5) {
