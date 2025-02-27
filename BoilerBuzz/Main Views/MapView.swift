@@ -8,6 +8,7 @@ struct MapView: View {
     var body: some View {
         GoogleMapViewRepresentable(location: locationManager.location)
             .ignoresSafeArea()
+            .accessibilityIdentifier("MapView")
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
             }

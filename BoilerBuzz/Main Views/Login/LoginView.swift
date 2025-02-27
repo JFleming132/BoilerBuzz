@@ -98,12 +98,14 @@ struct LoginView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
+                        .accessibilityIdentifier("UsernameField")
                         .onTapGesture {
                             showFailedLogin = false
                         }
                     
                     SecureField("Password", text: $password)
                         .padding()
+                        .accessibilityIdentifier("PasswordField")
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .onTapGesture {
                             showFailedLogin = false
@@ -120,6 +122,7 @@ struct LoginView: View {
                             .padding()
                             .foregroundColor(tertiaryColor)
                     }
+                    .accessibilityIdentifier("LoginButton")
                     .background(.black)
                     .cornerRadius(10)
                     .overlay(
