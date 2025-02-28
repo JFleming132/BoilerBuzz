@@ -11,7 +11,6 @@ struct AccountSettingsView: View {
 
     @Environment(\.presentationMode) var presentationMode
     @ObservedObject var profileData: ProfileViewModel
-    @State private var selectedImage: UIImage? = nil // Should be profileData.profilePicture eventually once we start storing them
     @State private var isImagePickerPresented = false
     @State private var errorMessage: String? = nil
     
@@ -50,25 +49,18 @@ struct AccountSettingsView: View {
                             isImagePickerPresented.toggle()
                         }) {
                             VStack {
-                                if let image = selectedImage {
-                                    Image(uiImage: image)
+                                Image(uiImage: profileData.profilePicture)
                                         .resizable()
                                         .scaledToFill()
                                         .frame(width: 100, height: 100)
                                         .clipShape(Circle())
-                                } else {
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .resizable()
-                                        .frame(width: 100, height: 100)
-                                        .foregroundColor(.gray)
-                                }
                                 Text("Change profile photo")
                                     .font(.footnote)
                                     .foregroundColor(.blue)
                             }
                         }
                         .sheet(isPresented: $isImagePickerPresented) {
-                            ImagePicker(image: $selectedImage)
+                            ImagePicker(image: $profileData.profilePicture)
                         }
                         
                         // Username
@@ -116,7 +108,8 @@ struct AccountSettingsView: View {
         
         let parameters: [String: Any] = [
             "username": profileData.username,
-            "bio": profileData.bio
+            "bio": profileData.bio,
+            "profilePicture": profileData.profilePicture.base64!
         ]
         
         do {
@@ -162,7 +155,7 @@ struct AccountSettingsView: View {
 // Also need to test edge cases
 import PhotosUI
 struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: UIImage?
+    @Binding var image: UIImage
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -190,7 +183,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             guard let provider = results.first?.itemProvider else { return }
             if provider.canLoadObject(ofClass: UIImage.self) {
                 provider.loadObject(ofClass: UIImage.self) { image, _ in
-                    self.parent.image = image as? UIImage
+                    self.parent.image = (image as? UIImage)!
                 }
             }
         }

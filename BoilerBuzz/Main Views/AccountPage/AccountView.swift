@@ -7,6 +7,26 @@
 
 import SwiftUI
 
+import UIKit
+
+// UIImage extension for encoding
+extension UIImage {
+    var base64: String? {
+        self.jpegData(compressionQuality: 1)?.base64EncodedString()
+    }
+}
+
+// String extension for decoding base64 into UIImage
+extension String {
+    var imageFromBase64: UIImage? {
+        guard let imageData = Data(base64Encoded: self, options: .ignoreUnknownCharacters) else {
+            return nil
+        }
+        return UIImage(data: imageData)
+    }
+}
+
+
 struct FriendStatusResponse: Codable {
     let isFriend: Bool
 }
@@ -112,11 +132,13 @@ struct AccountView: View {
                 }
                 
                 
-                // Profile Picture
-                Image(systemName: "person.crop.circle.fill")
+                Image(uiImage: profileData.profilePicture)
                     .resizable()
                     .frame(width: 100, height: 100)
-                    .padding(.top, -30)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .shadow(radius: 5)
+
                 
                 // User Rating
                 HStack(spacing: 2) {
