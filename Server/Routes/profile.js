@@ -49,7 +49,7 @@ router.get('/random', async (req, res) => {
 router.get('/:userId', async (req, res) => {
     try {
         console.log("Why are we here")
-        const user = await User.findById(req.params.userId).select('username bio isAdmin');
+        const user = await User.findById(req.params.userId).select('username bio isAdmin isBanned');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -94,6 +94,39 @@ router.put('/:userId', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
+router.post('/banUser', async (req, res) => {
+    const { adminId, friendId } = req.body;
+    
+    // Validate that the IDs are valid ObjectIds.
+    if (!mongoose.Types.ObjectId.isValid(adminId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+        return res.status(400).json({ error: 'Invalid user Id(s)' });
+    }
+    
+    try {
+        // Find the admin user and verify they have admin privileges.
+        const adminUser = await User.findById(adminId);
+        if (!adminUser || !adminUser.isAdmin) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+        
+        // Find the target user (friend) whose ban status is to be toggled.
+        const friendUser = await User.findById(friendId);
+        if (!friendUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        
+        // Toggle the ban status.
+        friendUser.isBanned = !friendUser.isBanned;
+        await friendUser.save();
+        
+        res.status(200).json({ success: true, isBanned: friendUser.isBanned });
+    } catch (error) {
+        console.error("Error toggling ban status:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
   
 
 module.exports = router;
