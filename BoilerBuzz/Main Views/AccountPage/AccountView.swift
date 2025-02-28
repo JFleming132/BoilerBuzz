@@ -62,6 +62,7 @@ struct AccountView: View {
                                 .contentShape(Circle())
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .accessibilityIdentifier("settingsButton")
                         // print("Own profile: showing settings gear")
                     }
                     else if !isOwnProfile && isAdmin {

@@ -17,6 +17,7 @@ struct SettingsView: View {
                 NavigationLink(destination: AccountSettingsView(profileData: profileData)) {
                     SettingsRow(icon: "person.fill", title: "Account")
                 }
+                .accessibilityIdentifier("accountSettingsRow")
                 NavigationLink(destination: NotificationsSettingsView()) {
                     SettingsRow(icon: "bell.fill", title: "Notifications")
                 }
