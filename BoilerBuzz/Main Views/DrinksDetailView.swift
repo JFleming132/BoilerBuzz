@@ -162,16 +162,16 @@ struct DrinksDetailView: View {
     
     var filteredDrinks: [Drink] {
         drinks.filter { drink in
-            (selectedCategory == nil || selectedCategory == "All" || drink.category.contains(selectedCategory!)) &&
-            (selectedBase == nil || selectedBase == "All" || drink.category.contains(selectedBase!)) &&
+            (selectedCategory == nil || drink.category.contains(selectedCategory!)) &&
+            (selectedBase == nil || drink.category.contains(selectedBase!)) &&
             (minCalories == nil || drink.calories >= minCalories!) &&
             (maxCalories == nil || drink.calories <= maxCalories!) &&
             (minRating == nil || drink.averageRating >= minRating!) &&
             //new filter logic
             (selectedBar == 0 || (drink.barServed.count >= selectedBar && drink.barServed[drink.barServed.index(drink.barServed.startIndex, offsetBy: selectedBar - 1)] == "1"))
         }
-
     }
+
     var body: some View {
         ZStack {
             VStack {
@@ -200,9 +200,6 @@ struct DrinksDetailView: View {
                     }
                 }
 
-
-                
-    
 
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
@@ -244,23 +241,21 @@ struct DrinksDetailView: View {
     
     private var filterSidebar: some View {
         ZStack {
-            Color.black.opacity(0.3)
-                .edgesIgnoringSafeArea(.all)
-                .onTapGesture {
-                    showFilterSidebar = false
-                }
-
             VStack(alignment: .leading) {
                 HStack {
                     Text("Filters")
                         .font(.headline)
-                        .foregroundColor(Color.primary)
                     Spacer()
+                    Button(action: { showFilterSidebar = false }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                            .imageScale(.large)
+                    }
                 }
                 .padding()
-
+                
                 Divider()
-
+                
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Drink Type")
                         .font(.subheadline)
@@ -275,6 +270,21 @@ struct DrinksDetailView: View {
                     .pickerStyle(DefaultPickerStyle())
                     .frame(maxWidth: .infinity)
                     
+                    if let category = tempSelectedCategory, let bases = drinkCategories[category] {
+                        Text("Base")
+                            .font(.subheadline)
+                            .bold()
+                        Picker("Base", selection: $tempSelectedBase) {
+                            Text("All").tag(nil as String?)
+                            ForEach(bases, id: \.self) { base in
+                                Text(base).tag(base as String?)
+                                    .lineLimit(1)  // Prevent wrapping in the options
+                            }
+                        }
+                        .pickerStyle(DefaultPickerStyle())  // Use DefaultPickerStyle here
+                        .frame(maxWidth: .infinity)  // Make Picker fill available space
+                    }
+                    
                     Text("Calories")
                         .font(.subheadline)
                         .bold()
@@ -284,43 +294,45 @@ struct DrinksDetailView: View {
                         TextField("Max", value: $tempMaxCalories, format: .number)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
-
+                    
+                    Text("Minimum Rating")
+                        .font(.subheadline)
+                        .bold()
+                    TextField("Min Rating", value: $tempMinRating, format: .number)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    
                     Button(action: {
+                        // Save the temporary filter values to the actual filter state
                         selectedCategory = tempSelectedCategory
+                        selectedBase = tempSelectedBase
                         minCalories = tempMinCalories
                         maxCalories = tempMaxCalories
+                        minRating = tempMinRating
+                        
+                        print(selectedCategory)
                         showFilterSidebar = false
                     }) {
-                        Text("Apply Filters")
+                        Text("Save Filters")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(.black)
                             .cornerRadius(10)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.primary, lineWidth: 2)
+                                    .stroke(tertiaryColor, lineWidth: 2)
                             )
+                        }
                     }
-                }
                 .padding()
-
+                
                 Spacer()
             }
-            .frame(width: 300, height: 450)
+            .frame(width: 300, height: 500)
             .background(Color(.systemBackground))
             .cornerRadius(10)
             .shadow(radius: 10)
-            .gesture(
-                DragGesture()
-                    .onEnded { gesture in
-                        if gesture.translation.height > 100 {
-                            showFilterSidebar = false
-                        }
-                    }
-            )
         }
     }
-
     
     var sortedDrinks: [Drink] {
         let sorted = filteredDrinks
@@ -742,8 +754,7 @@ struct DrinksDetailView: View {
             }
         }.resume()
     }
-
-
+    
     func fetchDrinks() {
         guard let url = URL(string: "http://localhost:3000/api/auth/drinks") else {
             errorMessage = "Invalid URL"
@@ -753,42 +764,52 @@ struct DrinksDetailView: View {
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
-                    errorMessage = "Failed to fetch drinks: \(error.localizedDescription)"
+                    self.errorMessage = "Failed to fetch drinks: \(error.localizedDescription)"
                 }
                 return
             }
 
             guard let data = data else {
                 DispatchQueue.main.async {
-                    errorMessage = "No data received from the server."
+                    self.errorMessage = "No data received from the server."
                 }
                 return
             }
 
             do {
-                // Decode JSON into a general structure first
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
-                    // Filter out drinks with image_id
-                    let filteredJson = json.filter { $0["image_id"] == nil }
-                    let filteredData = try JSONSerialization.data(withJSONObject: filteredJson, options: [])
+                // Print raw JSON response
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("🚀 API Response:\n\(jsonString)")
+                }
 
-                    // Decode filtered JSON into Drink objects
-                    var decodedDrinks = try JSONDecoder().decode([Drink].self, from: filteredData)
+                // Decode as a general JSON object first
+                if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] {
+                    var decodedDrinks: [Drink] = []
 
-                    // Sort the drinks array alphabetically by name
-                    decodedDrinks.sort { $0.name.lowercased() < $1.name.lowercased() }
+                    for (index, drinkJSON) in jsonArray.enumerated() {
+                        do {
+                            let drinkData = try JSONSerialization.data(withJSONObject: drinkJSON, options: [])
+                            let decodedDrink = try JSONDecoder().decode(Drink.self, from: drinkData)
+                            decodedDrinks.append(decodedDrink)
+                        } catch {
+                            print("❌ Failed to decode drink at index \(index): \(drinkJSON)")
+                            print("🔴 Decoding error: \(error)\n")
+                        }
+                    }
 
+                    // If some drinks were decoded successfully, update the state
                     DispatchQueue.main.async {
                         self.drinks = decodedDrinks
                     }
                 }
             } catch {
                 DispatchQueue.main.async {
-                    errorMessage = "Failed to decode drinks: \(error.localizedDescription)"
+                    self.errorMessage = "Failed to parse API response: \(error.localizedDescription)"
                 }
             }
         }.resume()
     }
+
 
 
     // Get an appropriate SF Symbol for the drink's category

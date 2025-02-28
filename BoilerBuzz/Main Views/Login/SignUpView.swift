@@ -38,20 +38,36 @@ struct SignUpView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
+                    .onTapGesture {
+                        showError = false
+                        errorMessage = nil
+                    }
 
                 TextField("Username", text: $newUsername)
                     .padding()
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
+                    .onTapGesture {
+                        showError = false
+                        errorMessage = nil
+                    }
 
                 SecureField("Password", text: $newPassword)
                     .padding()
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onTapGesture {
+                        showError = false
+                        errorMessage = nil
+                    }
 
                 SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .onTapGesture {
+                        showError = false
+                        errorMessage = nil
+                    }
 
                 Button(action: {
                     if !newEmail.isEmpty && !newUsername.isEmpty && newPassword == confirmPassword {
@@ -132,6 +148,7 @@ struct SignUpView: View {
                         print("Signup successful: \(message), User ID: \(userId)")
                         DispatchQueue.main.async {
                             self.userId = userId
+                            showError = false
                             isSignupSuccess = true
                             showOnboarding = true
                         }
