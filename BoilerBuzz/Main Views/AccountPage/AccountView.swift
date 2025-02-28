@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+struct FriendStatusResponse: Codable {
+    let isFriend: Bool
+}
+
 struct AccountView: View {
     
     @StateObject var profileData = ProfileViewModel()
@@ -144,6 +148,7 @@ struct AccountView: View {
                     // If a specific user is passed in, fetch that profile; otherwise, fetch your own.
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
+                        fetchFriendStatus()
                     } else {
                         profileData.fetchUserProfile()
                     }
@@ -289,6 +294,40 @@ struct AccountView: View {
                 print("Friend added successfully!")
                 // Optionally, show a confirmation message or update local state
                 isFriend = true
+            }
+        }.resume()
+    }
+
+    func fetchFriendStatus() {
+        // Only fetch status if we're viewing someone else's profile.
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
+              let friendId = viewedUserId,
+              !isOwnProfile else { return }
+        
+        guard let url = URL(string: "http://localhost:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
+            print("Invalid URL for friend status")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching friend status: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data for friend status")
+                return
+            }
+            
+            do {
+                let statusResponse = try JSONDecoder().decode(FriendStatusResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.isFriend = statusResponse.isFriend
+                    print("Friend status: \(self.isFriend)")
+                }
+            } catch {
+                print("Error decoding friend status: \(error.localizedDescription)")
             }
         }.resume()
     }
