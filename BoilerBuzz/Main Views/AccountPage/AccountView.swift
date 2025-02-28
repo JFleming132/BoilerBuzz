@@ -78,7 +78,7 @@ struct AccountView: View {
                                 Button(action: {
                                     showBanConfirmation = true
                                 }) {
-                                    Text("Ban User")
+                                    Text(profileData.isBanned ? "Unban User" : "Ban User")
                                         .foregroundColor(.orange)
                                         .padding(8)
                                         .background(Color.gray.opacity(0.2))
@@ -99,14 +99,15 @@ struct AccountView: View {
                 } message: {
                     Text("Are you sure you want to delete this user?")
                 }
-                .alert("Ban User", isPresented: $showBanConfirmation) {
+                .alert(profileData.isBanned ? "Unban User" : "Ban User", isPresented: $showBanConfirmation) {
                     Button("Confirm", role: .destructive) {
-                        // TODO: Call backend to ban user
-                        print("User banned")
+                        toggleBanUser()
                     }
                     Button("Cancel", role: .cancel) { }
                 } message: {
-                    Text("Are you sure you want to ban this user from posting events?")
+                    Text(profileData.isBanned ?
+                         "Are you sure you want to unban this user?" :
+                         "Are you sure you want to ban this user from posting events?")
                 }
                 
                 
@@ -251,6 +252,50 @@ struct AccountView: View {
             }
             
         }
+    }
+
+    func toggleBanUser() {
+        // Admin action: Ban or unban the viewed user.
+        guard let adminId = UserDefaults.standard.string(forKey: "userId"),
+              let friendId = viewedUserId else {
+            print("Missing admin or friend id")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/profile/banUser") else {
+            print("Invalid URL for banUser")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["adminId": adminId, "friendId": friendId]
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON for banUser: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error toggling ban status: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response toggling ban status: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                print("Ban status toggled successfully!")
+                // Update the profileData ban status.
+                profileData.isBanned.toggle()
+            }
+        }.resume()
     }
 
     func addFriend() {
