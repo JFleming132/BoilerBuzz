@@ -24,11 +24,13 @@ struct AccountSettingsView: View {
                     Spacer()
                     Text("Edit Profile")
                         .font(.headline)
+                        .accessibilityIdentifier("editProfileLabel")
                     Spacer()
                     Button("Done") {
                         saveProfileChanges()
                     }
                     .foregroundColor(.blue)
+                    .accessibilityIdentifier("doneButton")
                 }
                 .padding()
 
@@ -37,6 +39,7 @@ struct AccountSettingsView: View {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .padding(.horizontal)
+                        .accessibilityIdentifier("errorMessageLabel")
                 }
 
                 ScrollView {
@@ -68,6 +71,8 @@ struct AccountSettingsView: View {
                                     .foregroundColor(.gray)
                                 TextField("Enter username", text: $profileData.username)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .textInputAutocapitalization(.never)
+                                    .accessibilityIdentifier("usernameTextField")
                             }
                             // Bio
                             VStack(alignment: .leading, spacing: 5) {

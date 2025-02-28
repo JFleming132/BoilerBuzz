@@ -9,5 +9,10 @@
     "mongoose": "^8.11.0",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0"
+  },
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
+    "supertest": "^7.0.0"
   }
 }

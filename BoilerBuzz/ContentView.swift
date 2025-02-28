@@ -7,36 +7,53 @@
 
 import SwiftUI
 
+enum Tab: Hashable {
+    case map, calendar, home, drinks, account
+}
+
 struct ContentView: View {
+    @State private var selectedTab: Tab = .account  // Set Account as the initial tab
+
     init() {
         UITabBar.appearance().backgroundColor = UIColor(primaryColor)
         UITabBar.appearance().unselectedItemTintColor = UIColor(secondaryColor)
-
     }
+    
     var body: some View {
         ZStack {
             Color.red.ignoresSafeArea()
-            VStack {
-                TabView {
-                    Tab("Map", systemImage: "map") {
-                        MapView()
+            TabView(selection: $selectedTab) {
+                MapView()
+                    .tabItem {
+                        Label("Map", systemImage: "map")
                     }
-                    Tab("Calendar", systemImage: "calendar") {
-                        CalendarView()
+                    .tag(Tab.map)
+                
+                CalendarView()
+                    .tabItem {
+                        Label("Calendar", systemImage: "calendar")
                     }
-                    Tab("Home", systemImage: "house") {
-                        HomeView()
+                    .tag(Tab.calendar)
+                
+                HomeView()
+                    .tabItem {
+                        Label("Home", systemImage: "house")
                     }
-                    Tab("Drinks", systemImage: "wineglass") {
-                        DrinksView()
+                    .tag(Tab.home)
+                
+                DrinksView()
+                    .tabItem {
+                        Label("Drinks", systemImage: "wineglass")
                     }
-                    Tab("Account", systemImage: "person") {
-                        AccountView();
+                    .tag(Tab.drinks)
+                
+                AccountView()
+                    .tabItem {
+                        Label("Account", systemImage: "person")
                     }
-                }
-                .accentColor(tertiaryColor)
+                    .tag(Tab.account)
             }
-            
+            .accentColor(tertiaryColor)
         }
     }
 }

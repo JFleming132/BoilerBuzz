@@ -4,6 +4,31 @@ const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const User = require('../Models/User'); // if you're using Mongoose, though we use the native client here
 
+
+router.get('/status', async (req, res) => {
+    const { userId, friendId } = req.query;
+    
+    // Validate userId and friendId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+      return res.status(400).json({ error: 'Invalid user Id(s)' });
+    }
+    
+    try {
+      // Find the current user by userId
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if friendId is in the user's friends array
+      const isFriend = user.friends && user.friends.includes(friendId);
+      res.status(200).json({ isFriend });
+    } catch (error) {
+      console.error("Error fetching friend status:", error.message);
+      res.status(500).json({ error: "Failed to fetch friend status. Please try again later." });
+    }
+  });
+
 // GET endpoint to retrieve the friends list for a given user
 router.get('/:userId', async (req, res) => {
   try {
@@ -88,7 +113,7 @@ router.post('/addFriend', async (req, res) => {
         }
         
         // Save the updated user document.
-        await user.save();
+        await user.save({ validateBeforeSave: false });
         
         res.status(200).json({ success: true, friends: user.friends });
     } catch (error) {
@@ -119,10 +144,10 @@ router.post('/removeFriend', async (req, res) => {
         }
         
         // Remove friendId from the user's friends array.
-        user.friends = user.friends.filter(id => id !== friendId);
+        user.friends = user.friends.filter(id => id.toString() !== friendId);
         
         // Save the updated user document.
-        await user.save();
+        await user.save({ validateBeforeSave: false });
         
         res.status(200).json({ success: true, friends: user.friends });
     } catch (error) {

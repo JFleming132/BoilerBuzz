@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "99EE6236-DEBA-499D-88D3-8CE96C700650",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:BoilerBuzz.xcodeproj",
+        "identifier" : "8B0A402B2D5444C1001C0A7D",
+        "name" : "BoilerBuzzTests"
+      }
+    }
+  ],
+  "version" : 1
+}

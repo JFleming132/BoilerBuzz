@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct PrivacySecuritySettingsView: View {
-    @State private var oldPassword = ""
-    @State private var newPassword = ""
-    @State private var confirmNewPassword = ""
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-    @State private var isLoading = false
+    @State var oldPassword = ""
+    @State var newPassword = ""
+    @State var confirmNewPassword = ""
+    @State var showAlert = false
+    @State var alertMessage = ""
+    @State var isLoading = false
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
