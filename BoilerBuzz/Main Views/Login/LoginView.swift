@@ -48,7 +48,6 @@ struct LoginView: View {
                 if loginResponse.message == "Login successful" {
                     // Store the userID and token in UserDefaults
                     UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
-                    print(loginResponse.userId)
                     if let token = loginResponse.token {
                         UserDefaults.standard.set(token, forKey: "token")
                     }
@@ -58,6 +57,7 @@ struct LoginView: View {
                         isLoggedIn = true
                     }
                 } else {
+                    print("failed login!!!!!")
                     DispatchQueue.main.async {
                         errorMessage = loginResponse.message
                         showFailedLogin = true

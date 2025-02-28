@@ -108,28 +108,26 @@ router.post('/toggleTriedDrink', async (req, res) => {
 
 // Fetch tried drinks for a user
 router.get('/triedDrinks/:userId', async (req, res) => {
-    const { userId } = req.params;
+  const { userId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ error: 'Invalid user Id' });
-    }
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user Id' });
+  }
 
-    try {
-        const user = await User.findById(userId);
+  try {
+      const user = await User.findById(userId);
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
 
+      // Return the full triedDrinks array with name + rating
+      return res.json({ triedDrinks: user.triedDrinks });
 
-        // Return the full triedDrinks array with name + rating
-        return res.json({ triedDrinks: user.triedDrinks });
-
-    } catch (error) {
-        console.error('Error fetching tried drinks:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+  } catch (error) {
+      console.error('Error fetching tried drinks:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 

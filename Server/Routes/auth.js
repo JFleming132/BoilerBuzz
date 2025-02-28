@@ -129,18 +129,21 @@ router.post('/login', async (req, res) => {
         // Check if the user exists
         const user = await User.findOne({ username });
         if (!user) {
-            return res.status(400).json({ message: 'User not found' });
+            return res.status(400).json({ message: 'User not found', userId: "failed", isAdmin: false  });
         }
+
+        console.log(user.emailVerified)
         
         // Check if the user has verified their email
         if (!user.emailVerified) {
-            return res.status(400).json({ message: 'Please verify your email first' });
+          console.log("need to verify")
+          return res.status(400).json({ message: 'Please verify your email first', userId: "failed", isAdmin: false });
         }
 
         // Compare the password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid Credentials' });
+            return res.status(400).json({ message: 'Invalid Credentials', userId: "failed", isAdmin: false  });
         }
 
         // this is the jwt token for once the login fully works
