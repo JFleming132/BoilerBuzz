@@ -43,7 +43,8 @@ final class DrinksDetailViewTests: XCTestCase {
             selectedBase: nil,
             minCalories: nil,
             maxCalories: nil,
-            minRating: nil
+            minRating: nil,
+            selectedBar: nil
         )
         XCTAssertEqual(filteredByCategory.count, 2)
         XCTAssertTrue(filteredByCategory.contains { $0.name == "Mojito" })
@@ -56,7 +57,8 @@ final class DrinksDetailViewTests: XCTestCase {
             selectedBase: nil,
             minCalories: nil,
             maxCalories: nil,
-            minRating: 4
+            minRating: 4,
+            selectedBar: nil
         )
         XCTAssertEqual(filteredByRating.count, 2)
         XCTAssertTrue(filteredByRating.contains { $0.name == "Mojito" })
@@ -70,7 +72,8 @@ final class DrinksDetailViewTests: XCTestCase {
             selectedBase: nil,
             minCalories: 160,
             maxCalories: 220,
-            minRating: nil
+            minRating: nil,
+            selectedBar: nil
         )
         XCTAssertEqual(filteredByCalories.count, 2)
         XCTAssertTrue(filteredByCalories.contains { $0.name == "IPA Beer" })
@@ -83,7 +86,8 @@ final class DrinksDetailViewTests: XCTestCase {
             selectedBase: nil,
             minCalories: nil,
             maxCalories: nil,
-            minRating: 5
+            minRating: 5,
+            selectedBar: nil
         )
         XCTAssertEqual(filteredCombined.count, 1)
         XCTAssertEqual(filteredCombined.first?.name, "IPA Beer")
@@ -95,7 +99,8 @@ final class DrinksDetailViewTests: XCTestCase {
             selectedBase: "Rum-Based",
             minCalories: nil,
             maxCalories: nil,
-            minRating: 0
+            minRating: 0,
+            selectedBar: nil
         )
         XCTAssertEqual(filteredBase.count, 1)
         XCTAssertEqual(filteredBase.first?.name, "Mojito")
@@ -178,6 +183,24 @@ final class DrinksDetailViewTests: XCTestCase {
         XCTAssertEqual(sorted[0].name, "IPA Beer")
         XCTAssertEqual(sorted[1].name, "Whiskey Sour")
         XCTAssertEqual(sorted[2].name, "Mojito")
+    }
+    func testBarFilter() {
+        let testDrinks = [
+            Drink(objectID: "1", drinkID: 101, name: "Mojito", description: "Minty", ingredients: [], averageRating: 4, barServed: "Tiki Bar", category: ["Cocktail"], calories: 150),
+            Drink(objectID: "2", drinkID: 102, name: "IPA", description: "Hoppy", ingredients: [], averageRating: 5, barServed: "BrewPub", category: ["Beer"], calories: 200),
+            Drink(objectID: "3", drinkID: 103, name: "Whiskey Sour", description: "Citrusy", ingredients: [], averageRating: 3, barServed: "Speakeasy", category: ["Cocktail"], calories: 180)
+        ]
+
+        let filteredByTikiBar = filterDrinks(from: testDrinks, selectedCategory: nil, selectedBase: nil, minCalories: nil, maxCalories: nil, minRating: nil, selectedBar: "Tiki Bar")
+        XCTAssertEqual(filteredByTikiBar.count, 1)
+        XCTAssertTrue(filteredByTikiBar.contains { $0.name == "Mojito" })
+
+        let filteredBySpeakeasy = filterDrinks(from: testDrinks, selectedCategory: nil, selectedBase: nil, minCalories: nil, maxCalories: nil, minRating: nil, selectedBar: "Speakeasy")
+        XCTAssertEqual(filteredBySpeakeasy.count, 1)
+        XCTAssertTrue(filteredBySpeakeasy.contains { $0.name == "Whiskey Sour" })
+
+        let filteredByAll = filterDrinks(from: testDrinks, selectedCategory: nil, selectedBase: nil, minCalories: nil, maxCalories: nil, minRating: nil, selectedBar: "All")
+        XCTAssertEqual(filteredByAll.count, 3)
     }
 
 }
