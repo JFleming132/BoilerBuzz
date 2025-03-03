@@ -8,22 +8,19 @@ let bgColor = Color.black.opacity(0.7)
 @main
 struct BoilerBuzzApp: App {
     @State var isLoggedIn: Bool = false
+    @AppStorage("isDarkMode") private var isDarkMode = false
     
     init() {
-            GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
-            GMSPlacesClient.provideAPIKey(APIKeys.googleMapsAPIKey)
+        GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
+        GMSPlacesClient.provideAPIKey(APIKeys.googleMapsAPIKey)
 
-
-            // Check for the UITestSkipLogin launch argument.
         if CommandLine.arguments.contains("-UITestSkipLogin") {
-            // Set test defaults so that the app bypasses the login screen.
             UserDefaults.standard.set("67bfc14a59159fbf803fc3bf", forKey: "userId")
             UserDefaults.standard.set(false, forKey: "isAdmin")
-            // Update our state to indicate the user is logged in.
             self._isLoggedIn = State(initialValue: true)
         }
-        
-        }
+    }
+    
     var body: some Scene {
         WindowGroup {
             if isLoggedIn {
@@ -31,6 +28,15 @@ struct BoilerBuzzApp: App {
             } else {
                 LoginView(isLoggedIn: $isLoggedIn)
             }
+        }
+        .onChange(of: isDarkMode) { oldValue, newValue in
+            setColorScheme(newValue)
+        }
+    }
+    
+    private func setColorScheme(_ isDark: Bool) {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            windowScene.windows.first?.overrideUserInterfaceStyle = isDark ? .dark : .light
         }
     }
 }
