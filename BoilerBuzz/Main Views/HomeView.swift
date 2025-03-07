@@ -1,7 +1,7 @@
 import SwiftUI
 import PhotosUI
 import MapKit
-
+import UIKit
 
 struct Event: Identifiable, Codable {
     let id: String
@@ -16,6 +16,14 @@ struct Event: Identifiable, Codable {
     enum CodingKeys: String, CodingKey {
         case id = "_id"
         case title, description, location, capacity, is21Plus, date, imageUrl
+    }
+
+    // Convert Base64 string to UIImage
+    var eventImage: UIImage? {
+        guard let imageUrl = imageUrl, let imageData = Data(base64Encoded: imageUrl) else {
+            return nil
+        }
+        return UIImage(data: imageData)
     }
 }
 
@@ -155,33 +163,35 @@ struct EventListView: View {
 struct EventCardView: View {
     let event: Event
     @Environment(\.colorScheme) var colorScheme
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let imageUrl = event.imageUrl, !imageUrl.isEmpty, let url = URL(string: imageUrl) {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                        .scaledToFill()
-                        .frame(height: 200)
-                        .clipped()
-                } placeholder: {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 200)
-                        .opacity(0.3)
-                }
+            if let eventImage = event.eventImage {
+                Image(uiImage: eventImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 200)
+                    .clipped()
+            } else {
+                Image(systemName: "photo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 200)
+                    .opacity(0.3)
             }
-            
+
             VStack(alignment: .leading, spacing: 5) {
                 Text(event.title)
                     .font(.headline)
                     .foregroundColor(.primary)
 
-                Text(event.description?.prefix(100) ?? "No description available") // ✅ Truncate after 100 chars
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .lineLimit(2)
+                if let description = event.description {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .lineLimit(nil) // ✅ Allow dynamic height
+                        .fixedSize(horizontal: false, vertical: true) // ✅ Expand vertically
+                }
 
                 HStack {
                     Text(event.location)
@@ -199,11 +209,12 @@ struct EventCardView: View {
             .shadow(radius: 2)
         }
         .padding()
-        .background(Color.gray.opacity(0.1)) // ✅ Light gray background for post effect
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(15)
         .shadow(radius: 3)
     }
 }
+
 
 private func uploadImageToServer(_ image: UIImage) -> String {
     // Simulate image upload - Replace with actual upload logic if needed
@@ -228,6 +239,8 @@ struct CreateEventView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
+    private let maxDescriptionLength = 250  // ✅ Set max description length
+
     var body: some View {
         NavigationView {
             Form {
@@ -235,17 +248,33 @@ struct CreateEventView: View {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .bold()
+                        .padding(.bottom, 5)
                 }
                 
                 Section(header: Text("Event Details")) {
                     TextField("Title", text: $title)
-                    TextField("Description", text: $description)
                     TextField("Location", text: $location)
                     TextField("Max Capacity", text: $capacity)
                         .keyboardType(.numberPad)
                     Toggle("21+ Event", isOn: $is21Plus)
                     DatePicker("Date & Time", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     
+                    VStack(alignment: .leading) {
+                        TextField("Description (Max \(maxDescriptionLength) chars)", text: $description, onEditingChanged: { _ in
+                            validateDescription()
+                        })
+                        .onChange(of: description) { _ in
+                            validateDescription()
+                        }
+                        
+                        HStack {
+                            Spacer()
+                            Text("\(description.count)/\(maxDescriptionLength)")
+                                .font(.caption)
+                                .foregroundColor(description.count > maxDescriptionLength ? .red : .gray)
+                        }
+                    }
+
                     Button("Select Image") {
                         showImagePicker.toggle()
                     }
@@ -255,7 +284,7 @@ struct CreateEventView: View {
                             set: { selectedImage = $0 }
                         ))
                     }
-                    
+
                     if let image = selectedImage {
                         Image(uiImage: image)
                             .resizable()
@@ -264,12 +293,26 @@ struct CreateEventView: View {
                     }
                 }
             }
-            .navigationBarItems(leading: Button("Cancel") {
-                presentationMode.wrappedValue.dismiss()
-            }, trailing: Button("Post") {
-                validateAndCreateEvent()
-            })
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button("Post") {
+                    validateAndCreateEvent()
+                }
+            )
             .navigationTitle("Create Event")
+        }
+    }
+    
+    // ✅ Validate description length
+    private func validateDescription() {
+        if description.count > maxDescriptionLength {
+            showError = true
+            errorMessage = "Description is too long! Maximum \(maxDescriptionLength) characters allowed."
+        } else {
+            showError = false
+            errorMessage = ""
         }
     }
     
@@ -280,12 +323,18 @@ struct CreateEventView: View {
             return
         }
         
+        if description.count > maxDescriptionLength {
+            showError = true
+            errorMessage = "Description is too long!"
+            return
+        }
+
         if date < Date() {
             showError = true
             errorMessage = "Please select a future date."
             return
         }
-        
+
         validateLocation { isValid in
             DispatchQueue.main.async {
                 if isValid {
@@ -311,10 +360,16 @@ struct CreateEventView: View {
         }
     }
     
+
+    
+
     private func createEvent(capacityInt: Int) {
         print("🔍 Creating event")
 
-        let imageUrl: String? = selectedImage != nil ? uploadImageToServer(selectedImage!) : nil
+        var encodedImage: String? = nil
+        if let selectedImage = selectedImage {
+            encodedImage = selectedImage.base64 // ✅ Convert image to Base64
+        }
 
         let newEvent = Event(
             id: UUID().uuidString,
@@ -324,7 +379,7 @@ struct CreateEventView: View {
             capacity: capacityInt,
             is21Plus: is21Plus,
             date: date,
-            imageUrl: imageUrl
+            imageUrl: encodedImage // ✅ Save Base64 string instead of URL
         )
 
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
@@ -342,7 +397,7 @@ struct CreateEventView: View {
 
         do {
             let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601 // Ensure date is correctly encoded
+            encoder.dateEncodingStrategy = .millisecondsSince1970 // ✅ Use milliseconds for date
             let requestData = try encoder.encode(newEvent)
             request.httpBody = requestData
         } catch {

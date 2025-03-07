@@ -11,7 +11,7 @@ router.post('/events', async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        const formattedDate = new Date(date).getTime(); // ✅ Convert to timestamp (ms)
+        const formattedDate = new Date(date).getTime();
 
         if (isNaN(formattedDate)) {
             return res.status(400).json({ message: 'Invalid date format' });
@@ -23,8 +23,8 @@ router.post('/events', async (req, res) => {
             location,
             capacity,
             is21Plus,
-            date: formattedDate,  // ✅ Store in milliseconds
-            imageUrl
+            date: formattedDate,
+            imageUrl: imageUrl || "" // ✅ Store Base64 or empty string
         });
 
         await newEvent.save();
@@ -39,13 +39,13 @@ router.post('/events', async (req, res) => {
 
 router.get('/events', async (req, res) => {
     try {
-        const currentDate = new Date().getTime(); // ✅ Compare using timestamps
+        const currentDate = new Date().getTime();
         const events = await Event.find({ date: { $gte: currentDate } });
 
         const sanitizedEvents = events.map(event => ({
             ...event.toObject(),
-            date: event.date, // ✅ Return Unix timestamp directly
-            imageUrl: event.imageUrl || "" 
+            date: event.date,
+            imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string
         }));
 
         console.log("📥 Fetching events from DB:", sanitizedEvents);
