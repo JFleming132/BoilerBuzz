@@ -239,8 +239,10 @@ struct AccountView: View {
 
 
                     NavigationLink(destination: AccountView(viewedUserId: randomProfileId, adminStatus: adminStatus), isActive: $showRandomProfile) {
-                        EmptyView()
-                    }
+                                            EmptyView()
+                                        }
+
+
                 }
                 
                 // Grid for posts/favorites

@@ -309,7 +309,8 @@ struct DrinksDetailView: View {
                         maxCalories = tempMaxCalories
                         minRating = tempMinRating
                         
-                        print(selectedCategory)
+                        print(selectedCategory ?? "Unknown Category")
+
                         showFilterSidebar = false
                     }) {
                         Text("Save Filters")
