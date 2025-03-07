@@ -45,7 +45,7 @@ struct HomeView: View {
                     .multilineTextAlignment(.center)
                 
                 if let errorMessage = errorMessage {
-                    Text("⚠️ \(errorMessage)")
+                    Text("\(errorMessage)")
                         .foregroundColor(.red)
                         .padding()
                 } else {
@@ -109,23 +109,23 @@ struct HomeView: View {
                 return
             }
 
-            // ✅ Debug raw JSON response
+            // Debug raw JSON response
             if let jsonString = String(data: data, encoding: .utf8) {
                 print("🚀 API Response:\n\(jsonString)")
             }
 
             do {
                 let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .millisecondsSince1970 // ✅ Decode timestamps correctly
+                decoder.dateDecodingStrategy = .millisecondsSince1970 //  Decode timestamps correctly
                 
                 let fetchedEvents = try decoder.decode([Event].self, from: data)
                 DispatchQueue.main.async {
                     self.events = fetchedEvents.filter { $0.date >= Date() }
                     self.errorMessage = nil
                 }
-                print("✅ Successfully fetched events")
+                print("Successfully fetched events")
             } catch {
-                print("❌ JSON Decoding Error: \(error)")
+                print(" JSON Decoding Error: \(error)")
                 DispatchQueue.main.async {
                     self.errorMessage = "JSON Decoding Error: \(error.localizedDescription)"
                 }
@@ -166,18 +166,13 @@ struct EventCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // Only show image if it's available
             if let eventImage = event.eventImage {
                 Image(uiImage: eventImage)
                     .resizable()
                     .scaledToFill()
                     .frame(height: 200)
                     .clipped()
-            } else {
-                Image(systemName: "photo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 200)
-                    .opacity(0.3)
             }
 
             VStack(alignment: .leading, spacing: 5) {
@@ -189,8 +184,8 @@ struct EventCardView: View {
                     Text(description)
                         .font(.subheadline)
                         .foregroundColor(.gray)
-                        .lineLimit(nil) // ✅ Allow dynamic height
-                        .fixedSize(horizontal: false, vertical: true) // ✅ Expand vertically
+                        .lineLimit(nil) //  Allow dynamic height
+                        .fixedSize(horizontal: false, vertical: true) //  Expand dynamically
                 }
 
                 HStack {
@@ -239,7 +234,7 @@ struct CreateEventView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     
-    private let maxDescriptionLength = 250  // ✅ Set max description length
+    private let maxDescriptionLength = 200  //  Set max description length
 
     var body: some View {
         NavigationView {
@@ -305,7 +300,7 @@ struct CreateEventView: View {
         }
     }
     
-    // ✅ Validate description length
+    // Validate description length
     private func validateDescription() {
         if description.count > maxDescriptionLength {
             showError = true
@@ -368,7 +363,7 @@ struct CreateEventView: View {
 
         var encodedImage: String? = nil
         if let selectedImage = selectedImage {
-            encodedImage = selectedImage.base64 // ✅ Convert image to Base64
+            encodedImage = selectedImage.base64 //  Convert image to Base64
         }
 
         let newEvent = Event(
@@ -379,11 +374,11 @@ struct CreateEventView: View {
             capacity: capacityInt,
             is21Plus: is21Plus,
             date: date,
-            imageUrl: encodedImage // ✅ Save Base64 string instead of URL
+            imageUrl: encodedImage // Save Base64 string instead of URL
         )
 
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
-            print("❌ Invalid URL")
+            print("Invalid URL")
             return
         }
 
@@ -397,17 +392,17 @@ struct CreateEventView: View {
 
         do {
             let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .millisecondsSince1970 // ✅ Use milliseconds for date
+            encoder.dateEncodingStrategy = .millisecondsSince1970 //  Use milliseconds for date
             let requestData = try encoder.encode(newEvent)
             request.httpBody = requestData
         } catch {
-            print("❌ Error encoding event:", error)
+            print(" Error encoding event:", error)
             return
         }
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("❌ Error posting event:", error)
+                print("Error posting event:", error)
                 return
             }
             
