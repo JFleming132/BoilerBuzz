@@ -1,0 +1,74 @@
+version: "Apple Swift version 6.0.3 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)"
+options: "d574ba8a08708cd679fcd7d1df5b5a99bbf682246fe223db3bafc98698c5fc8c"
+build_start_time: [1741628206, 985579000]
+build_end_time: [1741628208, 399424000]
+inputs:
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/DerivedSources/resource_bundle_accessor.swift"
+  : [1741627058, 340270937]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/CalendarStyle.swift"
+  : [1741628200, 865426350]
+  "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/DayView.swift": [1741628200, 865550975]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/DayViewController.swift"
+  : [1741628200, 865644517]
+  "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/DayViewState.swift": [1741628200, 865732100]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/EventDataSource.swift"
+  : [1741628200, 865815517]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Array+Shift.swift"
+  : [1741628200, 865936101]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Date+DateOnly.swift"
+  : [1741628200, 866015476]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Locale+24Hour.swift"
+  : [1741628200, 866091518]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/UIColor+SystemColors.swift"
+  : [1741628200, 866171185]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Value+Clamped.swift"
+  : [1741628200, 866253310]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/View+StackView.swift"
+  : [1741628200, 866331102]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DayHeaderView.swift"
+  : [1741628200, 866487477]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DaySelector/DateLabel.swift"
+  : [1741628200, 866940603]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DaySelector/DayDateCell.swift"
+  : [1741628200, 867025020]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DaySelector/DaySelector.swift"
+  : [1741628200, 867179145]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DaySelector/DaySelectorController.swift"
+  : [1741628200, 867258895]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/DaySymbolsView.swift"
+  : [1741628200, 867341812]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Header/SwipeLabelView.swift"
+  : [1741628200, 867433729]
+  "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Localization.swift": [1741628200, 867522479]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/AllDayView.swift"
+  : [1741628200, 872587281]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/CurrentTimeIndicator.swift"
+  : [1741628200, 872701032]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/Event.swift"
+  : [1741628200, 872777448]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventDescriptor.swift"
+  : [1741628200, 872854073]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventEditingSnappingBehavior.swift"
+  : [1741628200, 872924449]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventLayoutAttributes.swift"
+  : [1741628200, 873001074]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventResizeHandleDotView.swift"
+  : [1741628200, 873074991]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventResizeHandleView.swift"
+  : [1741628200, 873142907]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/EventView.swift"
+  : [1741628200, 873273074]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/ReusePool.swift"
+  : [1741628200, 873350116]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/SnapTo15MinuteIntervals.swift"
+  : [1741628200, 873433491]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimeStringsFactory.swift"
+  : [1741628200, 873514742]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineContainer.swift"
+  : [1741628200, 873591950]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineContainerController.swift"
+  : [1741628200, 873666825]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelinePagerView.swift"
+  : [1741628200, 873771784]
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineView.swift"
+  : [1741628200, 873905909]

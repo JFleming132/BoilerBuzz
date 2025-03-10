@@ -1,0 +1,24 @@
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/VerificationView.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/VerificationView.d"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/VerificationView.swiftconstvalues"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/VerificationView.o"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/VerificationView.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/VerificationView.dia"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/SignUpView.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/SignUpView.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/SignUpView.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/SignUpView.swiftconstvalues"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/SignUpView.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/SignUpView.o"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/CalendarView.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/CalendarView.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/CalendarView.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/CalendarView.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/CalendarView.o"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/CalendarView.swiftconstvalues"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/LoginView.swift":
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LoginView.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LoginView.dia"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LoginView.swiftconstvalues"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LoginView.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LoginView.swiftdeps"

@@ -1,0 +1,18 @@
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/LocationManager.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LocationManager.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LocationManager.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LocationManager.o"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LocationManager.swiftconstvalues"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/LocationManager.d"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/ContentView.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ContentView.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ContentView.swiftconstvalues"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ContentView.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ContentView.o"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ContentView.d"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/DerivedSources/GeneratedAssetSymbols.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/GeneratedAssetSymbols.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/GeneratedAssetSymbols.dia"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"

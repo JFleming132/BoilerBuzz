@@ -1,0 +1,24 @@
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/ForgotPasswordView.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ForgotPasswordView.d"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ForgotPasswordView.swiftconstvalues"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ForgotPasswordView.dia"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ForgotPasswordView.swiftdeps"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ForgotPasswordView.o"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/ProfileViewModel.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ProfileViewModel.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ProfileViewModel.o"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ProfileViewModel.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ProfileViewModel.dia"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/ProfileViewModel.swiftconstvalues"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/FriendsListPopup.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FriendsListPopup.swiftdeps"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FriendsListPopup.d"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FriendsListPopup.swiftconstvalues"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FriendsListPopup.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FriendsListPopup.o"
+"/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/FavoritedDrinksPopup.swift":
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FavoritedDrinksPopup.dia"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FavoritedDrinksPopup.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FavoritedDrinksPopup.o"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FavoritedDrinksPopup.swiftconstvalues"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzz.build/Objects-normal/arm64/FavoritedDrinksPopup.swiftdeps"

@@ -1,0 +1,93 @@
+{
+  "" : {
+    "dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/Objects-normal/arm64/BoilerBuzz-master.d",
+    "diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/Objects-normal/arm64/BoilerBuzz-master.dia",
+    "emit-module-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/Objects-normal/arm64/BoilerBuzz-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/Objects-normal/arm64/BoilerBuzz-master-emit-module.dia",
+    "swift-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/Objects-normal/arm64/BoilerBuzz-master.swiftdeps"
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/APIKeys.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/BoilerBuzzApp.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/ContentView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/LocationManager.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/AccountView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/FavoritedDrinksPopup.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/FriendsListPopup.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/ProfileViewModel.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/AccountSettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/AppearanceSettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/HelpSupportSettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/NotificationsSettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/PrivacySecuritySettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/SettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/SocialPreferencesSettingsView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/CalendarView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/DrinksDetailView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/DrinksView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/GoogleMapViewRepresentable.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/HomeView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/ForgotPasswordView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/LoginView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/SignUpView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/Login/VerificationView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/MapView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/ShakeGestureHandle.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/SpendingView.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphoneos/BoilerBuzz.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+
+  }
+}

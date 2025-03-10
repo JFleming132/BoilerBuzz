@@ -1,0 +1,18 @@
+{
+  "" : {
+    "dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-maccatalyst/BoilerBuzzUITests.build/Objects-normal/arm64/BoilerBuzzUITests-master.d",
+    "diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-maccatalyst/BoilerBuzzUITests.build/Objects-normal/arm64/BoilerBuzzUITests-master.dia",
+    "emit-module-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-maccatalyst/BoilerBuzzUITests.build/Objects-normal/arm64/BoilerBuzzUITests-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-maccatalyst/BoilerBuzzUITests.build/Objects-normal/arm64/BoilerBuzzUITests-master-emit-module.dia",
+    "swift-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-maccatalyst/BoilerBuzzUITests.build/Objects-normal/arm64/BoilerBuzzUITests-master.swiftdeps"
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzUITests/BoilerBuzzUITests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzUITests/BoilerBuzzUITestsLaunchTests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzUITests/ProfileSettingsUITests.swift" : {
+
+  }
+}

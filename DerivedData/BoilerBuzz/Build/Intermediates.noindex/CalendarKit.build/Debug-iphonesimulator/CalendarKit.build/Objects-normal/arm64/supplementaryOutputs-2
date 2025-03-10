@@ -1,0 +1,30 @@
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Locale+24Hour.swift":
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Locale+24Hour.dia"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Locale+24Hour.d"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Locale+24Hour.swiftconstvalues"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Locale+24Hour.swiftdeps"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Locale+24Hour.o"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/UIColor+SystemColors.swift":
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/UIColor+SystemColors.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/UIColor+SystemColors.dia"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/UIColor+SystemColors.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/UIColor+SystemColors.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/UIColor+SystemColors.swiftconstvalues"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Date+DateOnly.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Date+DateOnly.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Date+DateOnly.swiftconstvalues"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Date+DateOnly.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Date+DateOnly.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Date+DateOnly.dia"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Extensions/Array+Shift.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Array+Shift.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Array+Shift.o"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Array+Shift.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Array+Shift.swiftconstvalues"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/Array+Shift.dia"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/EventDataSource.swift":
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/EventDataSource.swiftconstvalues"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/EventDataSource.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/EventDataSource.dia"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/EventDataSource.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/EventDataSource.swiftdeps"

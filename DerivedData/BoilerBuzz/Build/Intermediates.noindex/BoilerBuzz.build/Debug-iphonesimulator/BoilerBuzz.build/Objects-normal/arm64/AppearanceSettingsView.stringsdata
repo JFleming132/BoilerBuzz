@@ -1,0 +1,24 @@
+{
+  "source": "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/Settings/AppearanceSettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "This should be the Appearance page of the Settings menu.",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 13
+        }
+      },
+      {
+        "comment": "",
+        "key": "Appearance Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 14
+        }
+      }
+    ]
+  },
+  "version": 1
+}

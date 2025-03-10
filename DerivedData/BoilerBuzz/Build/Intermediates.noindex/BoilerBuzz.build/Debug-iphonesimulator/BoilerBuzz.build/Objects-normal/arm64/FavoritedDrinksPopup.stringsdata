@@ -1,0 +1,40 @@
+{
+  "source": "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzz/Main Views/AccountPage/FavoritedDrinksPopup.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 50
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld cal",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "Favorite Drinks",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add Drink",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 60
+        }
+      }
+    ]
+  },
+  "version": 1
+}

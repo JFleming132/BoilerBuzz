@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>11</integer>
+	<key>logs</key>
+	<dict>
+		<key>EF7D53EA-49B3-4E74-9427-65770D1F25A5</key>
+		<dict>
+			<key>className</key>
+			<string>IDEActivityLogSection</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>EF7D53EA-49B3-4E74-9427-65770D1F25A5.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>1</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>BoilerBuzz project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>BoilerBuzz</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Build BoilerBuzz</string>
+			<key>timeStartedRecording</key>
+			<real>763321000.46822906</real>
+			<key>timeStoppedRecording</key>
+			<real>763321009.90321898</real>
+			<key>title</key>
+			<string>Build BoilerBuzz</string>
+			<key>uniqueIdentifier</key>
+			<string>EF7D53EA-49B3-4E74-9427-65770D1F25A5</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

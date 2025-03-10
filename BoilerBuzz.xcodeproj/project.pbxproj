@@ -10,6 +10,7 @@
 		172099A32D66BFAA0050754E /* GoogleMaps in Frameworks */ = {isa = PBXBuildFile; productRef = 172099A22D66BFAA0050754E /* GoogleMaps */; };
 		172099A62D66C01C0050754E /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = 172099A52D66C01C0050754E /* GooglePlaces */; };
 		172099A82D66C01C0050754E /* GooglePlacesSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 172099A72D66C01C0050754E /* GooglePlacesSwift */; };
+		264C59642D7F565A00027F8C /* CalendarKit in Frameworks */ = {isa = PBXBuildFile; productRef = 264C59632D7F565A00027F8C /* CalendarKit */; };
 		85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */; };
 		85D4954A2D71FB2B000BE249 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85D495482D71FA56000BE249 /* XCTest.framework */; platformFilter = ios; };
 		F02CA6D42D6D31DE0083E19C /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F02CA6D32D6D31DE0083E19C /* CoreLocation.framework */; };
@@ -64,13 +65,6 @@
 			);
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
 		};
-		F0D6C66D2D71015600F358BD /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -85,9 +79,6 @@
 		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F0D6C66D2D71015600F358BD /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
-			);
 			path = BoilerBuzz;
 			sourceTree = "<group>";
 		};
@@ -104,6 +95,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F02CA6D42D6D31DE0083E19C /* CoreLocation.framework in Frameworks */,
+				264C59642D7F565A00027F8C /* CalendarKit in Frameworks */,
 				172099A62D66C01C0050754E /* GooglePlaces in Frameworks */,
 				172099A32D66BFAA0050754E /* GoogleMaps in Frameworks */,
 				85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */,
@@ -185,6 +177,7 @@
 				172099A22D66BFAA0050754E /* GoogleMaps */,
 				172099A52D66C01C0050754E /* GooglePlaces */,
 				172099A72D66C01C0050754E /* GooglePlacesSwift */,
+				264C59632D7F565A00027F8C /* CalendarKit */,
 			);
 			productName = BoilerBuzz;
 			productReference = 8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */;
@@ -269,6 +262,7 @@
 				85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
 				172099A12D66BFAA0050754E /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
 				172099A42D66C01C0050754E /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
+				264C59622D7F524E00027F8C /* XCRemoteSwiftPackageReference "CalendarKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8B0A401D2D5444BF001C0A7D /* Products */;
@@ -653,6 +647,14 @@
 				minimumVersion = 9.3.0;
 			};
 		};
+		264C59622D7F524E00027F8C /* XCRemoteSwiftPackageReference "CalendarKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/richardtop/CalendarKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.11;
+			};
+		};
 		85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
@@ -678,6 +680,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 172099A42D66C01C0050754E /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
 			productName = GooglePlacesSwift;
+		};
+		264C59632D7F565A00027F8C /* CalendarKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 264C59622D7F524E00027F8C /* XCRemoteSwiftPackageReference "CalendarKit" */;
+			productName = CalendarKit;
 		};
 		85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

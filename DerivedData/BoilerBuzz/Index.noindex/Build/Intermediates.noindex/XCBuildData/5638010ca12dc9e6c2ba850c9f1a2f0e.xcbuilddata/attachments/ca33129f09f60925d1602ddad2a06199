@@ -1,0 +1,24 @@
+{
+  "" : {
+    "dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzzTests.build/Objects-normal/arm64/BoilerBuzzTests-master.d",
+    "diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzzTests.build/Objects-normal/arm64/BoilerBuzzTests-master.dia",
+    "emit-module-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzzTests.build/Objects-normal/arm64/BoilerBuzzTests-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzzTests.build/Objects-normal/arm64/BoilerBuzzTests-master-emit-module.dia",
+    "swift-dependencies" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/BoilerBuzz.build/Debug-iphonesimulator/BoilerBuzzTests.build/Objects-normal/arm64/BoilerBuzzTests-master.swiftdeps"
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzTests/BoilerBuzzTests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzTests/DrinksDetailViewTests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzTests/GoogleMapViewRepresentableTests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzTests/PrivacySecuritySettingsViewTests.swift" : {
+
+  },
+  "/Users/josephfleming/Documents/BoilerBuzz/BoilerBuzzTests/ProfileSettingsTests.swift" : {
+
+  }
+}

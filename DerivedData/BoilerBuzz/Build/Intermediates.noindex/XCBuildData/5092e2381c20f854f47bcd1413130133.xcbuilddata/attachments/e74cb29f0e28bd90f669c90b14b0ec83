@@ -1,0 +1,4 @@
+module GooglePlacesTarget {
+umbrella "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/ios-places-sdk/Places/Sources"
+export *
+}

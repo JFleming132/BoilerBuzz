@@ -1,0 +1,24 @@
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineContainerController.swift":
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainerController.d"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainerController.swiftconstvalues"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainerController.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainerController.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainerController.o"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelinePagerView.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelinePagerView.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelinePagerView.dia"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelinePagerView.o"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelinePagerView.swiftconstvalues"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelinePagerView.d"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineContainer.swift":
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainer.o"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainer.d"
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainer.swiftdeps"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainer.dia"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineContainer.swiftconstvalues"
+"/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/CalendarKit/Sources/Timeline/TimelineView.swift":
+  swift-dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineView.swiftdeps"
+  const-values: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineView.swiftconstvalues"
+  dependencies: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineView.d"
+  object: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineView.o"
+  diagnostics: "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Build/Intermediates.noindex/CalendarKit.build/Debug-iphonesimulator/CalendarKit.build/Objects-normal/arm64/TimelineView.dia"

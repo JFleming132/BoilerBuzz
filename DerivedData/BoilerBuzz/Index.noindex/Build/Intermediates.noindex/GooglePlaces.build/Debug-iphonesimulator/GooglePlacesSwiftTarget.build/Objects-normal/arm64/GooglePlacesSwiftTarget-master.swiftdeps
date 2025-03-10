@@ -1,0 +1,8 @@
+version: "Apple Swift version 6.0.3 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)"
+options: "3af0ccf87239c78b4c0ae05bbb1162594fda08abc1f77f4db6f62b5a806e72ee"
+build_start_time: [1741628207, 92369000]
+build_end_time: [1741628208, 398958000]
+inputs:
+  ? "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/Index.noindex/Build/Intermediates.noindex/GooglePlaces.build/Debug-iphonesimulator/GooglePlacesSwiftTarget.build/DerivedSources/resource_bundle_accessor.swift"
+  : [1741627053, 502663780]
+  "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/checkouts/ios-places-sdk/PlacesSwift/Empty.swift": [1741628200, 602891637]
