@@ -283,7 +283,7 @@ struct OnboardingView: View {
     func updateStepView() {
         switch step {
         case 1: currentStepView = AnyView(MapView())
-        case 2: currentStepView = AnyView(CalendarView())
+        case 2: currentStepView = AnyView(CalendarViewPage())
         case 3: currentStepView = AnyView(HomeView())
         case 4: currentStepView = AnyView(AccountView())
         case 5: currentStepView = AnyView(DrinksDetailView())

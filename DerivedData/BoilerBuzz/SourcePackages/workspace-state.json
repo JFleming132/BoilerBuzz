@@ -25,13 +25,13 @@
           "location" : "https://github.com/googlemaps/ios-places-sdk",
           "name" : "GooglePlaces"
         },
-        "path" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/artifacts/ios-places-sdk/GooglePlaces/GooglePlaces.xcframework",
+        "path" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/artifacts/ios-places-sdk/GooglePlacesSwift/GooglePlacesSwift.xcframework",
         "source" : {
-          "checksum" : "96e49315561ed8f3e8ea72878e0d71c1fb251907952d991e3585588a47fe496b",
+          "checksum" : "42ea9c8462ea876fcd746cd5566d3ba9d51469b3f44bdf3cdf5588cf72864211",
           "type" : "remote",
-          "url" : "https://dl.google.com/geosdk/swiftpm/9.3.0/GooglePlaces_3p.xcframework.zip"
+          "url" : "https://dl.google.com/geosdk/swiftpm/0.4.0/google_places_swift.xcframework.zip"
         },
-        "targetName" : "GooglePlaces"
+        "targetName" : "GooglePlacesSwift"
       },
       {
         "kind" : "xcframework",
@@ -41,13 +41,13 @@
           "location" : "https://github.com/googlemaps/ios-places-sdk",
           "name" : "GooglePlaces"
         },
-        "path" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/artifacts/ios-places-sdk/GooglePlacesSwift/GooglePlacesSwift.xcframework",
+        "path" : "/Users/josephfleming/Documents/BoilerBuzz/DerivedData/BoilerBuzz/SourcePackages/artifacts/ios-places-sdk/GooglePlaces/GooglePlaces.xcframework",
         "source" : {
-          "checksum" : "42ea9c8462ea876fcd746cd5566d3ba9d51469b3f44bdf3cdf5588cf72864211",
+          "checksum" : "96e49315561ed8f3e8ea72878e0d71c1fb251907952d991e3585588a47fe496b",
           "type" : "remote",
-          "url" : "https://dl.google.com/geosdk/swiftpm/0.4.0/google_places_swift.xcframework.zip"
+          "url" : "https://dl.google.com/geosdk/swiftpm/9.3.0/GooglePlaces_3p.xcframework.zip"
         },
-        "targetName" : "GooglePlacesSwift"
+        "targetName" : "GooglePlaces"
       }
     ],
     "dependencies" : [
@@ -67,6 +67,23 @@
           "name" : "sourceControlCheckout"
         },
         "subpath" : "CalendarKit"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "calendarview",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/AllanJuenemann/CalendarView.git",
+          "name" : "CalendarView"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "a0f913aff2bf63a808e60c9490fe034043613c5f",
+            "version" : "2.1.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "CalendarView"
       },
       {
         "basedOn" : null,

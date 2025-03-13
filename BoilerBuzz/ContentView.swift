@@ -29,7 +29,7 @@ struct ContentView: View {
                     }
                     .tag(Tab.map)
                 
-                CalendarView()
+                CalendarViewPage()
                     .tabItem {
                         Label("Calendar", systemImage: "calendar")
                     }
