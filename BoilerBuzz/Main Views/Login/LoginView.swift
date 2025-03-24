@@ -93,7 +93,14 @@ struct LoginView: View {
                 DispatchQueue.main.async {
                     if success {
                         print("Biometric authentication successful. Setting isLoggedIn to true.")
-                        isLoggedIn = true
+                        checkServerAvailability { isServerUp in
+                            if isServerUp {
+                                print("Server is up, allowing biometric authentication.")
+                                isLoggedIn = true
+                            } else {
+                                print("Server is down, not allowing biometric authentication.")
+                            }
+                        }
                     } else {
                         print("Biometric authentication failed: \(authError?.localizedDescription ?? "Unknown error")")
                     }
@@ -102,6 +109,37 @@ struct LoginView: View {
         } else {
             print("Biometric authentication not available. Error: \(error?.localizedDescription ?? "Unknown error")")
         }
+    }
+    
+    // MARK: - Server Availability Check
+    func checkServerAvailability(completion: @escaping (Bool) -> Void) {
+        // Adjust the URL to your server's health-check endpoint.
+        guard let url = URL(string: "http://localhost:3000/api/auth/health") else {
+            completion(false)
+            return
+        }
+        print("making request...")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error checking server availability: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                DispatchQueue.main.async {
+                    completion(true)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            }
+        }.resume()
     }
     
     // MARK: - View Body
@@ -124,7 +162,6 @@ struct LoginView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        // You can remove any onTapGesture from here since biometric is now triggered onAppear.
                     
                     SecureField("Password", text: $password)
                         .padding()
@@ -167,11 +204,18 @@ struct LoginView: View {
                 }
                 .padding()
             }
-            // On appear, check if a userId is saved, and if so, prompt biometric authentication.
+            // On appear, check if a userId is saved and if the server is available before prompting biometric authentication.
             .onAppear {
                 if let savedUserId = UserDefaults.standard.string(forKey: "userId") {
-                    print("UserID found: \(savedUserId) on load. Initiating biometric authentication.")
-                    authenticateWithBiometrics()
+                    print("UserID found: \(savedUserId) on load. Checking server availability...")
+                    checkServerAvailability { isServerUp in
+                        if isServerUp {
+                            print("Server is up, initiating biometric authentication.")
+                            authenticateWithBiometrics()
+                        } else {
+                            print("Server is down, skipping biometric authentication.")
+                        }
+                    }
                 } else {
                     print("No userID found on load. Skipping biometric authentication.")
                 }
