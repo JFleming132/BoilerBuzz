@@ -8,10 +8,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = kCLDistanceFilterNone
+        locationManager.startUpdatingLocation()
     }
 
     func requestWhenInUseAuthorization() {
         locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
     }
 
     func startUpdatingLocation() {
@@ -21,7 +24,8 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let newLocation = locations.last else { return }
         self.location = newLocation
-
+        
+        print("📍 New location: \(newLocation.coordinate.latitude), \(newLocation.coordinate.longitude)")
         // Call API to update user location
         updateUserLocationInDatabase(newLocation)
     }

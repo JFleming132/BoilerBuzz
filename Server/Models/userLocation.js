@@ -21,5 +21,5 @@ const userLocationSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('UserLocation', userLocationSchema);
+module.exports = mongoose.model('UserLocation', userLocationSchema,'user_locations');
 

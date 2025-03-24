@@ -1,4 +1,3 @@
-// routes/location.js
 const express = require('express');
 const UserLocation = require('../Models/UserLocation');
 const router = express.Router();
@@ -13,21 +12,33 @@ router.post('/updateLocation', async (req, res) => {
 
     try {
         const updatedLocation = await UserLocation.findOneAndUpdate(
-            { userId: userId },
+            { userId: userId },  // Search for existing location by userId
             { 
                 userId: userId,
                 latitude: latitude,
                 longitude: longitude,
-                lastUpdate: new Date()
+                lastUpdate: new Date() 
             },
-            { upsert: true, new: true }
+            { upsert: true, new: true }  // Create new if not exists, and return the updated document
         );
 
-        res.status(200).json({ success: true, message: "Location updated successfully", location: updatedLocation });
+        // Log to check if the location was updated or created
+        if (updatedLocation) {
+            console.log("✅ Location updated or created:", updatedLocation);
+        } else {
+            console.log("❌ No location was created or updated.");
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Location updated successfully",
+            location: updatedLocation
+        });
     } catch (error) {
-        console.error("Error updating location:", error);
+        console.error("❌ Error updating location:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-module.exports = router;
+module.exports = router; // Ensure it's exported correctly
+

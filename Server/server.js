@@ -13,6 +13,7 @@ const profileRoutes = require('./Routes/profile');
 const drinksRoutes = require('./Routes/drinks');
 const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
+const locationRoutes = require('./Routes/location');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -66,6 +67,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/drinks', drinksRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/spending', spendingRoutes);
+app.use('/api/location', locationRoutes);
 
 // Start the server
 app.listen(port, () => {
