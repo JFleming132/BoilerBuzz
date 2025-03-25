@@ -1,4 +1,0 @@
-module GooglePlacesSwiftTarget {
-header "GooglePlacesSwiftTarget-Swift.h"
-export *
-}

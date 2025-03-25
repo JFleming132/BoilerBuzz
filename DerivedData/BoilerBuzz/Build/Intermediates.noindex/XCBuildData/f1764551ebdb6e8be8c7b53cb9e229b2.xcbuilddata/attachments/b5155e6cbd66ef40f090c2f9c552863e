@@ -1,4 +1,0 @@
-module GoogleMapsTarget {
-umbrella "/Users/josephfleming/Library/Developer/Xcode/DerivedData/BoilerBuzz-fyudetdiznxifqemfkbqcgdaljle/SourcePackages/checkouts/ios-maps-sdk/Maps/Sources"
-export *
-}
