@@ -18,11 +18,19 @@ struct CalendarViewPage: View {
     //I want to then parse them into the datecomponent arrays
     //and display views of their posts when selected
     //shouldn't be too hard!
+    init() {
+        
+    }
     
     var body: some View {
         CalendarView()
             .decorating(RSVPEvents)
             .decorating(promotedEvents, systemImage: "star")
+    }
+    
+    func retrieveEvents() {
+        guard let url = URL(string:"http://localhost:3000/api/auth/getevents") else { return }
+        
     }
 }
 
