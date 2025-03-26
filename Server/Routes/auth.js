@@ -14,6 +14,13 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 const router = express.Router();
+
+// Health-check endpoint
+router.post('/health', async (req, res) => {
+  res.status(200).json({ message: "Server is up and running" });
+});
+
+
 router.post('/update-password', async (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
 
