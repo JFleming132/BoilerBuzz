@@ -13,30 +13,29 @@ import CalendarView
 struct CalendarViewPage: View {
     @State var events : [Event] = []
     @State var errorMessage: String?
-    //I want an init function to load ALL event data, not just dates
-    //I want to then parse them into the datecomponent arrays
-    //and display views of their posts when selected
-    //shouldn't be too hard!
+
     init() {
         fetchEvents()
     }
     
     var body: some View {
         CalendarView()
-            .decorating(parseEvents(events: events))
+            .decorating(
+                parseEvents(events: events)
+            ) //turn events date data into dateComponents set
 
     }
     private func parseEvents(events: ([Event])) -> Set<DateComponents> {
-        var DateComponentsArray: [DateComponents] = []
-        let decoder = JSONDecoder()
-        for event in events {
-            DateComponentsArray.append(
-                Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: event.date)
+        var DateComponentsArray: [DateComponents] = [] //will be returned, parsed
+        for event in events { //for every event we fetched in init()
+            DateComponentsArray.append( //add the date it contains to the array
+                Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: event.date) //parse the date with built-in methods
             )
         }
-        return Set(DateComponentsArray)
+        return Set(DateComponentsArray) //convert array to set for CalendarView()
     }
-    private func fetchEvents() {
+    
+    private func fetchEvents() { //literally copied from Sophie's code in HomeView
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             errorMessage = "Invalid API URL"
             return

@@ -4,6 +4,7 @@ import MapKit
 import UIKit
 
 struct Event: Identifiable, Codable {
+    //TODO: Add author and promoted status
     let id: String
     let title: String
     let description: String?
@@ -197,6 +198,8 @@ struct EventCardView: View {
                         .font(.footnote)
                         .foregroundColor(.gray)
                 }
+                //TODO: Add current and max capacity here
+                //TODO: Add RSVP Button here, which calls RSVP function
             }
             .padding()
             .background(Color(.systemBackground))
@@ -208,6 +211,8 @@ struct EventCardView: View {
         .cornerRadius(15)
         .shadow(radius: 3)
     }
+    
+    //TODO: Write function to RSVP/un-RSVP to/from events, per user
 }
 
 
@@ -221,7 +226,7 @@ private func uploadImageToServer(_ image: UIImage) -> String {
 struct CreateEventView: View {
     @Environment(\.presentationMode) var presentationMode
     var onEventCreated: (Event) -> Void
-    
+    //TODO: Add author field to be propogated to database
     @State private var title = ""
     @State private var description = ""
     @State private var location = ""
@@ -230,7 +235,7 @@ struct CreateEventView: View {
     @State private var date = Date()
     @State private var selectedImage: UIImage?
     @State private var showImagePicker = false
-    
+    //TODO: add state for if event is a promoted event and propogate to database
     @State private var showError = false
     @State private var errorMessage = ""
     
@@ -252,6 +257,7 @@ struct CreateEventView: View {
                     TextField("Max Capacity", text: $capacity)
                         .keyboardType(.numberPad)
                     Toggle("21+ Event", isOn: $is21Plus)
+                    //TODO: if user is allowed to promote, Add toggle for if event is promoted
                     DatePicker("Date & Time", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     
                     VStack(alignment: .leading) {
@@ -368,6 +374,7 @@ struct CreateEventView: View {
 
         let newEvent = Event(
             id: UUID().uuidString,
+            //TODO: include author and promotion status
             title: title,
             description: description,
             location: location,
