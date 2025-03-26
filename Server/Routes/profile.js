@@ -49,7 +49,7 @@ router.get('/random', async (req, res) => {
 router.get('/:userId', async (req, res) => {
     try {
         console.log("Why are we here")
-        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned');
+        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned rating');
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

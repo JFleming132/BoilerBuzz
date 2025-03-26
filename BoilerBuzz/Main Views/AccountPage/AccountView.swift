@@ -26,6 +26,28 @@ extension String {
     }
 }
 
+struct StarRatingView: View {
+    let rating: Float  // Assume values: 0.0, 0.5, 1.0, 1.5, ... up to 5.0
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(1...5, id: \.self) { index in
+                if rating >= Float(index) {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                } else if rating + 0.5 >= Float(index) {
+                    // SF Symbol for a half star may differ based on iOS version.
+                    Image(systemName: "star.leadinghalf.filled")
+                        .foregroundColor(.yellow)
+                } else {
+                    Image(systemName: "star")
+                        .foregroundColor(.yellow)
+                }
+            }
+        }
+    }
+}
+
 
 struct FriendStatusResponse: Codable {
     let isFriend: Bool
@@ -39,6 +61,7 @@ struct AccountView: View {
     @State private var isFriend: Bool = false
     @State private var showDeleteConfirmation = false
     @State private var showBanConfirmation = false
+    @State private var showRatingPopup: Bool = false
     
     /* TESTING */
     @State private var randomProfileId: String? = nil
@@ -70,6 +93,28 @@ struct AccountView: View {
             VStack(spacing: 20) {
                 // Settings
                 HStack {
+                    if !isOwnProfile && isAdmin {
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                showDeleteConfirmation = true
+                            }) {
+                                Text("Delete User")
+                                    .foregroundColor(.red)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                            Button(action: {
+                                showBanConfirmation = true
+                            }) {
+                                Text(profileData.isBanned ? "Unban User" : "Ban User")
+                                    .foregroundColor(.orange)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
                     Spacer()
                     if isOwnProfile {
                         NavigationLink(destination: SettingsView(profileData: profileData)) {
@@ -83,31 +128,21 @@ struct AccountView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .accessibilityIdentifier("settingsButton")
-                        // print("Own profile: showing settings gear")
                     }
-                    else if !isOwnProfile && isAdmin {
-                            HStack(spacing: 12) {
-                                Button(action: {
-                                    showDeleteConfirmation = true
-                                }) {
-                                    Text("Delete User")
-                                        .foregroundColor(.red)
-                                        .padding(8)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(8)
-                                }
-                                Button(action: {
-                                    showBanConfirmation = true
-                                }) {
-                                    Text(profileData.isBanned ? "Unban User" : "Ban User")
-                                        .foregroundColor(.orange)
-                                        .padding(8)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(8)
-                                }
-                            }
-                            .padding(.top, 20)
-                            .offset(y: -20)
+                    else {
+                        Button(action: {
+                            showRatingPopup = true
+                        }) {
+                            Image(systemName: "star.bubble.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.blue)
+                                .padding(14)
+                                .clipShape(Circle())
+                                .contentShape(Circle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .accessibilityIdentifier("rateUserButton")
                     }
                 }
                 .padding(.horizontal)
@@ -131,7 +166,7 @@ struct AccountView: View {
                          "Are you sure you want to ban this user from posting events?")
                 }
                 
-                
+                // Profile Picture
                 Image(uiImage: profileData.profilePicture)
                     .resizable()
                     .frame(width: 100, height: 100)
@@ -141,13 +176,8 @@ struct AccountView: View {
 
                 
                 // User Rating
-                HStack(spacing: 2) {
-                    ForEach(0..<5) { _ in
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.top, 5)
+                StarRatingView(rating: profileData.rating)
+                    .padding(.top, 5)
                 
                 // Profile Name & Bio
                 VStack {
@@ -258,6 +288,18 @@ struct AccountView: View {
 
             }
             .padding()
+            .overlay(
+                Group {
+                    if showRatingPopup {
+                        UserRatingPopup(isPresented: $showRatingPopup, submitAction: { rating, feedback in
+                            submitUserRating(rating: rating, feedback: feedback)
+                        })
+                        .transition(.opacity)
+                        .animation(.easeInOut, value: showRatingPopup)
+                    }
+                }
+            )
+
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -275,7 +317,6 @@ struct AccountView: View {
                 FriendsListPopup(isMyProfile: isOwnProfile, userId: profileData.userId, adminStatus: adminStatus)
                     .presentationDetents([.medium, .large])
             }
-            
         }
     }
 
@@ -436,6 +477,50 @@ struct AccountView: View {
             }
         }.resume()
     }
+
+    func submitUserRating(rating: Float, feedback: String) {
+        guard let raterUserId = UserDefaults.standard.string(forKey: "userId"),
+            let ratedUserId = viewedUserId else {
+            print("Missing user IDs")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/ratings") else {
+            print("Invalid URL for ratings endpoint")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = [
+            "raterUserId": raterUserId,
+            "ratedUserId": ratedUserId,
+            "rating": rating,
+            "feedback": feedback
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing rating JSON: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error submitting rating: \(error)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response submitting rating: \(response ?? "No response" as Any)")
+                return
+            }
+            print("Rating submitted successfully")
+        }.resume()
+    }
+
 
 
 
