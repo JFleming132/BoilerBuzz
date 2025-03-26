@@ -17,6 +17,7 @@ const locationRoutes = require('./Routes/location');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
+const { exec } = require('child_process');
 
 
 
@@ -54,6 +55,23 @@ cron.schedule('0 0 1 * *', async () => {
         console.error("Error resetting currentSpent and clearing expenses:", error);
     }
 });
+
+// Schedule aggregate.js to run every minute
+cron.schedule('* * * * *', () => {
+    console.log("Running aggregate.js...");
+
+    exec('node aggregate.js', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing aggregate.js: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`aggregate.js stderr: ${stderr}`);
+            return;
+        }
+        console.log(`aggregate.js output:\n${stdout}`);
+    });
+})
 
 app.use((req, res, next) => {
     console.log(`Incoming Request: ${req.method} ${req.url}`);
