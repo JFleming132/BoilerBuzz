@@ -43,11 +43,13 @@ struct AccountView: View {
     /* TESTING */
     @State private var randomProfileId: String? = nil
     @State private var showRandomProfile: Bool = false
+    @State private var showingShareSheet = false
     /* TESTING */
 
 
     // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
     var viewedUserId: String? = nil
+    var deeplinkUserId: String? = nil
     var adminStatus: Bool? = nil  // If passed, use this value for isAdmin
     
     var isOwnProfile: Bool {
@@ -176,6 +178,11 @@ struct AccountView: View {
                     } else {
                         profileData.fetchUserProfile()
                     }
+                    
+                    if let deeplinkId = deeplinkUserId {
+                        self.randomProfileId = deeplinkId
+                        self.showRandomProfile = true
+                    }
                 }
                 
                 // Buttons Row
@@ -263,8 +270,23 @@ struct AccountView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Text(viewedUserId == nil ? "Account" : "Profile")
-                    .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                 }
+                if !isOwnProfile {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            showingShareSheet = true
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showingShareSheet) {
+                // Create a deep link URL using your custom scheme.
+                let shareURL = URL(string: "boilerbuzz://account?id=\(profileData.userId)")!
+                let shareText = "Check out this profile: \(shareURL.absoluteString)"
+                ShareSheet(activityItems: [shareText])
             }
             .sheet(isPresented: $showFavoritedDrinks) {
                 FavoritedDrinksPopup(isMyProfile: viewedUserId == nil, userId: profileData.userId)
@@ -287,7 +309,7 @@ struct AccountView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/profile/banUser") else {
+        guard let url = URL(string: "http://10.1.54.171:3000/api/profile/banUser") else {
             print("Invalid URL for banUser")
             return
         }
@@ -332,7 +354,7 @@ struct AccountView: View {
             print("Friend ID is missing")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/friends/addFriend") else {
+        guard let url = URL(string: "http://10.1.54.171:3000/api/friends/addFriend") else {
             print("Invalid URL")
             return
         }
@@ -374,7 +396,7 @@ struct AccountView: View {
               let friendId = viewedUserId,
               !isOwnProfile else { return }
         
-        guard let url = URL(string: "http://localhost:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
+        guard let url = URL(string: "http://10.1.54.171:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
             print("Invalid URL for friend status")
             return
         }
@@ -404,7 +426,7 @@ struct AccountView: View {
 
     func fetchRandomProfile(completion: @escaping (String?) -> Void) {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
-            let url = URL(string: "http://localhost:3000/api/profile/random?exclude=\(myUserId)") else {
+            let url = URL(string: "http://10.1.54.171:3000/api/profile/random?exclude=\(myUserId)") else {
             completion(nil)
             return
         }

@@ -48,7 +48,6 @@ router.get('/events', async (req, res) => {
             imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string
         }));
 
-        console.log("📥 Fetching events from DB:", sanitizedEvents);
         res.json(sanitizedEvents);
     } catch (err) {
         console.error("❌ Error fetching events:", err);

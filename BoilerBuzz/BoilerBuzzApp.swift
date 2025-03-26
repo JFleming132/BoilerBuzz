@@ -9,6 +9,8 @@ let bgColor = Color.black.opacity(0.7)
 struct BoilerBuzzApp: App {
     @State var isLoggedIn: Bool = false
     @AppStorage("isDarkMode") private var isDarkMode = false
+    @State private var initialTab: Tab = .home
+    @State private var deepLinkUserId: String? = nil
     
     init() {
         GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
@@ -23,10 +25,29 @@ struct BoilerBuzzApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if isLoggedIn {
-                ContentView()
-            } else {
-                LoginView(isLoggedIn: $isLoggedIn)
+            Group {
+                if isLoggedIn {
+                    if let userId = deepLinkUserId {
+                        ContentView(initialTab: .account, accountToView: userId)
+                    } else {
+                        ContentView()
+                    }
+                } else {
+                    LoginView(isLoggedIn: $isLoggedIn)
+                }
+            }
+            .onOpenURL { url in
+                print("Received deep link: \(url)")
+                isLoggedIn = false
+                if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                   let host = components.host,
+                   host.lowercased() == "account",
+                   let queryItems = components.queryItems,
+                   let idItem = queryItems.first(where: { $0.name.lowercased() == "id" }),
+                   let userId = idItem.value {
+                    deepLinkUserId = userId
+                    print("Deep link userId: \(userId)")
+                }
             }
         }
         .onChange(of: isDarkMode) { oldValue, newValue in
