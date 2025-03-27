@@ -18,5 +18,9 @@
 	<string>need your location even in background</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>need your location</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>
