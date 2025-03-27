@@ -1,8 +1,8 @@
 //
-//  MapView.swift
+//  AccountView.swift
 //  BoilerBuzz
 //
-//  Created by user269394 on 2/7/25.
+//  Created by Patrick on 2/7/25.
 //
 
 import SwiftUI
@@ -118,6 +118,15 @@ struct AccountView: View {
                     }
                     Spacer()
                     if isOwnProfile {
+                        NavigationLink(destination: NotificationCenterView()) {
+                            Image(systemName: "bell.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.primary)
+                                .padding(14)
+                                .clipShape(Circle())
+                                .contentShape(Circle())
+                        }
                         NavigationLink(destination: SettingsView(profileData: profileData)) {
                             Image(systemName: "gearshape.fill")
                                 .resizable()
