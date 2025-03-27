@@ -18,7 +18,11 @@ router.post('/events', async (req, res) => {
         }
 
         const newEvent = new Event({
+            //Done: Add Author, RSVPcount, and Promoted status
             title,
+            author,
+            rsvpCount,
+            promoted,
             description,
             location,
             capacity,
@@ -40,7 +44,7 @@ router.post('/events', async (req, res) => {
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
-        const events = await Event.find({ date: { $gte: currentDate } });
+        const events = await Event.find({ date: { $gte: currentDate } }); //TODO: Add functionality for block lists
 
         const sanitizedEvents = events.map(event => ({
             ...event.toObject(),
@@ -55,6 +59,10 @@ router.get('/events', async (req, res) => {
         res.status(500).json({ message: 'Error fetching events', error: err });
     }
 });
+
+//TODO: Write function to get only RSVPd events and Promoted events that aren't from users in the current user's block list
+
+//TODO: Write function to RSVP and un-RSVP from events (add eventID to current user's RSVP list)
 
 module.exports = router;
 

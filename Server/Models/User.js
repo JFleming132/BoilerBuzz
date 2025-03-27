@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isPromoted: {
+        type: Boolean,
+        default: false
+    },
     verificationToken: {
         type: String
     },
@@ -65,6 +69,9 @@ const userSchema = new mongoose.Schema({
             min: 0,
             max: 5
         }
+    }],
+    blockedUserIDs: [{
+        type: String
     }],
     friends: [{
         type: String

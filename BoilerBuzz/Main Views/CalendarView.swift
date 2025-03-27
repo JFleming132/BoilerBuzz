@@ -33,9 +33,11 @@ struct CalendarViewPage: View {
             )
         }
         return Set(DateComponentsArray) //convert array to set for CalendarView()
+        //TODO: Edit function so it returns 2 arrays, promoted and RSVPd, that can be decorated differently by the CalendarView
     }
     
     private func fetchEvents() { //literally copied from Sophie's code in HomeView
+        //TODO: Rewrite to only fetch RSVP'd and Promoted events via a new backend call
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             errorMessage = "Invalid API URL"
             return

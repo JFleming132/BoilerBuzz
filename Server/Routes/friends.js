@@ -156,4 +156,77 @@ router.post('/removeFriend', async (req, res) => {
     }
 });
 
+//TODO: Write function to block user (add user to current user's block list in database)
+//I think we can just do the same thing for friends but edit which array we add it to
+//make sure unblock friends gets updated too
+ 
+router.post('/block', async (req, res) => {
+ const { userId, friendId } = req.body;
+ 
+ // Validate that the user IDs are valid ObjectIds if stored that way.
+ if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+     return res.status(400).json({ error: 'Invalid user Id(s)' });
+ }
+ 
+ try {
+     // Find the current user by their ID.
+     const user = await User.findById(userId);
+     if (!user) {
+         return res.status(404).json({ error: "User not found" });
+     }
+     
+     // Ensure the friends field exists.
+     if (!user.blockedUserIDs) {
+         user.blockedUserIDs = [];
+     }
+     
+     // Add friendId to the user's friends list if it's not already there.
+     if (!user.blockedUserIDs.includes(friendId)) {
+         user.blockedUserIDs.push(friendId);
+     }
+     
+     // Save the updated user document.
+     await user.save({ validateBeforeSave: false });
+     
+     res.status(200).json({ success: true, friends: user.friends });
+ } catch (error) {
+     console.error('Error blocking:', error);
+     res.status(500).json({ error: 'Internal server error' });
+ }
+});
+
+// POST endpoint to remove a friend
+router.post('/unblock', async (req, res) => {
+ const { userId, friendId } = req.body;
+ 
+ // Validate that the user IDs are valid ObjectIds if necessary.
+ if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+     return res.status(400).json({ error: 'Invalid user Id(s)' });
+ }
+ 
+ try {
+     // Find the current user by their ID.
+     const user = await User.findById(userId);
+     if (!user) {
+         return res.status(404).json({ error: "User not found" });
+     }
+     
+     // Ensure the friends field exists.
+     if (!user.blockedUserIDs) {
+         user.blockedUserIDs = [];
+     }
+     
+     // Remove friendId from the user's friends array.
+     user.blockedUserIDs = user.blockedUserIDs.filter(id => id.toString() !== friendId);
+     
+     // Save the updated user document.
+     await user.save({ validateBeforeSave: false });
+     
+     res.status(200).json({ success: true, friends: user.friends });
+ } catch (error) {
+     console.error('Error unblocking:', error);
+     res.status(500).json({ error: 'Internal server error' });
+ }
+});
+
 module.exports = router;

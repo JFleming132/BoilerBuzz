@@ -31,6 +31,7 @@ struct FriendStatusResponse: Codable {
     let isFriend: Bool
 }
 
+
 struct AccountView: View {
     
     @StateObject var profileData = ProfileViewModel()
@@ -64,81 +65,94 @@ struct AccountView: View {
         return adminStatus ?? stored
     }
     
+    var accountSettings : some View {
+        // Settings
+        HStack {
+            Spacer()
+            if isOwnProfile {
+                NavigationLink(destination: SettingsView(profileData: profileData)) {
+                    Image(systemName: "gearshape.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.primary)
+                        .padding(14)
+                        .clipShape(Circle())
+                        .contentShape(Circle())
+                }
+                .buttonStyle(PlainButtonStyle())
+                .accessibilityIdentifier("settingsButton")
+                // print("Own profile: showing settings gear")
+            }
+            else if !isOwnProfile && isAdmin {
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            showDeleteConfirmation = true
+                        }) {
+                            Text("Delete User")
+                                .foregroundColor(.red)
+                                .padding(8)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        Button(action: {
+                            showBanConfirmation = true
+                        }) {
+                            Text(profileData.isBanned ? "Unban User" : "Ban User")
+                                .foregroundColor(.orange)
+                                .padding(8)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        Button(action: {
+                            //TODO: Verify user as promoted
+                        }) {
+                            Text(profileData.isPromoted ? "Promote User" : "Demote User")
+                                .foregroundColor(.blue)
+                                .padding(8)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.top, 20)
+                    .offset(y: -20)
+            }
+        }
+        .padding(.horizontal)
+        .alert("Delete User", isPresented: $showDeleteConfirmation) {
+            Button("Confirm", role: .destructive) {
+                // TODO: Call backend to delete user
+                print("User deleted")
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete this user?")
+        }
+        .alert(profileData.isBanned ? "Unban User" : "Ban User", isPresented: $showBanConfirmation) {
+            Button("Confirm", role: .destructive) {
+                toggleBanUser()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text(profileData.isBanned ?
+                 "Are you sure you want to unban this user?" :
+                 "Are you sure you want to ban this user from posting events?")
+        }
+        
+        
+        return Image(uiImage: profileData.profilePicture)
+            .resizable()
+            .frame(width: 100, height: 100)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.white, lineWidth: 2))
+            .shadow(radius: 5)
+    }
     
+    //TODO: why is this encountering issues?
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Settings
-                HStack {
-                    Spacer()
-                    if isOwnProfile {
-                        NavigationLink(destination: SettingsView(profileData: profileData)) {
-                            Image(systemName: "gearshape.fill")
-                                .resizable()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.primary)
-                                .padding(14)
-                                .clipShape(Circle())
-                                .contentShape(Circle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .accessibilityIdentifier("settingsButton")
-                        // print("Own profile: showing settings gear")
-                    }
-                    else if !isOwnProfile && isAdmin {
-                            HStack(spacing: 12) {
-                                Button(action: {
-                                    showDeleteConfirmation = true
-                                }) {
-                                    Text("Delete User")
-                                        .foregroundColor(.red)
-                                        .padding(8)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(8)
-                                }
-                                Button(action: {
-                                    showBanConfirmation = true
-                                }) {
-                                    Text(profileData.isBanned ? "Unban User" : "Ban User")
-                                        .foregroundColor(.orange)
-                                        .padding(8)
-                                        .background(Color.gray.opacity(0.2))
-                                        .cornerRadius(8)
-                                }
-                            }
-                            .padding(.top, 20)
-                            .offset(y: -20)
-                    }
-                }
-                .padding(.horizontal)
-                .alert("Delete User", isPresented: $showDeleteConfirmation) {
-                    Button("Confirm", role: .destructive) {
-                        // TODO: Call backend to delete user
-                        print("User deleted")
-                    }
-                    Button("Cancel", role: .cancel) { }
-                } message: {
-                    Text("Are you sure you want to delete this user?")
-                }
-                .alert(profileData.isBanned ? "Unban User" : "Ban User", isPresented: $showBanConfirmation) {
-                    Button("Confirm", role: .destructive) {
-                        toggleBanUser()
-                    }
-                    Button("Cancel", role: .cancel) { }
-                } message: {
-                    Text(profileData.isBanned ?
-                         "Are you sure you want to unban this user?" :
-                         "Are you sure you want to ban this user from posting events?")
-                }
                 
-                
-                Image(uiImage: profileData.profilePicture)
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
-                    .shadow(radius: 5)
-
+                accountSettings
                 
                 // User Rating
                 HStack(spacing: 2) {
@@ -219,6 +233,17 @@ struct AccountView: View {
                             .resizable()
                             .frame(width: 40, height: 40)
                             .padding()
+                    }
+                    
+                    if (!isOwnProfile) {
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            blockUser()
+                        }) {
+                            Image(systemName: "xmark.circle.fill") //TODO: add behavior for if user is already blocked
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -437,7 +462,13 @@ struct AccountView: View {
         }.resume()
     }
 
-
+    func blockUser() {
+        //TODO: this
+    }
+    
+    func togglePromotion() {
+        //TODO: this
+    }
 
 }
     struct AccountView_Previews: PreviewProvider {

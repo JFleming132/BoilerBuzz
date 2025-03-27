@@ -4,19 +4,22 @@ import MapKit
 import UIKit
 
 struct Event: Identifiable, Codable {
-    //TODO: Add author and promoted status
+    //DONE: Add author, currentRSVPcount, and promoted status
     let id: String
+    let author: String
+    let rsvpCount: Int
     let title: String
     let description: String?
     let location: String
     let capacity: Int
     let is21Plus: Bool
+    let promoted: Bool
     let date: Date
     let imageUrl: String?
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case title, description, location, capacity, is21Plus, date, imageUrl
+        case title, author, rsvpCount, description, location, capacity, is21Plus, promoted, date, imageUrl
     }
 
     // Convert Base64 string to UIImage
@@ -82,7 +85,7 @@ struct HomeView: View {
         }
     }
     
-    private func fetchEvents() {
+    private func fetchEvents() { //TODO: Ensure function remains compatible with new fields
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             errorMessage = "Invalid API URL"
             return
@@ -226,16 +229,19 @@ private func uploadImageToServer(_ image: UIImage) -> String {
 struct CreateEventView: View {
     @Environment(\.presentationMode) var presentationMode
     var onEventCreated: (Event) -> Void
-    //TODO: Add author field to be propogated to database
+    //Done: Add author field to be propogated to database
     @State private var title = ""
     @State private var description = ""
+    let author = "" //TODO: Change to be current user's username
+    let rsvpCount = 0
     @State private var location = ""
     @State private var capacity = ""
     @State private var is21Plus = false
+    @State private var promoted = false
     @State private var date = Date()
     @State private var selectedImage: UIImage?
     @State private var showImagePicker = false
-    //TODO: add state for if event is a promoted event and propogate to database
+    //Done: add state for if event is a promoted event and propogate to database
     @State private var showError = false
     @State private var errorMessage = ""
     
@@ -257,7 +263,9 @@ struct CreateEventView: View {
                     TextField("Max Capacity", text: $capacity)
                         .keyboardType(.numberPad)
                     Toggle("21+ Event", isOn: $is21Plus)
-                    //TODO: if user is allowed to promote, Add toggle for if event is promoted
+                    if (true) { //TODO: Change "true" to be "if user is admin OR if user is verified"
+                        Toggle("Promoted Event", isOn: $promoted)
+                    }
                     DatePicker("Date & Time", selection: $date, displayedComponents: [.date, .hourAndMinute])
                     
                     VStack(alignment: .leading) {
@@ -375,11 +383,14 @@ struct CreateEventView: View {
         let newEvent = Event(
             id: UUID().uuidString,
             //TODO: include author and promotion status
+            author: UserDefaults.standard.string(forKey: "userId") ?? "Anonymous",
+            rsvpCount: 0,
             title: title,
             description: description,
             location: location,
             capacity: capacityInt,
             is21Plus: is21Plus,
+            promoted: UserDefaults.standard.bool(forKey: "isPromoted"),
             date: date,
             imageUrl: encodedImage // Save Base64 string instead of URL
         )
