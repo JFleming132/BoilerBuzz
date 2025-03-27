@@ -155,10 +155,6 @@ router.post('/removeFriend', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-//TODO: Write function to block user (add user to current user's block list in database)
-//I think we can just do the same thing for friends but edit which array we add it to
-//make sure unblock friends gets updated too
  
 router.post('/block', async (req, res) => {
  const { userId, friendId } = req.body;

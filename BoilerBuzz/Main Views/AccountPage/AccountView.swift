@@ -462,12 +462,93 @@ struct AccountView: View {
         }.resume()
     }
 
-    func blockUser() {
-        //TODO: this
+    func blockUser() { //this function is a copied and modified version of addFriend, hence the variable names
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
+            print("My user ID not found")
+            return
+        }
+        guard let friendId = viewedUserId else {
+            print("Friend ID is missing")
+            return
+        }
+        guard let url = URL(string: "http://localhost:3000/api/friends/block") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["userId": myUserId, "friendId": friendId]
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error blocking user: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response blocking user: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                print("Blocked user successfully!")
+                // Optionally, show a confirmation message or update local state
+                isFriend = true
+            }
+        }.resume()
     }
     
     func togglePromotion() {
-        //TODO: this
+        // copied version of toggle ban
+        guard let adminId = UserDefaults.standard.string(forKey: "userId"),
+              let friendId = viewedUserId else {
+            print("Missing admin or friend id")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/profile/promote") else {
+            print("Invalid URL for promote")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["adminId": adminId, "friendId": friendId]
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON for promote: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error toggling promotion status: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response toggling promotion status: \(response ?? "No response" as Any)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                print("promotion status toggled successfully!")
+                // Update the profileData ban status.
+                profileData.isPromoted.toggle()
+            }
+        }.resume()
     }
 
 }

@@ -127,7 +127,7 @@ router.post('/banUser', async (req, res) => {
     }
 });
 
-router.post('/promoteUser', async (req, res) => {
+router.post('/promote', async (req, res) => {
     const { adminId, friendId } = req.body;
     
     // Validate that the IDs are valid ObjectIds.
