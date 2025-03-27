@@ -54,6 +54,7 @@ struct FriendStatusResponse: Codable {
 }
 
 struct AccountView: View {
+    @Environment(\.presentationMode) var presentationMode
     
     @StateObject var profileData = ProfileViewModel()
     @State private var showFavoritedDrinks = false
@@ -148,8 +149,7 @@ struct AccountView: View {
                 .padding(.horizontal)
                 .alert("Delete User", isPresented: $showDeleteConfirmation) {
                     Button("Confirm", role: .destructive) {
-                        // TODO: Call backend to delete user
-                        print("User deleted")
+                        deleteUser()
                     }
                     Button("Cancel", role: .cancel) { }
                 } message: {
@@ -318,6 +318,48 @@ struct AccountView: View {
                     .presentationDetents([.medium, .large])
             }
         }
+    }
+
+    func deleteUser() {
+        guard let adminId = UserDefaults.standard.string(forKey: "userId"),
+              let friendId = viewedUserId else {
+            print("Missing admin or friend id")
+            return
+        }
+        guard let url = URL(string: "http://localhost:3000/api/profile/deleteUser") else {
+            print("Invalid URL for deleteUser")
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = [
+            "adminId": adminId,
+            "friendId": friendId
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Error serializing JSON for deleteUser: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error deleting user: \(error.localizedDescription)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response deleting user: \(response ?? "No response" as Any)")
+                return
+            }
+            DispatchQueue.main.async {
+                print("User deleted successfully!")
+                presentationMode.wrappedValue.dismiss()
+            }
+        }.resume()
     }
 
     func toggleBanUser() {

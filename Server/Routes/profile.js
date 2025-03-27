@@ -10,6 +10,7 @@ const User = require('../Models/User');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
+const UserRating = require('../Models/Rating');
 
 router.get('/random', async (req, res) => {
     try {
@@ -126,6 +127,39 @@ router.post('/banUser', async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+// POST endpoint to delete a user.
+router.post('/deleteUser', async (req, res) => {
+    const { adminId, friendId } = req.body;
+    
+    // Validate that the IDs are valid ObjectIds.
+    if (!mongoose.Types.ObjectId.isValid(adminId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+        return res.status(400).json({ error: 'Invalid user Id(s)' });
+    }
+    
+    try {
+        // Find the admin user and verify that they have admin privileges.
+        const adminUser = await User.findById(adminId);
+        if (!adminUser || !adminUser.isAdmin) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+        
+        // Delete all ratings where the ratedUserId matches the user to be deleted.
+        await UserRating.deleteMany({ ratedUserId: friendId });
+        
+        // Delete the target user.
+        const deletedUser = await User.findByIdAndDelete(friendId);
+        if (!deletedUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        
+        res.status(200).json({ success: true, message: "User deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 
   
 
