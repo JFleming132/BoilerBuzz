@@ -56,7 +56,6 @@ struct AccountView: View {
     // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
     var viewedUserId: String? = nil
     var adminStatus: Bool? = nil  // If passed, use this value for isAdmin
-    var promotedStatus: Bool? = nil
     
     var isOwnProfile: Bool {
         if let viewed = viewedUserId,
@@ -72,13 +71,7 @@ struct AccountView: View {
         return adminStatus ?? stored
     }
     
-    var isPromoted: Bool { //TODO: fetch viewed user promotion status instead of this
-        let stored = UserDefaults.standard.bool(forKey: "isPromoted")
-        print("promotedStatus = \(promotedStatus ?? stored)")
-        return promotedStatus ?? stored
-    }
-    
-    //TODO: why is this encountering issues?
+    //fixed i think: why is this encountering issues?
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -124,7 +117,7 @@ struct AccountView: View {
                                     .cornerRadius(8)
                             }
                             Button(action: {
-                                //TODO: Verify user as promoted with function call
+                                //Done: Verify user as promoted with function call
                                 showPromotionConfirmation = true //causes the alert that asks the user to confirm promotion to appear
                             }) {
                                 Text(profileData.isPromoted ? "Demote User" : "Promote User")
@@ -213,6 +206,7 @@ struct AccountView: View {
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
                         fetchFriendStatus()
+                        fetchBlockedStatus()
                     } else {
                         profileData.fetchUserProfile()
                     }
@@ -269,7 +263,7 @@ struct AccountView: View {
                         Button(action: {
                             blockUser()
                         }) {
-                            Image(systemName: isBlocked ? "xmark.circle" : "xmark.circle.fill")
+                            Image(systemName: isBlocked ? "xmark.circle.fill" : "xmark.circle")
                                 .resizable()
                                 .frame(width: 40, height: 40)
                                 .padding()
@@ -462,7 +456,7 @@ struct AccountView: View {
               let friendId = viewedUserId,
               !isOwnProfile else { return }
         
-        //TODO: Edit this string to correspond with the a new backend function
+        //Done: Edit this string to correspond with the a new backend function
         guard let url = URL(string: "http://localhost:3000/api/blocked/status?userId=\(myUserId)&friendId=\(friendId)") else {
             print("Invalid URL for Blocked status")
             return

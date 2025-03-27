@@ -10,6 +10,30 @@ const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const User = require('../Models/User');
 
+router.get('/status', async (req, res) => {
+    const { userId, friendId } = req.query;
+    
+    // Validate userId and friendId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+      return res.status(400).json({ error: 'Invalid user Id(s)' });
+    }
+    
+    try {
+      // Find the current user by userId
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if friendId is in the user's friends array
+      const isBlocked = user.blockedUserIDs && user.blockedUserIDs.includes(friendId);
+      res.status(200).json({ isBlocked });
+    } catch (error) {
+      console.error("Error fetching blocked status:", error.message);
+      res.status(500).json({ error: "Failed to fetch blocked status. Please try again later." });
+    }
+  });
+
 router.post('/block', async (req, res) => {
  const { userId, friendId } = req.body;
  
@@ -80,13 +104,15 @@ router.post('/unblock', async (req, res) => {
  }
 });
 
+//returns a list of all users blocked by the userID specified
 router.get('/:userId', async (req, res) => {
   try {
     // Access the 'Boiler_Buzz' database using the MongoDB client
     const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
     // log "Getting friends of id: {id}"
-    console.log(`Getting blocked users of id: ${req.params.userId}`);
+    console.log(`Getting blocked users, params are: ${req.params}`);
+    console.log(req.params);
 
     // Find the user by their _id (converted to ObjectId)
     const user = await db.collection('users').findOne({ _id: new ObjectId(req.params.userId) });

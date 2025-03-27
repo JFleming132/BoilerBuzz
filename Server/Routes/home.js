@@ -60,8 +60,6 @@ router.get('/events', async (req, res) => {
     }
 });
 
-//TODO: Write function to get only RSVPd events and Promoted events that aren't from users in the current user's block list
-
 //TODO: Write function to RSVP and un-RSVP from events (add eventID to current user's RSVP list)
 
 module.exports = router;
