@@ -43,9 +43,14 @@ router.get('/events', async (req, res) => {
         const events = await Event.find({ date: { $gte: currentDate } });
 
         const sanitizedEvents = events.map(event => ({
-            ...event.toObject(),
-            date: event.date,
-            imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string
+            _id: event._id.toString(), // Convert ObjectId to plain string
+            title: event.title,
+            description: event.description || "",
+            location: event.location,
+            capacity: Number(event.capacity),
+            is21Plus: Boolean(event.is21Plus),
+            date: Number(event.date), // Already milliseconds
+            imageUrl: event.imageUrl || ""
         }));
 
         console.log("📥 Fetching events from DB:", sanitizedEvents);
