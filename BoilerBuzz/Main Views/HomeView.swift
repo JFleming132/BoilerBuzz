@@ -232,7 +232,7 @@ struct CreateEventView: View {
     //Done: Add author field to be propogated to database
     @State private var title = ""
     @State private var description = ""
-    let author = "" //TODO: Change to be current user's username
+    @State private var author = UserDefaults.standard.string(forKey: "username") ?? "anonymous" //Done: Change to be current user's username
     let rsvpCount = 0
     @State private var location = ""
     @State private var capacity = ""
@@ -244,9 +244,11 @@ struct CreateEventView: View {
     //Done: add state for if event is a promoted event and propogate to database
     @State private var showError = false
     @State private var errorMessage = ""
-    
+    private var canPromote : Bool {
+        return UserDefaults.standard.bool(forKey: "isAdmin") || UserDefaults.standard.bool(forKey: "isPromoted")
+    }
     private let maxDescriptionLength = 200  //  Set max description length
-
+    
     var body: some View {
         NavigationView {
             Form {
@@ -258,12 +260,13 @@ struct CreateEventView: View {
                 }
                 
                 Section(header: Text("Event Details")) {
+                    
                     TextField("Title", text: $title)
                     TextField("Location", text: $location)
                     TextField("Max Capacity", text: $capacity)
                         .keyboardType(.numberPad)
                     Toggle("21+ Event", isOn: $is21Plus)
-                    if (true) { //TODO: Change "true" to be "if user is admin OR if user is verified"
+                    if (canPromote) { //TODO: Change "true" to be "if user is admin OR if user is verified"
                         Toggle("Promoted Event", isOn: $promoted)
                     }
                     DatePicker("Date & Time", selection: $date, displayedComponents: [.date, .hourAndMinute])
@@ -383,14 +386,14 @@ struct CreateEventView: View {
         let newEvent = Event(
             id: UUID().uuidString,
             //TODO: include author and promotion status
-            author: UserDefaults.standard.string(forKey: "userId") ?? "Anonymous",
+            author: author,
             rsvpCount: 0,
             title: title,
             description: description,
             location: location,
             capacity: capacityInt,
             is21Plus: is21Plus,
-            promoted: UserDefaults.standard.bool(forKey: "isPromoted"),
+            promoted: promoted,
             date: date,
             imageUrl: encodedImage // Save Base64 string instead of URL
         )
@@ -430,5 +433,4 @@ struct CreateEventView: View {
             }
         }.resume()
     }
-
 }

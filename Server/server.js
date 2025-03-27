@@ -14,6 +14,7 @@ const drinksRoutes = require('./Routes/drinks');
 const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
 const homeRoutes = require('./Routes/home');
+const blockedRoutes = require('./Routes/Blocked');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -68,6 +69,7 @@ app.use('/api/drinks', drinksRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/spending', spendingRoutes);
 app.use('/api/home', homeRoutes);
+app.use('/api/blocked', blockedRoutes);
 
 // Start the server
 app.listen(port, () => {

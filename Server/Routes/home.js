@@ -5,7 +5,7 @@ const User = require('../Models/User');   // Ensure correct path to User model
 
 router.post('/events', async (req, res) => {
     try {
-        const { title, description, location, capacity, is21Plus, date, imageUrl } = req.body;
+        const { title, author, rsvpCount, promoted, description, location, capacity, is21Plus, date, imageUrl } = req.body;
 
         if (!title || !location || !capacity || !date) {
             return res.status(400).json({ message: 'Missing required fields' });

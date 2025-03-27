@@ -31,6 +31,10 @@ struct FriendStatusResponse: Codable {
     let isFriend: Bool
 }
 
+struct BlockedStatusResponse: Codable {
+    let isBlocked: Bool
+}
+
 
 struct AccountView: View {
     
@@ -38,8 +42,10 @@ struct AccountView: View {
     @State private var showFavoritedDrinks = false
     @State private var showFriendsList = false
     @State private var isFriend: Bool = false
+    @State private var isBlocked: Bool = false
     @State private var showDeleteConfirmation = false
     @State private var showBanConfirmation = false
+    @State private var showPromotionConfirmation = false
     
     /* TESTING */
     @State private var randomProfileId: String? = nil
@@ -50,6 +56,7 @@ struct AccountView: View {
     // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
     var viewedUserId: String? = nil
     var adminStatus: Bool? = nil  // If passed, use this value for isAdmin
+    var promotedStatus: Bool? = nil
     
     var isOwnProfile: Bool {
         if let viewed = viewedUserId,
@@ -65,86 +72,10 @@ struct AccountView: View {
         return adminStatus ?? stored
     }
     
-    var accountSettings : some View {
-        // Settings
-        HStack {
-            Spacer()
-            if isOwnProfile {
-                NavigationLink(destination: SettingsView(profileData: profileData)) {
-                    Image(systemName: "gearshape.fill")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(.primary)
-                        .padding(14)
-                        .clipShape(Circle())
-                        .contentShape(Circle())
-                }
-                .buttonStyle(PlainButtonStyle())
-                .accessibilityIdentifier("settingsButton")
-                // print("Own profile: showing settings gear")
-            }
-            else if !isOwnProfile && isAdmin {
-                    HStack(spacing: 12) {
-                        Button(action: {
-                            showDeleteConfirmation = true
-                        }) {
-                            Text("Delete User")
-                                .foregroundColor(.red)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        Button(action: {
-                            showBanConfirmation = true
-                        }) {
-                            Text(profileData.isBanned ? "Unban User" : "Ban User")
-                                .foregroundColor(.orange)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        Button(action: {
-                            //TODO: Verify user as promoted
-                        }) {
-                            Text(profileData.isPromoted ? "Promote User" : "Demote User")
-                                .foregroundColor(.blue)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                    }
-                    .padding(.top, 20)
-                    .offset(y: -20)
-            }
-        }
-        .padding(.horizontal)
-        .alert("Delete User", isPresented: $showDeleteConfirmation) {
-            Button("Confirm", role: .destructive) {
-                // TODO: Call backend to delete user
-                print("User deleted")
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete this user?")
-        }
-        .alert(profileData.isBanned ? "Unban User" : "Ban User", isPresented: $showBanConfirmation) {
-            Button("Confirm", role: .destructive) {
-                toggleBanUser()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text(profileData.isBanned ?
-                 "Are you sure you want to unban this user?" :
-                 "Are you sure you want to ban this user from posting events?")
-        }
-        
-        
-        return Image(uiImage: profileData.profilePicture)
-            .resizable()
-            .frame(width: 100, height: 100)
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.white, lineWidth: 2))
-            .shadow(radius: 5)
+    var isPromoted: Bool { //TODO: fetch viewed user promotion status instead of this
+        let stored = UserDefaults.standard.bool(forKey: "isPromoted")
+        print("promotedStatus = \(promotedStatus ?? stored)")
+        return promotedStatus ?? stored
     }
     
     //TODO: why is this encountering issues?
@@ -152,7 +83,101 @@ struct AccountView: View {
         NavigationView {
             VStack(spacing: 20) {
                 
-                accountSettings
+                
+                //Account Settings
+                HStack {
+                    Spacer()
+                    //Settings for own profile
+                    if isOwnProfile {
+                        NavigationLink(destination: SettingsView(profileData: profileData)) {
+                            Image(systemName: "gearshape.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.primary)
+                                .padding(14)
+                                .clipShape(Circle())
+                                .contentShape(Circle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .accessibilityIdentifier("settingsButton")
+                        // print("Own profile: showing settings gear")
+                    }
+                    //Settings for someone elses profile
+                    else if !isOwnProfile && isAdmin {
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                showDeleteConfirmation = true
+                            }) {
+                                Text("Delete User")
+                                    .foregroundColor(.red)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                            Button(action: {
+                                showBanConfirmation = true
+                            }) {
+                                Text(profileData.isBanned ? "Unban User" : "Ban User")
+                                    .foregroundColor(.orange)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                            Button(action: {
+                                //TODO: Verify user as promoted with function call
+                                showPromotionConfirmation = true //causes the alert that asks the user to confirm promotion to appear
+                            }) {
+                                Text(profileData.isPromoted ? "Demote User" : "Promote User")
+                                    .foregroundColor(.blue)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .padding(.top, 20)
+                        .offset(y: -20)
+                    }
+                }
+                .padding(.horizontal)
+                //Alert to ask to confirm user deletion (not linked to backend yet)
+                .alert("Delete User", isPresented: $showDeleteConfirmation) {
+                    Button("Confirm", role: .destructive) {
+                        // TODO: Call backend to delete user
+                        print("User deleted")
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text("Are you sure you want to delete this user?")
+                }
+                //Alert to ask to confirm user banning
+                .alert(profileData.isBanned ? "Unban User" : "Ban User", isPresented: $showBanConfirmation) {
+                    Button("Confirm", role: .destructive) {
+                        toggleBanUser()
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text(profileData.isBanned ?
+                         "Are you sure you want to unban this user?" :
+                            "Are you sure you want to ban this user from posting events?")
+                }
+                //Alert to ask to confirm user promotion
+                .alert(profileData.isPromoted ? "Demote User" : "Promote User", isPresented: $showPromotionConfirmation) {
+                    Button("Confirm", role: .destructive) {
+                        togglePromotion()
+                    }
+                    Button("Cancel", role: .cancel) { }
+                } message: {
+                    Text(profileData.isBanned ?
+                         "Are you sure you want to demote this user?" :
+                            "Are you sure you want to promote this user?")
+                }
+                Image(uiImage: profileData.profilePicture)
+                    .resizable()
+                    .frame(width: 100, height: 100)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .shadow(radius: 5)
+                
                 
                 // User Rating
                 HStack(spacing: 2) {
@@ -162,6 +187,7 @@ struct AccountView: View {
                     }
                 }
                 .padding(.top, 5)
+                
                 
                 // Profile Name & Bio
                 VStack {
@@ -192,6 +218,7 @@ struct AccountView: View {
                     }
                 }
                 
+                
                 // Buttons Row
                 HStack {
                     Button(action: {
@@ -217,7 +244,7 @@ struct AccountView: View {
                     
                     Spacer()
                     
-                    Button(action: {
+                    Button(action: { //TODO: Should we move this button into the if(!isOwnProfile) block below?
                         // Friend request action
                         if isOwnProfile {
                                 // Action: Show your friends list
@@ -242,8 +269,13 @@ struct AccountView: View {
                         Button(action: {
                             blockUser()
                         }) {
-                            Image(systemName: "xmark.circle.fill") //TODO: add behavior for if user is already blocked
+                            Image(systemName: isBlocked ? "xmark.circle" : "xmark.circle.fill")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .padding()
                         }
+                    } else {
+                        //TODO: Add button that shows your blocked users with options to unblock them later
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -266,9 +298,8 @@ struct AccountView: View {
                     NavigationLink(destination: AccountView(viewedUserId: randomProfileId, adminStatus: adminStatus), isActive: $showRandomProfile) {
                                             EmptyView()
                                         }
-
-
                 }
+                
                 
                 // Grid for posts/favorites
                 // Right now just empty boxes. dont know what to have at the beginning
@@ -280,7 +311,6 @@ struct AccountView: View {
                     }
                 }
                 .padding()
-
             }
             .padding()
             .navigationTitle("")
@@ -300,7 +330,6 @@ struct AccountView: View {
                 FriendsListPopup(isMyProfile: isOwnProfile, userId: profileData.userId, adminStatus: adminStatus)
                     .presentationDetents([.medium, .large])
             }
-            
         }
     }
 
@@ -427,6 +456,41 @@ struct AccountView: View {
         }.resume()
     }
 
+    func fetchBlockedStatus() {
+        // Only fetch status if we're viewing someone else's profile.
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
+              let friendId = viewedUserId,
+              !isOwnProfile else { return }
+        
+        //TODO: Edit this string to correspond with the a new backend function
+        guard let url = URL(string: "http://localhost:3000/api/blocked/status?userId=\(myUserId)&friendId=\(friendId)") else {
+            print("Invalid URL for Blocked status")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching Block status: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data for Block status")
+                return
+            }
+            
+            do {
+                let statusResponse = try JSONDecoder().decode(BlockedStatusResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.isBlocked = statusResponse.isBlocked
+                    print("Block status: \(self.isBlocked)")
+                }
+            } catch {
+                print("Error decoding Block status: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
+    
     func fetchRandomProfile(completion: @escaping (String?) -> Void) {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
             let url = URL(string: "http://localhost:3000/api/profile/random?exclude=\(myUserId)") else {
@@ -471,7 +535,7 @@ struct AccountView: View {
             print("Friend ID is missing")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/friends/block") else {
+        guard let url = URL(string: "http://localhost:3000/api/blocked/block") else {
             print("Invalid URL")
             return
         }
@@ -502,7 +566,7 @@ struct AccountView: View {
             DispatchQueue.main.async {
                 print("Blocked user successfully!")
                 // Optionally, show a confirmation message or update local state
-                isFriend = true
+                isBlocked = true
             }
         }.resume()
     }

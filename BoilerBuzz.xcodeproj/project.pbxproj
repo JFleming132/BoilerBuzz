@@ -1822,6 +1822,7 @@
 		26A843D12D94B1B400645A4B /* package-lock.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "package-lock.json"; sourceTree = "<group>"; };
 		26A843D22D94B1B400645A4B /* server.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = server.js; sourceTree = "<group>"; };
 		26A843D32D94B1B400645A4B /* update.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = update.js; sourceTree = "<group>"; };
+		26A843D82D95C11000645A4B /* blocked.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = blocked.js; sourceTree = "<group>"; };
 		85D495482D71FA56000BE249 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BoilerBuzz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0A402C2D5444C1001C0A7D /* BoilerBuzzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BoilerBuzzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -6430,6 +6431,7 @@
 		26A843C72D94B1B400645A4B /* Routes */ = {
 			isa = PBXGroup;
 			children = (
+				26A843D82D95C11000645A4B /* blocked.js */,
 				26A843C12D94B1B400645A4B /* auth.js */,
 				26A843C22D94B1B400645A4B /* drinks.js */,
 				26A843C32D94B1B400645A4B /* friends.js */,

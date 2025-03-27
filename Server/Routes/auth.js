@@ -153,6 +153,7 @@ router.post('/login', async (req, res) => {
             message: 'Login successful',
             userId: user._id,
             isAdmin: user.isAdmin,
+            isPromoted: user.isPromoted
          });
     } catch (err) {
         console.error(err);
