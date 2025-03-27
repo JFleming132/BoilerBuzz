@@ -24,13 +24,16 @@ router.post('/', async (req, res) => {
     // Calculate the average rating for the rated user.
     const aggregation = await UserRating.aggregate([
         { $match: { ratedUserId: ratedUserId } },
-        { $group: { _id: "$ratedUserId", avgRating: { $avg: "$rating" } } }
+        { $group: { _id: "$ratedUserId", avgRating: { $avg: "$rating" }, count: { $sum: 1} } }
     ]);
     
     if (aggregation.length > 0) {
         const newAvg = aggregation[0].avgRating;
+        const count = aggregation[0].count;
+        console.log("newAvg: ", newAvg);
+        console.log("count: ", count);
         // Update the user's rating field in the User collection.
-        await User.findByIdAndUpdate(ratedUserId, { rating: newAvg });
+        await User.findByIdAndUpdate(ratedUserId, { rating: newAvg, ratingCount: count });
     }
   
     

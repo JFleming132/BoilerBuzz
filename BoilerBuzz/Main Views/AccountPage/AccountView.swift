@@ -87,6 +87,15 @@ struct AccountView: View {
         print("adminStatus = \(adminStatus ?? stored)")
         return adminStatus ?? stored
     }
+
+    var ratingDisplay: some View {
+        HStack(spacing: 5) {
+            StarRatingView(rating: profileData.rating)
+            Text("(\(profileData.ratingCount))")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+    }
     
     
     var body: some View {
@@ -185,7 +194,7 @@ struct AccountView: View {
 
                 
                 // User Rating
-                StarRatingView(rating: profileData.rating)
+                ratingDisplay
                     .padding(.top, 5)
                 
                 // Profile Name & Bio

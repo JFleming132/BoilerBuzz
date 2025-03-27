@@ -55,15 +55,25 @@ struct NotificationsSettingsView: View {
                     }
                     
                     Toggle("Drink Specials", isOn: $drinkSpecialsEnabled)
-                        .onChange(of: drinkSpecialsEnabled) { _ in updateNotificationPreferences() }
+                        .onChange(of: drinkSpecialsEnabled) { oldValue, newValue in
+                            updateNotificationPreferences()
+                        }
                     Toggle("Event Updates", isOn: $eventUpdatesEnabled)
-                        .onChange(of: eventUpdatesEnabled) { _ in updateNotificationPreferences() }
+                        .onChange(of: eventUpdatesEnabled) { oldValue, newValue in
+                            updateNotificationPreferences()
+                        }
                     Toggle("Event Reminders", isOn: $eventRemindersEnabled)
-                        .onChange(of: eventRemindersEnabled) { _ in updateNotificationPreferences() }
+                        .onChange(of: eventRemindersEnabled) { oldValue, newValue in
+                            updateNotificationPreferences()
+                        }
                     Toggle("Administrative Announcements", isOn: $announcementsEnabled)
-                        .onChange(of: announcementsEnabled) { _ in updateNotificationPreferences() }
+                        .onChange(of: announcementsEnabled) { oldValue, newValue in
+                            updateNotificationPreferences()
+                        }
                     Toggle("Location Based Offers", isOn: $locationBasedOffersEnabled)
-                        .onChange(of: locationBasedOffersEnabled) { _ in updateNotificationPreferences() }
+                        .onChange(of: locationBasedOffersEnabled) { oldValue, newValue in
+                            updateNotificationPreferences()
+                        }
                 }
             }
             .navigationTitle("Notifications Settings")

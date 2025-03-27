@@ -17,6 +17,7 @@ class ProfileViewModel: ObservableObject {
     @Published var profilePicture: UIImage = UIImage(systemName: "person.crop.circle.fill")!
     @Published var isAdmin: Bool = false
     @Published var rating: Float = 0.0
+    @Published var ratingCount: Int = 0
 
     // Function to fetch user data from the backend.
 
@@ -66,6 +67,8 @@ class ProfileViewModel: ObservableObject {
 
                     self.rating = decodedResponse.rating ?? 0.0
 
+                    self.ratingCount = decodedResponse.ratingCount ?? 0
+
                 }
             } catch {
                 print("Error decoding profile data: \(error)")
@@ -82,5 +85,6 @@ struct Profile: Codable {
     let isAdmin: Bool?
     let isBanned: Bool?
     let rating: Float?
+    let ratingCount: Int?
 }
 
