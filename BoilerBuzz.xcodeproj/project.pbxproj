@@ -85,9 +85,11 @@
 		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+
 			exceptions = (
 				F09B54152D946FE600105032 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
 			);
+
 			path = BoilerBuzz;
 			sourceTree = "<group>";
 		};
