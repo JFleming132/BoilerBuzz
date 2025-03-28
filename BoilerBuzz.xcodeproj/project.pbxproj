@@ -65,13 +65,14 @@
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
 		};
 
-		857A5BD82D77D27500C64CDD /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+		F09B54152D946FE600105032 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
+
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -87,9 +88,11 @@
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 
+
 			exceptions = (
-				857A5BD82D77D27500C64CDD /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
+				F09B54152D946FE600105032 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
 			);
+
 
 			path = BoilerBuzz;
 			sourceTree = "<group>";
