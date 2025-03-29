@@ -16,10 +16,10 @@ struct Event: Identifiable, Codable {
     let promoted: Bool
     let date: Date
     let imageUrl: String?
-
+    let authorUsername: String
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case title, author, rsvpCount, description, location, capacity, is21Plus, promoted, date, imageUrl
+        case title, author, rsvpCount, description, location, capacity, is21Plus, promoted, date, imageUrl, authorUsername
     }
 
     // Convert Base64 string to UIImage
@@ -85,7 +85,7 @@ struct HomeView: View {
         }
     }
     
-    private func fetchEvents() { //TODO: Ensure function remains compatible with new fields
+    private func fetchEvents() {
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             errorMessage = "Invalid API URL"
             return
@@ -136,10 +136,6 @@ struct HomeView: View {
             }
         }.resume()
     }
-
-
-
-
 }
 
 struct EventListView: View {
@@ -166,6 +162,9 @@ struct EventListView: View {
 
 struct EventCardView: View {
     let event: Event
+
+    //TODO: add a boolean field to indicate if the current user is rsvpd or not
+    //maybe by saving eventIDs in an array in the UserDefaults and simply testing if event.id is in that array?
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -203,6 +202,7 @@ struct EventCardView: View {
                 }
                 //TODO: Add current and max capacity here
                 //TODO: Add RSVP Button here, which calls RSVP function
+                //TODO: Add an bit that gives the authorUsername field
             }
             .padding()
             .background(Color(.systemBackground))
@@ -215,7 +215,27 @@ struct EventCardView: View {
         .shadow(radius: 3)
     }
     
-    //TODO: Write function to RSVP/un-RSVP to/from events, per user
+    private func isRSVPed() -> Bool {
+        let arr: [String] = UserDefaults.standard.array(forKey: "rsvpEvents") as? [String] ?? []
+        if arr.contains(event.id) {
+            return true
+        }
+        return false
+    }
+    
+    private func rsvp() {
+        let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
+        //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
+        //where eventID can be found in the Event field of the EventCardView struct
+        return
+    }
+    
+    private func unrsvp() {
+        let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
+        //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
+        //where eventID can be found in the Event field of the EventCardView struct
+        return
+    }
 }
 
 
@@ -232,8 +252,9 @@ struct CreateEventView: View {
     //Done: Add author field to be propogated to database
     @State private var title = ""
     @State private var description = ""
-    @State private var author = UserDefaults.standard.string(forKey: "username") ?? "anonymous" //Done: Change to be current user's username
+    @State private var author = UserDefaults.standard.string(forKey: "userId") ?? "noID"
     let rsvpCount = 0
+    @State private var authorUsername = UserDefaults.standard.string(forKey: "username") ?? "anonymouse"
     @State private var location = ""
     @State private var capacity = ""
     @State private var is21Plus = false
@@ -385,7 +406,7 @@ struct CreateEventView: View {
 
         let newEvent = Event(
             id: UUID().uuidString,
-            //TODO: include author and promotion status
+            //Done: include author and promotion status
             author: author,
             rsvpCount: 0,
             title: title,
@@ -395,7 +416,8 @@ struct CreateEventView: View {
             is21Plus: is21Plus,
             promoted: promoted,
             date: date,
-            imageUrl: encodedImage // Save Base64 string instead of URL
+            imageUrl: encodedImage, // Save Base64 string instead of URL
+            authorUsername: authorUsername
         )
 
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {

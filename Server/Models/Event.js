@@ -11,7 +11,8 @@ const EventSchema = new mongoose.Schema({
     is21Plus: { type: Boolean, default: false },
     promoted: { type: Boolean, default: false},
     date: { type: Number, required: true },  // ✅ Store as Unix timestamp (milliseconds)
-    imageUrl: { type: String }
+    imageUrl: { type: String },
+    authorUsername: {type: String}
 });
 
 module.exports = mongoose.model('Event', EventSchema);

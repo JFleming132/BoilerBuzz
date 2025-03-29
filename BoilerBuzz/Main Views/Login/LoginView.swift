@@ -54,6 +54,7 @@ struct LoginView: View {
                     UserDefaults.standard.set(loginResponse.isAdmin, forKey: "isAdmin")
                     UserDefaults.standard.set(loginResponse.isPromoted, forKey: "isPromoted")
                     UserDefaults.standard.set(username, forKey: "username")
+                    UserDefaults.standard.set(loginResponse.rsvpEvents, forKey: "rsvpEvents")
                     print("Login successful: \(loginResponse.message)")
                     DispatchQueue.main.async {
                         isLoggedIn = true
@@ -79,6 +80,7 @@ struct LoginView: View {
             let isAdmin: Bool
             let isPromoted: Bool
             let token: String?
+            let rsvpEvents: [String]?
         }
     }
     

@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const User = require('../Models/User');
 
+
 router.get('/status', async (req, res) => {
     const { userId, friendId } = req.query;
     
@@ -69,8 +70,8 @@ router.post('/block', async (req, res) => {
  }
 });
 
-// POST endpoint to remove a friend
-//Note: Unused on frontent
+// POST endpoint to remove a blocked user
+//Note: Unused on frontend
 router.post('/unblock', async (req, res) => {
  const { userId, friendId } = req.body;
  

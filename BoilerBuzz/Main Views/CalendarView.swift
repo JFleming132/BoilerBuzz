@@ -12,19 +12,22 @@ import CalendarView
 
 struct CalendarViewPage: View {
     @State var events : [Event] = []
+    @State var rsvpEvents : [Event] = []
+    @State var promotedEvents : [Event] = []
     @State var errorMessage: String?
 
-    init() {
-        fetchEvents()
-    }
-    
     var body: some View {
         CalendarView()
             .decorating(
-                parseEvents(events: events)
+                parseEvents(events: rsvpEvents),
+                systemImage: "star"
             ) //turn events date data into dateComponents set
-
+            .decorating(
+                parseEvents(events: promotedEvents),
+                systemImage: "star.fill"
+            ).onAppear(perform: fetchEvents) //TODO: clicking on an event should pull up a card with information about it
     }
+    
     private func parseEvents(events: ([Event])) -> Set<DateComponents> {
         var DateComponentsArray: [DateComponents] = [] //will be returned, parsed
         for event in events { //for every event we fetched in init()
@@ -33,23 +36,32 @@ struct CalendarViewPage: View {
             )
         }
         return Set(DateComponentsArray) //convert array to set for CalendarView()
-        //TODO: Edit function so it returns 2 arrays, promoted and RSVPd, that can be decorated differently by the CalendarView
     }
     
     private func fetchEvents() { //literally copied from Sophie's code in HomeView
         //TODO: Rewrite to only fetch RSVP'd and Promoted events via a new backend call
-        guard let url = URL(string: "http://localhost:3000/api/home/events") else {
+        //...also, wherever we make a backend call, shouldnt we dynamically build
+        //it with a global variable that represents the IP of the server so we
+        //dont have to change tons of backend calls when it comes time to deploy?
+        guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
+            print("My user ID not found")
+            return
+        }
+        
+        guard let url = URL(string: "http://localhost:3000/api/calendar/events?currentUserID=\(myUserId)") else {
             errorMessage = "Invalid API URL"
             return
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
 
         if let token = UserDefaults.standard.string(forKey: "authToken") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -76,7 +88,9 @@ struct CalendarViewPage: View {
                 
                 let fetchedEvents = try decoder.decode([Event].self, from: data)
                 DispatchQueue.main.async {
-                    self.events = fetchedEvents.filter { $0.date >= Date() }
+                    //All events that are promoted go in one array, all other events go in another
+                    self.promotedEvents = fetchedEvents.filter { $0.promoted }
+                    self.rsvpEvents = fetchedEvents.filter { !$0.promoted }
                     self.errorMessage = nil
                 }
                 print("Successfully fetched events")
