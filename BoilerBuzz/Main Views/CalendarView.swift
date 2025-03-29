@@ -39,7 +39,7 @@ struct CalendarViewPage: View {
     }
     
     private func fetchEvents() { //literally copied from Sophie's code in HomeView
-        //TODO: Rewrite to only fetch RSVP'd and Promoted events via a new backend call
+        //Done: Rewrite to only fetch RSVP'd and Promoted events via a new backend call
         //...also, wherever we make a backend call, shouldnt we dynamically build
         //it with a global variable that represents the IP of the server so we
         //dont have to change tons of backend calls when it comes time to deploy?
