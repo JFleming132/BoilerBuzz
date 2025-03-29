@@ -163,7 +163,6 @@ struct EventListView: View {
 struct EventCardView: View {
     let event: Event
 
-    //TODO: add a boolean field to indicate if the current user is rsvpd or not
     //maybe by saving eventIDs in an array in the UserDefaults and simply testing if event.id is in that array?
     @Environment(\.colorScheme) var colorScheme
 
@@ -287,7 +286,7 @@ struct CreateEventView: View {
                     TextField("Max Capacity", text: $capacity)
                         .keyboardType(.numberPad)
                     Toggle("21+ Event", isOn: $is21Plus)
-                    if (canPromote) { //TODO: Change "true" to be "if user is admin OR if user is verified"
+                    if (canPromote) { //Done: Change "true" to be "if user is admin OR if user is verified"
                         Toggle("Promoted Event", isOn: $promoted)
                     }
                     DatePicker("Date & Time", selection: $date, displayedComponents: [.date, .hourAndMinute])
