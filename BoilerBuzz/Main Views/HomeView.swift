@@ -206,9 +206,6 @@ struct EventCardView: View {
                         .font(.footnote)
                         .foregroundColor(.gray)
                 }
-                //TODO: Add current and max capacity here
-                //TODO: Add RSVP Button here, which calls RSVP function
-                //TODO: Add an bit that gives the authorUsername field
                 
             }
             .padding()
@@ -232,8 +229,6 @@ func isRSVPed(event: Event) -> Bool {
 
 func rsvp(event: Event) {
     let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-    //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
-    //where eventID can be found in the Event field of the EventCardView struct
     guard let url = URL(string: "http://localhost:3000/api/home/rsvp") else {
         print("invalid URL")
         return
@@ -265,8 +260,6 @@ func rsvp(event: Event) {
 
 func unrsvp(event: Event) {
     let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-    //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
-    //where eventID can be found in the Event field of the EventCardView struct
     guard let url = URL(string: "http://localhost:3000/api/home/unrsvp") else {
         print("invalid URL")
         return
