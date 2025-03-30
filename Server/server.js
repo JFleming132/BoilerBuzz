@@ -4,6 +4,7 @@
 //
 //  Created by Matt Zlatniski on 2/12/25.
 //
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');

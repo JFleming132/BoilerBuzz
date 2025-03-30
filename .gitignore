@@ -17,3 +17,6 @@ APIKeys.swift
 
 .DS_Store
 /BoilerBuzz.xcodeproj
+
+# .env files
+.env
