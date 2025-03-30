@@ -1,3 +1,4 @@
+/*
 //
 //  MapView.swift
 //  BoilerBuzz
@@ -107,3 +108,38 @@ struct CalendarViewPage: View {
 #Preview {
     CalendarViewPage()
 }
+*/
+
+import SwiftUI
+
+// Dummy implementation of CalendarView
+public struct CalendarView: View {
+    public init() { }
+    
+    public var body: some View {
+        // Display dummy text as a placeholder
+        Text("Dummy CalendarView")
+            .font(.title)
+            .padding()
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(8)
+    }
+}
+
+public extension CalendarView {
+    // Dummy chainable function to mimic the API
+    func decorating(_ events: Set<DateComponents>, systemImage: String?) -> CalendarView {
+        // Just return self; ignore parameters for now.
+        return self
+    }
+}
+
+// Wrapper view to be used by content.js or elsewhere.
+public struct CalendarViewPage: View {
+    public init() { }
+    
+    public var body: some View {
+        CalendarView() // Use the dummy CalendarView here.
+    }
+}
+

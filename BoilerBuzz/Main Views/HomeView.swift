@@ -207,6 +207,7 @@ struct EventCardView: View {
                         .foregroundColor(.gray)
                 }
                 
+
             }
             .padding()
             .background(Color(.systemBackground))
@@ -517,104 +518,119 @@ struct CreateEventView: View {
     }
 }
 
+
 struct EventDetailView: View {
     var event: Event
-    @State var rsvpCountDisplay: Int
-    @State private var hasRSVPed : Bool
+    @State private var rsvpCountDisplay: Int
+    @State private var hasRSVPed: Bool
     @Environment(\.dismiss) var dismiss
-
+    
     init(event: Event) {
         self.event = event
-        rsvpCountDisplay = event.rsvpCount
-        hasRSVPed = isRSVPed(event: event)
+        _rsvpCountDisplay = State(initialValue: event.rsvpCount)
+        _hasRSVPed = State(initialValue: isRSVPed(event: event))
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if let image = event.eventImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .clipped()
+        VStack(spacing: 20) {
+            if let image = event.eventImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 250)
+                    .clipped()
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {
+                Text(event.title)
+                    .font(.title)
+                    .bold()
+                
+                Text(event.description ?? "")
+                    .font(.body)
+                
+                HStack {
+                    Label(event.location, systemImage: "mappin.and.ellipse")
+                    Spacer()
+                    Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
                 }
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(event.title)
-                        .font(.title)
-                        .bold()
-
-                    Text(event.description ?? "")
-                        .font(.body)
-
-                    HStack {
-                        Label(event.location, systemImage: "mappin.and.ellipse")
-                        Spacer()
-                        Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                
+                HStack {
+                    Label("Capacity: \(event.capacity)", systemImage: "person.3")
+                    if event.is21Plus {
+                        Text("21+")
+                            .font(.caption)
+                            .padding(5)
+                            .background(Color.red.opacity(0.2))
+                            .cornerRadius(5)
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-
-                    HStack {
-                        Label("Capacity: \(event.capacity)", systemImage: "person.3")
-                        if event.is21Plus {
-                            Text("21+")
-                                .font(.caption)
-                                .padding(5)
-                                .background(Color.red.opacity(0.2))
-                                .cornerRadius(5)
-                        }
+                }
+                
+                Divider()
+                
+                Text("\u{1F465} RSVPs: \(rsvpCountDisplay)")
+                    .font(.headline)
+                
+                if event.author == UserDefaults.standard.string(forKey: "userId") {
+                    Button("Edit Post") {
+                        // TODO: Navigate to edit view
+                        print("Edit post tapped")
                     }
-
-                    Divider()
-
-                    Text("👥 RSVPs: \(rsvpCountDisplay)")
-                        .font(.headline)
-
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                } else {
                     Button(action: {
-                        hasRSVPed.toggle() //update local view (can be temporary, event gets fetched before view gets reinstantiated)
-                        rsvpCountDisplay += hasRSVPed ? 1 : -1
-                        if (hasRSVPed) {
-                            var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
-                            tempArr.append(event.id)
-                            UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
-                            rsvp(event: event)
-                        }
-                        else {
-                            var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
-                            tempArr = tempArr.filter({$0 != event.id})
-                            UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
-                            unrsvp(event: event)
-                        }
+                        toggleRSVP()
                     }) {
-                        Text(hasRSVPed ? "You're Going ✅" : "RSVP")
+                        Text(hasRSVPed ? "You're Going \u{2705}" : "RSVP")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(hasRSVPed ? Color.green : Color.blue)
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
-
-
-                    Button(action: {
-                        let activityVC = UIActivityViewController(
-                            activityItems: ["Check out this event: \(event.title) at \(event.location)"],
-                            applicationActivities: nil
-                        )
-                        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
-                    }) {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
-                    }
                 }
-                .padding()
+                
+                Button(action: {
+                    let activityVC = UIActivityViewController(
+                        activityItems: ["Check out this event: \(event.title) at \(event.location)"],
+                        applicationActivities: nil
+                    )
+                    UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
+                }) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
+                }
             }
+            .padding()
         }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func toggleRSVP() {
+        hasRSVPed.toggle()
+        rsvpCountDisplay += hasRSVPed ? 1 : -1
+        var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
+        
+        if hasRSVPed {
+            if !tempArr.contains(event.id) {
+                tempArr.append(event.id)
+                UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
+            }
+            rsvp(event: event)
+        } else {
+            tempArr.removeAll { $0 == event.id }
+            UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
+            unrsvp(event: event)
+        }
     }
 }
