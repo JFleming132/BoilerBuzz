@@ -54,7 +54,7 @@ struct LoginView: View {
                     UserDefaults.standard.set(username, forKey: "username")
                     UserDefaults.standard.set(loginResponse.rsvpEvents, forKey: "rsvpEvents")
                     print("isAdmin stored: \(loginResponse.isAdmin)")
-                    
+                    print("rsvpEvents stored: \(String(describing: loginResponse.rsvpEvents))")
                     print("Login successful: \(loginResponse.message)")
                     DispatchQueue.main.async {
                         isLoggedIn = true
@@ -80,6 +80,9 @@ struct LoginView: View {
         let message: String
         let userId: String
         let isAdmin: Bool
+        let isPromoted: Bool
+        let token: String?
+        let rsvpEvents: [String]?
     }
     
     // MARK: - Biometric Authentication Function
@@ -87,14 +90,6 @@ struct LoginView: View {
         print("Attempting biometric authentication...")
         let context = LAContext()
         var error: NSError?
-        
-        struct LoginResponse: Codable {
-            let message: String
-            let userId: String
-            let isAdmin: Bool
-            let isPromoted: Bool
-            let token: String?
-            let rsvpEvents: [String]?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             print("Biometric authentication is available.")
             let reason = "Authenticate with FaceID to access your account."

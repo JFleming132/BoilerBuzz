@@ -167,10 +167,10 @@ struct EventListView: View {
 
 struct EventCardView: View {
     let event: Event
-
+    
     //maybe by saving eventIDs in an array in the UserDefaults and simply testing if event.id is in that array?
     @Environment(\.colorScheme) var colorScheme
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             // Only show image if it's available
@@ -181,12 +181,12 @@ struct EventCardView: View {
                     .frame(height: 200)
                     .clipped()
             }
-
+            
             VStack(alignment: .leading, spacing: 5) {
                 Text(event.title)
                     .font(.headline)
                     .foregroundColor(.primary)
-
+                
                 if let description = event.description {
                     Text(description)
                         .font(.subheadline)
@@ -194,7 +194,7 @@ struct EventCardView: View {
                         .lineLimit(nil) //  Allow dynamic height
                         .fixedSize(horizontal: false, vertical: true) //  Expand dynamically
                 }
-
+                
                 HStack {
                     Text(event.location)
                         .font(.footnote)
@@ -209,7 +209,7 @@ struct EventCardView: View {
                 //TODO: Add current and max capacity here
                 //TODO: Add RSVP Button here, which calls RSVP function
                 //TODO: Add an bit that gives the authorUsername field
-
+                
             }
             .padding()
             .background(Color(.systemBackground))
@@ -221,28 +221,79 @@ struct EventCardView: View {
         .cornerRadius(15)
         .shadow(radius: 3)
     }
-    
-    private func isRSVPed() -> Bool {
-        let arr: [String] = UserDefaults.standard.array(forKey: "rsvpEvents") as? [String] ?? []
+}
+func isRSVPed(event: Event) -> Bool {
+    let arr: [String] = UserDefaults.standard.array(forKey: "rsvpEvents") as? [String] ?? []
         if arr.contains(event.id) {
             return true
         }
         return false
     }
-    
-    private func rsvp() {
-        let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-        //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
-        //where eventID can be found in the Event field of the EventCardView struct
+
+func rsvp(event: Event) {
+    let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
+    //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
+    //where eventID can be found in the Event field of the EventCardView struct
+    guard let url = URL(string: "http://localhost:3000/api/home/rsvp") else {
+        print("invalid URL")
         return
     }
     
-    private func unrsvp() {
-        let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-        //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
-        //where eventID can be found in the Event field of the EventCardView struct
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = ["userId": currentUserID, "eventId": event.id]
+    do {
+        request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+    } catch {
+        print("Error serializing JSON: \(error)")
         return
     }
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Error removing friend: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            print("Unexpected response rsvping: \(response ?? "No response" as Any)")
+            return
+        }
+    }.resume()
+    return
+}
+
+func unrsvp(event: Event) {
+    let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
+    //TODO: Construct a url POST request to the rsvp url with 2 fields: currentUserID and eventID,
+    //where eventID can be found in the Event field of the EventCardView struct
+    guard let url = URL(string: "http://localhost:3000/api/home/unrsvp") else {
+        print("invalid URL")
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = ["userId": currentUserID, "eventId": event.id]
+    do {
+        request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+    } catch {
+        print("Error serializing JSON: \(error)")
+        return
+    }
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("Error removing friend: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            print("Unexpected response rsvping: \(response ?? "No response" as Any)")
+            return
+        }
+    }.resume()
+    return
 }
 
 
@@ -474,11 +525,17 @@ struct CreateEventView: View {
 }
 
 struct EventDetailView: View {
-    let event: Event
-    @State private var rsvpCount: Int = Int.random(in: 5...50)
-    @State private var hasRSVPed = false
+    var event: Event
+    @State var rsvpCountDisplay: Int
+    @State private var hasRSVPed : Bool
     @Environment(\.dismiss) var dismiss
 
+    init(event: Event) {
+        self.event = event
+        rsvpCountDisplay = event.rsvpCount
+        hasRSVPed = isRSVPed(event: event)
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -519,12 +576,24 @@ struct EventDetailView: View {
 
                     Divider()
 
-                    Text("👥 RSVPs: \(rsvpCount)")
+                    Text("👥 RSVPs: \(rsvpCountDisplay)")
                         .font(.headline)
 
                     Button(action: {
-                        hasRSVPed.toggle()
-                        rsvpCount += hasRSVPed ? 1 : -1
+                        hasRSVPed.toggle() //update local view (can be temporary, event gets fetched before view gets reinstantiated)
+                        rsvpCountDisplay += hasRSVPed ? 1 : -1
+                        if (hasRSVPed) {
+                            var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
+                            tempArr.append(event.id)
+                            UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
+                            rsvp(event: event)
+                        }
+                        else {
+                            var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
+                            tempArr = tempArr.filter({$0 != event.id})
+                            UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
+                            unrsvp(event: event)
+                        }
                     }) {
                         Text(hasRSVPed ? "You're Going ✅" : "RSVP")
                             .frame(maxWidth: .infinity)

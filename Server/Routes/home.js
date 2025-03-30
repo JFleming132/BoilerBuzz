@@ -75,6 +75,7 @@ router.get('/events', async (req, res) => {
     }
 });
 
+//rsvp endpoint
 router.post('/rsvp', async (req, res) => {
     const { userId, eventId } = req.body;
 
@@ -114,6 +115,7 @@ router.post('/rsvp', async (req, res) => {
 
             console.log("✅ RSVP added successfully");
         }
+        
 
         res.status(200).json({
             success: true,
