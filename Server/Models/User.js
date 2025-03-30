@@ -96,6 +96,11 @@ const userSchema = new mongoose.Schema({
         name: String,
         amount: Number,
         date: { type: Date, default: Date.now }
+    }],
+     // Added RSVP events field
+    rsvpEvents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event'
     }]
 });
 
