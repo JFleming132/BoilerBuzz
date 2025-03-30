@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../Models/Event'); // Ensure correct path to Event model
 const User = require('../Models/User');   // Ensure correct path to User model
+const mongoose = require('mongoose');
 
 router.post('/events', async (req, res) => {
     try {
@@ -58,6 +59,46 @@ router.get('/events', async (req, res) => {
     } catch (err) {
         console.error("❌ Error fetching events:", err);
         res.status(500).json({ message: 'Error fetching events', error: err });
+    }
+});
+
+// New endpoint to get events by creator ID
+router.get('/events/byUser/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            userId = mongoose.Types.ObjectId(userId);
+        }
+
+        // Find events where the creator field matches the provided userId
+        const events = await Event.find({ author: userId });
+
+        console.log("🔍 Found events:", events);
+
+        if (!events) {
+            return res.status(404).json({ message: 'No events found for this user' });
+        }
+
+        // Sanitize the events similar to the general events endpoint
+        const sanitizedEvents = events.map(event => ({
+            _id: event._id.toString(),
+            title: event.title,
+            description: event.description || "",
+            location: event.location,
+            capacity: Number(event.capacity),
+            is21Plus: Boolean(event.is21Plus),
+            date: Number(event.date),
+            imageUrl: event.imageUrl || "",
+            author: event.author ? event.author.toString() : null
+        }));
+
+        console.log(`📥 Fetching events for user ${userId}:`, sanitizedEvents.length);
+        res.json(sanitizedEvents);
+
+    } catch (err) {
+        console.error(`❌ Error fetching events for user ${req.params.userId}:`, err);
+        res.status(500).json({ message: 'Error fetching user events', error: err });
     }
 });
 
