@@ -38,53 +38,54 @@ struct HomeView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack {
-            bgColor.ignoresSafeArea(edges: .all)
-            
-            VStack {
-                Text("Events Near You")
-                    .font(.largeTitle)
-                    .bold()
-                    .padding()
-                    .multilineTextAlignment(.center)
-                
-                if let errorMessage = errorMessage {
-                    Text("\(errorMessage)")
-                        .foregroundColor(.red)
+        NavigationView { // ✅ Add this
+            ZStack {
+                bgColor.ignoresSafeArea(edges: .all)
+                VStack {
+                    Text("Events Near You")
+                        .font(.largeTitle)
+                        .bold()
                         .padding()
-                } else {
-                    EventListView(events: events)
-                }
-            }
-            .padding(.horizontal)
-            
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        isCreatingEvent.toggle()
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
-                            .shadow(radius: 4)
+                        .multilineTextAlignment(.center)
+
+                    if let errorMessage = errorMessage {
+                        Text("\(errorMessage)")
+                            .foregroundColor(.red)
+                            .padding()
+                    } else {
+                        EventListView(events: events) // ✅ This will now allow navigation
                     }
-                    .padding()
+                }
+                .padding(.horizontal)
+
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            isCreatingEvent.toggle()
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.blue)
+                                .shadow(radius: 4)
+                        }
+                        .padding()
+                    }
                 }
             }
-        }
-        .onAppear {
-            fetchEvents()
-        }
-        .sheet(isPresented: $isCreatingEvent) {
-            CreateEventView(onEventCreated: { newEvent in
-                events.append(newEvent)
-            })
+            .onAppear {
+                fetchEvents()
+            }
+            .sheet(isPresented: $isCreatingEvent) {
+                CreateEventView(onEventCreated: { newEvent in
+                    events.append(newEvent)
+                })
+            }
         }
     }
-    
+
     private func fetchEvents() {
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             errorMessage = "Invalid API URL"
@@ -140,7 +141,7 @@ struct HomeView: View {
 
 struct EventListView: View {
     let events: [Event]
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 15) {
@@ -151,7 +152,10 @@ struct EventListView: View {
                         .padding()
                 } else {
                     ForEach(events) { event in
-                        EventCardView(event: event)
+                        NavigationLink(destination: EventDetailView(event: event)) {
+                            EventCardView(event: event)
+                        }
+                        .buttonStyle(PlainButtonStyle()) // ✅ Removes default blue highlight
                     }
                 }
             }
@@ -159,6 +163,7 @@ struct EventListView: View {
         }
     }
 }
+
 
 struct EventCardView: View {
     let event: Event
@@ -194,14 +199,17 @@ struct EventCardView: View {
                     Text(event.location)
                         .font(.footnote)
                         .foregroundColor(.blue)
+                    
                     Spacer()
-                    Text(event.date, style: .date)
+                    
+                    Text(event.date.formatted(date: .abbreviated, time: .shortened))
                         .font(.footnote)
                         .foregroundColor(.gray)
                 }
                 //TODO: Add current and max capacity here
                 //TODO: Add RSVP Button here, which calls RSVP function
                 //TODO: Add an bit that gives the authorUsername field
+
             }
             .padding()
             .background(Color(.systemBackground))
@@ -383,7 +391,17 @@ struct CreateEventView: View {
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(location) { placemarks, error in
             DispatchQueue.main.async {
-                if let placemark = placemarks?.first, placemark.location != nil, let _ = placemark.locality {
+                guard let placemark = placemarks?.first else {
+                    completion(false)
+                    return
+                }
+
+                // Require full address details to consider it valid
+                if let street = placemark.thoroughfare,
+                   let streetNumber = placemark.subThoroughfare,
+                   let city = placemark.locality,
+                   let state = placemark.administrativeArea,
+                   !street.isEmpty, !streetNumber.isEmpty, !city.isEmpty, !state.isEmpty {
                     completion(true)
                 } else {
                     completion(false)
@@ -393,7 +411,6 @@ struct CreateEventView: View {
     }
     
 
-    
 
     private func createEvent(capacityInt: Int) {
         print("🔍 Creating event")
@@ -453,5 +470,89 @@ struct CreateEventView: View {
                 presentationMode.wrappedValue.dismiss()
             }
         }.resume()
+    }
+}
+
+struct EventDetailView: View {
+    let event: Event
+    @State private var rsvpCount: Int = Int.random(in: 5...50)
+    @State private var hasRSVPed = false
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                if let image = event.eventImage {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 250)
+                        .clipped()
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(event.title)
+                        .font(.title)
+                        .bold()
+
+                    Text(event.description ?? "")
+                        .font(.body)
+
+                    HStack {
+                        Label(event.location, systemImage: "mappin.and.ellipse")
+                        Spacer()
+                        Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                    HStack {
+                        Label("Capacity: \(event.capacity)", systemImage: "person.3")
+                        if event.is21Plus {
+                            Text("21+")
+                                .font(.caption)
+                                .padding(5)
+                                .background(Color.red.opacity(0.2))
+                                .cornerRadius(5)
+                        }
+                    }
+
+                    Divider()
+
+                    Text("👥 RSVPs: \(rsvpCount)")
+                        .font(.headline)
+
+                    Button(action: {
+                        hasRSVPed.toggle()
+                        rsvpCount += hasRSVPed ? 1 : -1
+                    }) {
+                        Text(hasRSVPed ? "You're Going ✅" : "RSVP")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(hasRSVPed ? Color.green : Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+
+
+                    Button(action: {
+                        let activityVC = UIActivityViewController(
+                            activityItems: ["Check out this event: \(event.title) at \(event.location)"],
+                            applicationActivities: nil
+                        )
+                        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
+                    }) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                }
+                .padding()
+            }
+        }
+        .navigationTitle("Event Details")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

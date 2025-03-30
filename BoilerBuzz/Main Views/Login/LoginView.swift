@@ -1,4 +1,5 @@
 import SwiftUI
+import LocalAuthentication
 
 struct LoginView: View {
     @State private var username = ""
@@ -7,9 +8,9 @@ struct LoginView: View {
     @State private var errorMessage: String = "Invalid Credentials"
     @Binding var isLoggedIn: Bool
     
-    // Function to perform the login request
+    // MARK: - Login Request Function
     func loginRequest() {
-        print("trying login request")
+        print("Attempting login request...")
         guard let url = URL(string: "http://localhost:3000/api/auth/login") else {
             print("Invalid URL")
             return
@@ -20,7 +21,6 @@ struct LoginView: View {
             "password": password,
         ]
         
-        // Serialize parameters to JSON
         guard let jsonData = try? JSONSerialization.data(withJSONObject: parameters) else {
             print("Failed to encode parameters")
             return
@@ -31,7 +31,6 @@ struct LoginView: View {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         
-        // Send the request
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
@@ -46,21 +45,22 @@ struct LoginView: View {
             do {
                 let loginResponse = try JSONDecoder().decode(LoginResponse.self, from: data)
                 if loginResponse.message == "Login successful" {
-                    // Store the userID and token in UserDefaults
+                    // Store the userId locally.
                     UserDefaults.standard.set(loginResponse.userId, forKey: "userId")
-                    if let token = loginResponse.token {
-                        UserDefaults.standard.set(token, forKey: "token")
-                    }
+                    print("UserID stored: \(loginResponse.userId)")
+                    
                     UserDefaults.standard.set(loginResponse.isAdmin, forKey: "isAdmin")
                     UserDefaults.standard.set(loginResponse.isPromoted, forKey: "isPromoted")
                     UserDefaults.standard.set(username, forKey: "username")
                     UserDefaults.standard.set(loginResponse.rsvpEvents, forKey: "rsvpEvents")
+                    print("isAdmin stored: \(loginResponse.isAdmin)")
+                    
                     print("Login successful: \(loginResponse.message)")
                     DispatchQueue.main.async {
                         isLoggedIn = true
                     }
                 } else {
-                    print("failed login!!!!!")
+                    print("Failed login: \(loginResponse.message)")
                     DispatchQueue.main.async {
                         errorMessage = loginResponse.message
                         showFailedLogin = true
@@ -73,6 +73,20 @@ struct LoginView: View {
                 }
             }
         }.resume()
+    }
+    
+    // Define your LoginResponse model (without token)
+    struct LoginResponse: Codable {
+        let message: String
+        let userId: String
+        let isAdmin: Bool
+    }
+    
+    // MARK: - Biometric Authentication Function
+    func authenticateWithBiometrics() {
+        print("Attempting biometric authentication...")
+        let context = LAContext()
+        var error: NSError?
         
         struct LoginResponse: Codable {
             let message: String
@@ -81,43 +95,91 @@ struct LoginView: View {
             let isPromoted: Bool
             let token: String?
             let rsvpEvents: [String]?
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            print("Biometric authentication is available.")
+            let reason = "Authenticate with FaceID to access your account."
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authError in
+                print("Biometric evaluation completed. Success: \(success), error: \(authError?.localizedDescription ?? "nil")")
+                DispatchQueue.main.async {
+                    if success {
+                        print("Biometric authentication successful. Setting isLoggedIn to true.")
+                        checkServerAvailability { isServerUp in
+                            if isServerUp {
+                                print("Server is up, allowing biometric authentication.")
+                                isLoggedIn = true
+                            } else {
+                                print("Server is down, not allowing biometric authentication.")
+                            }
+                        }
+                    } else {
+                        print("Biometric authentication failed: \(authError?.localizedDescription ?? "Unknown error")")
+                    }
+                }
+            }
+        } else {
+            print("Biometric authentication not available. Error: \(error?.localizedDescription ?? "Unknown error")")
         }
     }
     
+    // MARK: - Server Availability Check
+    func checkServerAvailability(completion: @escaping (Bool) -> Void) {
+        // Adjust the URL to your server's health-check endpoint.
+        guard let url = URL(string: "http://localhost:3000/api/auth/health") else {
+            completion(false)
+            return
+        }
+        print("making request...")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error checking server availability: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                DispatchQueue.main.async {
+                    completion(true)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    completion(false)
+                }
+            }
+        }.resume()
+    }
+    
+    // MARK: - View Body
     var body: some View {
         NavigationView {
             ZStack {
-                
-                VStack {
+                VStack(spacing: 20) {
                     Text("BoilerBuzz Login")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
                     Rectangle()
-                        .fill(tertiaryColor)
+                        .fill(tertiaryColor) // Replace tertiaryColor with your actual color.
                         .frame(width: 150, height: 4)
                         .padding(.horizontal)
                         .cornerRadius(2)
-
+                    
                     TextField("Username", text: $username)
                         .padding()
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        .onTapGesture {
-                            showFailedLogin = false
-                        }
                     
                     SecureField("Password", text: $password)
                         .padding()
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onTapGesture {
-                            showFailedLogin = false
-                        }
                     
                     Button(action: {
                         if !username.isEmpty && !password.isEmpty {
-                            loginRequest()  // Call loginRequest function
+                            loginRequest()
                         } else {
                             showFailedLogin = true
                         }
@@ -126,13 +188,12 @@ struct LoginView: View {
                             .padding()
                             .foregroundColor(tertiaryColor)
                     }
-                    .background(.black)
+                    .background(Color.black)
                     .cornerRadius(10)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10) // Same corner radius as the button
-                            .stroke(tertiaryColor, lineWidth: 2) // Border with the desired color and width
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(tertiaryColor, lineWidth: 2)
                     )
-                    .padding()
                     
                     if showFailedLogin {
                         Text("\(errorMessage). Please try again.")
@@ -141,17 +202,33 @@ struct LoginView: View {
                     
                     NavigationLink(destination: SignUpView()) {
                         Text("New to BoilerBuzz? Sign Up!")
-                            .foregroundColor(Color.blue) // iOS Blue color
+                            .foregroundColor(.blue)
                             .padding()
                     }
                     
                     NavigationLink(destination: ForgotPasswordView()) {
                         Text("Forgot password?")
-                            .foregroundColor(Color.blue) // iOS Blue color
+                            .foregroundColor(.blue)
                             .padding()
                     }
                 }
                 .padding()
+            }
+            // On appear, check if a userId is saved and if the server is available before prompting biometric authentication.
+            .onAppear {
+                if let savedUserId = UserDefaults.standard.string(forKey: "userId") {
+                    print("UserID found: \(savedUserId) on load. Checking server availability...")
+                    checkServerAvailability { isServerUp in
+                        if isServerUp {
+                            print("Server is up, initiating biometric authentication.")
+                            authenticateWithBiometrics()
+                        } else {
+                            print("Server is down, skipping biometric authentication.")
+                        }
+                    }
+                } else {
+                    print("No userID found on load. Skipping biometric authentication.")
+                }
             }
         }
     }

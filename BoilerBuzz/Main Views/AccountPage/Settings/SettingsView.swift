@@ -33,6 +33,9 @@ struct SettingsView: View {
                 NavigationLink(destination: HelpSupportSettingsView()) {
                     SettingsRow(icon: "questionmark.circle.fill", title: "Help & Support")
                 }
+                NavigationLink(destination: IdentificationView()) {
+                    SettingsRow(icon: "checkmark.seal.fill", title: "Identification")
+                }
             }
         }
         .navigationTitle("Settings")
