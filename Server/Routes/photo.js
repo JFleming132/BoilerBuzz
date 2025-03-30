@@ -59,7 +59,7 @@ router.get('/byUser/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     // Find photos where the creator field matches the given userId.
-    const photos = await Photo.find({ creator: userId });
+    const photos = await Photo.find({ creator: userId }).sort({ createdAt: -1 });
     
     // Sanitize the response: convert ObjectIDs to strings.
     const sanitizedPhotos = photos.map(photo => ({
