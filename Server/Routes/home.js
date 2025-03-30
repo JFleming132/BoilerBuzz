@@ -1,8 +1,10 @@
+const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
-const Event = require('../Models/Event'); // Ensure correct path to Event model
-const User = require('../Models/User');   // Ensure correct path to User model
+const Event = require('../Models/Event'); // Ensure correct path
+const User = require('../Models/User');   // Ensure correct path
 
+// Create a new event (unchanged)
 router.post('/events', async (req, res) => {
     try {
         const { title, author, rsvpCount, promoted, description, location, capacity, is21Plus, date, imageUrl, authorUsername } = req.body;
@@ -12,28 +14,30 @@ router.post('/events', async (req, res) => {
         }
 
         const formattedDate = new Date(date).getTime();
-
         if (isNaN(formattedDate)) {
             return res.status(400).json({ message: 'Invalid date format' });
         }
 
         const newEvent = new Event({
-            //Done: Add Author, RSVPcount, and Promoted status
             title,
             author,
-            rsvpCount,
+            rsvpCount,  // Should be 0 on creation
             promoted,
             description,
             location,
             capacity,
             is21Plus,
             date: formattedDate,
-            imageUrl: imageUrl || "", // ✅ Store Base64 or empty string
+            imageUrl: imageUrl || "",
             authorUsername
         });
 
         await newEvent.save();
-
+	
+	// Add event ID to user's pastEvents
+        await User.findByIdAndUpdate(author, {
+            $push: { pastEvents: newEvent._id }
+        });
         console.log("✅ Event created successfully:", newEvent);
         res.status(201).json(newEvent);
     } catch (err) {
@@ -42,22 +46,27 @@ router.post('/events', async (req, res) => {
     }
 });
 
+// Get events endpoint (unchanged)
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
-        const events = await Event.find({ date: { $gte: currentDate } }); //TODO: Add functionality for block lists
-
+        const events = await Event.find({ date: { $gte: currentDate } });
+        
         const sanitizedEvents = events.map(event => ({
-            _id: event._id.toString(), // Convert ObjectId to plain string
+            _id: event._id.toString(),
             title: event.title,
+            author: event.author,
+            rsvpCount: event.rsvpCount,
             description: event.description || "",
             location: event.location,
             capacity: Number(event.capacity),
             is21Plus: Boolean(event.is21Plus),
-            date: Number(event.date), // Already milliseconds
-            imageUrl: event.imageUrl || ""
+            promoted: event.promoted,
+            date: Number(event.date),
+            imageUrl: event.imageUrl || "",
+            authorUsername: event.authorUsername || ""
         }));
-
+        
         console.log("📥 Fetching events from DB:", sanitizedEvents);
         res.json(sanitizedEvents);
     } catch (err) {
@@ -66,71 +75,86 @@ router.get('/events', async (req, res) => {
     }
 });
 
-//These next two methods are copied/modified versions of addfriend/removefriend
 router.post('/rsvp', async (req, res) => {
     const { userId, eventId } = req.body;
-    
-    // Validate that the user IDs are valid ObjectIds if stored that way.
+
+    console.log("📥 RSVP request received");
+    console.log("👉 userId:", userId);
+    console.log("👉 eventId:", eventId);
+
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(eventId)) {
-        return res.status(400).json({ error: 'Invalid user Id or event Id)' });
+        return res.status(400).json({ error: 'Invalid user Id or event Id' });
     }
-    
+
     try {
-        // Find the current user by their ID.
         const user = await User.findById(userId);
         if (!user) {
+            console.log("❌ User not found");
             return res.status(404).json({ error: "User not found" });
         }
-        
-        // Ensure the friends field exists.
-        if (!user.rsvpEvents) {
-            user.rsvpEvents = [];
+
+        const event = await Event.findById(eventId);
+        if (!event) {
+            console.log("❌ Event not found");
+            return res.status(404).json({ error: "Event not found" });
         }
-        
-        // Add friendId to the user's friends list if it's not already there.
-        if (!user.rsvpEvents.includes(eventId)) {
+
+        // Initialize if undefined
+        user.rsvpEvents = user.rsvpEvents || [];
+
+        const alreadyRSVPed = user.rsvpEvents.includes(eventId);
+        console.log("✅ RSVP already exists?", alreadyRSVPed);
+
+        if (!alreadyRSVPed) {
             user.rsvpEvents.push(eventId);
+            event.rsvpCount = (event.rsvpCount || 0) + 1;
+
+            await user.save({ validateBeforeSave: false });
+            await event.save({ validateBeforeSave: false });
+
+            console.log("✅ RSVP added successfully");
         }
-        
-        // Save the updated user document.
-        await user.save({ validateBeforeSave: false });
-        
-        res.status(200).json({ success: true, rsvpEvents: user.rsvpEvents });
+
+        res.status(200).json({
+            success: true,
+            rsvpEvents: user.rsvpEvents,
+            rsvpCount: event.rsvpCount
+        });
+
     } catch (error) {
-        console.error('Error adding friend:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error("❌ RSVP error:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
+// UnRSVP endpoint
 router.post('/unrsvp', async (req, res) => {
     const { userId, eventId } = req.body;
     
-    // Validate that the user IDs are valid ObjectIds if necessary.
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(eventId)) {
         return res.status(400).json({ error: 'Invalid user Id or event Id' });
     }
     
     try {
-        // Find the current user by their ID.
+        // Update user: remove eventId.
         const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
+        if (!user) return res.status(404).json({ error: "User not found" });
         
-        // Ensure the friends field exists.
-        if (!user.rsvpEvents) {
-            user.rsvpEvents = [];
-        }
-        
-        // Remove friendId from the user's friends array.
+        if (!user.rsvpEvents) user.rsvpEvents = [];
         user.rsvpEvents = user.rsvpEvents.filter(id => id.toString() !== eventId);
-        
-        // Save the updated user document.
         await user.save({ validateBeforeSave: false });
         
-        res.status(200).json({ success: true, friends: user.friends });
+        // Update event: decrement RSVP count.
+        const event = await Event.findById(eventId);
+        if (event) {
+            event.rsvpCount = Math.max(0, event.rsvpCount - 1);
+            await event.save();
+            console.log("UnRSVP updated. New event count:", event.rsvpCount);
+        }
+        
+        res.status(200).json({ success: true, rsvpEvents: user.rsvpEvents });
     } catch (error) {
-        console.error('Error removing rsvp event:', error);
+        console.error('Error removing RSVP event:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
