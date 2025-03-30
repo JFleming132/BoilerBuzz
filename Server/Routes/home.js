@@ -102,5 +102,20 @@ router.get('/events/byUser/:userId', async (req, res) => {
     }
 });
 
+router.delete('/delEvents/:eventId', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const deletedEvent = await Event.findByIdAndDelete(eventId);
+        if (!deletedEvent) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        res.status(200).json({ message: "Event deleted successfully" });
+    } catch (err) {
+        console.error("Error deleting event:", err);
+        res.status(500).json({ message: 'Error deleting event', error: err });
+    }
+});
+
+
 module.exports = router;
 

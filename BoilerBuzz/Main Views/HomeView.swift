@@ -437,6 +437,8 @@ struct EventDetailView: View {
     @State private var rsvpCount: Int = Int.random(in: 5...50)
     @State private var hasRSVPed = false
     @Environment(\.dismiss) var dismiss
+    @State private var showDeleteAlert = false
+    
 
     var body: some View {
         ScrollView {
@@ -513,5 +515,49 @@ struct EventDetailView: View {
         }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+                if UserDefaults.standard.bool(forKey: "isAdmin") {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            showDeleteAlert = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                }
+            }
+            .alert("Delete Event", isPresented: $showDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    deleteEvent()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete this event?")
+            }
+        }
+
+    func deleteEvent() {
+        guard let url = URL(string: "http://localhost:3000/api/home/delEvents/\(event.id)") else {
+            print("Invalid URL for event deletion")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error deleting event: \(error.localizedDescription)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response deleting event: \(response ?? "No response" as Any)")
+                return
+            }
+            DispatchQueue.main.async {
+                print("Event deleted successfully!")
+                dismiss()
+            }
+        }.resume()
     }
 }
