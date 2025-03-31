@@ -3,6 +3,22 @@ import PhotosUI
 import MapKit
 import UIKit
 
+
+//api data for harrys
+struct APIResponse: Codable {
+    let peopleInBar: Int?
+    let peopleInLine: Int?
+    let lastUpdated: Date?
+    let message: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case peopleInBar = "people_in_bar"
+        case peopleInLine = "people_in_line"
+        case lastUpdated = "last_updated"
+        case message
+    }
+}
+// Event Struct
 struct Event: Identifiable, Codable {
     let id: String
     let title: String
@@ -27,57 +43,60 @@ struct Event: Identifiable, Codable {
     }
 }
 
-
+// Home View with Tabs
 struct HomeView: View {
+    @State private var selectedTab = 0
     @State private var isCreatingEvent = false
     @State private var events: [Event] = []
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationView { // ✅ Add this
-            ZStack {
-                bgColor.ignoresSafeArea(edges: .all)
-                VStack {
-                    Text("Events Near You")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding()
-                        .multilineTextAlignment(.center)
-
-                    if let errorMessage = errorMessage {
-                        Text("\(errorMessage)")
-                            .foregroundColor(.red)
-                            .padding()
-                    } else {
-                        EventListView(events: events) // ✅ This will now allow navigation
-                    }
-                }
-                .padding(.horizontal)
-
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            isCreatingEvent.toggle()
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .foregroundColor(.blue)
-                                .shadow(radius: 4)
+        NavigationView {
+            VStack {
+                // Custom Top Tab Bar
+                HStack {
+                    Button(action: { selectedTab = 0 }) {
+                        VStack {
+                            Image(systemName: "calendar")
+                            Text("Events")
                         }
-                        .padding()
+                        .foregroundColor(selectedTab == 0 ? .blue : .gray)
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    Button(action: { selectedTab = 1 }) {
+                        VStack {
+                            Image(systemName: "cup.and.saucer")
+                            Text("Harry's")
+                        }
+                        .foregroundColor(selectedTab == 1 ? .blue : .gray)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding()
+                .background(
+                    Color(uiColor: UIColor.systemBackground) // Adaptive to light/dark mode
+                )
+                .shadow(radius: 2)
+
+                // Tab Content
+                ZStack {
+                    if selectedTab == 0 {
+                        EventsTab(
+                            events: events,
+                            errorMessage: errorMessage,
+                            isCreatingEvent: $isCreatingEvent,
+                            fetchEvents: fetchEvents
+                        )
+                    } else if selectedTab == 1 {
+                        HarrysView()
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(uiColor: UIColor.systemBackground)) // Ensure background adapts
             }
             .onAppear {
                 fetchEvents()
-            }
-            .sheet(isPresented: $isCreatingEvent) {
-                CreateEventView(onEventCreated: { newEvent in
-                    events.append(newEvent)
-                })
             }
         }
     }
@@ -110,35 +129,77 @@ struct HomeView: View {
                 return
             }
 
-            // Debug raw JSON response
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("🚀 API Response:\n\(jsonString)")
-            }
-
             do {
                 let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .millisecondsSince1970 //  Decode timestamps correctly
+                decoder.dateDecodingStrategy = .millisecondsSince1970
                 
                 let fetchedEvents = try decoder.decode([Event].self, from: data)
                 DispatchQueue.main.async {
                     self.events = fetchedEvents.filter { $0.date >= Date() }
                     self.errorMessage = nil
                 }
-                print("Successfully fetched events")
             } catch {
-                print(" JSON Decoding Error: \(error)")
+                print("JSON Decoding Error: \(error)")
                 DispatchQueue.main.async {
                     self.errorMessage = "JSON Decoding Error: \(error.localizedDescription)"
                 }
             }
         }.resume()
     }
-
-
-
-
 }
 
+// Events Tab
+struct EventsTab: View {
+    let events: [Event]
+    let errorMessage: String?
+    @Binding var isCreatingEvent: Bool
+    var fetchEvents: () -> Void
+
+    var body: some View {
+        ZStack {
+            VStack {
+                Text("Events Near You")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding()
+                    .multilineTextAlignment(.center)
+
+                if let errorMessage = errorMessage {
+                    Text("\(errorMessage)")
+                        .foregroundColor(.red)
+                        .padding()
+                } else {
+                    EventListView(events: events)
+                }
+            }
+            .padding(.horizontal)
+
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        isCreatingEvent.toggle()
+                    }) {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.blue)
+                            .shadow(radius: 4)
+                    }
+                    .padding()
+                }
+            }
+        }
+        .sheet(isPresented: $isCreatingEvent) {
+            CreateEventView(onEventCreated: { _ in
+                // Placeholder for event creation
+            })
+        }
+    }
+}
+
+// Event List View
 struct EventListView: View {
     let events: [Event]
 
@@ -155,7 +216,7 @@ struct EventListView: View {
                         NavigationLink(destination: EventDetailView(event: event)) {
                             EventCardView(event: event)
                         }
-                        .buttonStyle(PlainButtonStyle()) // ✅ Removes default blue highlight
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
@@ -164,7 +225,7 @@ struct EventListView: View {
     }
 }
 
-
+// Event Card View
 struct EventCardView: View {
     let event: Event
     @Environment(\.colorScheme) var colorScheme
@@ -189,8 +250,7 @@ struct EventCardView: View {
                     Text(description)
                         .font(.subheadline)
                         .foregroundColor(.gray)
-                        .lineLimit(nil) //  Allow dynamic height
-                        .fixedSize(horizontal: false, vertical: true) //  Expand dynamically
+                        .lineLimit(2)
                 }
 
                 HStack {
@@ -204,7 +264,6 @@ struct EventCardView: View {
                         .font(.footnote)
                         .foregroundColor(.gray)
                 }
-
             }
             .padding()
             .background(Color(.systemBackground))
@@ -218,14 +277,164 @@ struct EventCardView: View {
     }
 }
 
+// Harry's View
+struct HarrysView: View {
+    @State private var peopleInBar: Int = 0
+    @State private var peopleInLine: Int = 0
+    @State private var lastUpdated: String = ""
+    @State private var errorMessage: String?
+    @State private var isRefreshing: Bool = false
 
-private func uploadImageToServer(_ image: UIImage) -> String {
-    // Simulate image upload - Replace with actual upload logic if needed
-    let imageId = UUID().uuidString
-    return "https://localhost:3000/uploads/\(imageId).jpg"
-}
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Harry's Bar Status")
+                .font(.largeTitle)
+                .bold()
+                .padding()
 
+            if let errorMessage = errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+            } else {
+                VStack(alignment: .leading, spacing: 15) {
+                    HStack {
+                        Image(systemName: "person.3")
+                        Text("People in Bar:")
+                        Spacer()
+                        Text("\(peopleInBar)")
+                            .fontWeight(.bold)
+                    }
 
+                    HStack {
+                        Image(systemName: "line.3.horizontal")
+                        Text("People in Line:")
+                        Spacer()
+                        Text("\(peopleInLine)")
+                            .fontWeight(.bold)
+                    }
+
+                    HStack {
+                        Image(systemName: "clock")
+                        Text("Last Updated:")
+                        Spacer()
+                        Text(lastUpdated)
+                            .fontWeight(.bold)
+                    }
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+            }
+
+            Button(action: {
+                isRefreshing = true
+                fetchHarrysData()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    isRefreshing = false
+                }
+            }) {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Refresh")
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(isRefreshing ? Color.gray : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .disabled(isRefreshing)
+            }
+            .padding()
+
+            Spacer()
+        }
+        .padding()
+        .onAppear {
+            fetchHarrysData()
+        }
+    }
+    
+    private func fetchHarrysData() {
+        guard let url = URL(string: "http://localhost:3000/api/home/harrys/line") else {
+            errorMessage = "Invalid API URL"
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Error: \(error.localizedDescription)"
+                }
+                return
+            }
+
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "No data received"
+                }
+                return
+            }
+
+            do {
+                            let decoder = JSONDecoder()
+                            // Configure date decoding strategy
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                            decoder.dateDecodingStrategy = .formatted(dateFormatter)
+                            
+                            let apiResponse = try decoder.decode(APIResponse.self, from: data)
+                            DispatchQueue.main.async {
+                                if let message = apiResponse.message {
+                                    self.errorMessage = message  // Handle "No data found" gracefully
+                                } else {
+                                    self.peopleInBar = apiResponse.peopleInBar ?? 0
+                                    self.peopleInLine = apiResponse.peopleInLine ?? 0
+                                    // In your data handling code
+                                    if let date = apiResponse.lastUpdated {
+                                                    // Add 1 hour to the decoded date
+                                                    let calendar = Calendar.current
+                                                    if let newDate = calendar.date(byAdding: .hour, value: 1, to: date) {
+                                                        self.lastUpdated = formatDate(newDate) // Pass the adjusted date to formatDate
+                                                    } else {
+                                                        self.lastUpdated = "Error adjusting time"
+                                                    }
+                                                }                                    else {
+                                        self.lastUpdated = "Not available"
+                                    }                    }
+                            }
+                        } catch {
+                            DispatchQueue.main.async {
+                                self.errorMessage = "JSON Decoding Error: \(error.localizedDescription)"
+                            }
+                            print("Decoding Error: \(error)")
+                        }
+                    }.resume()
+                }
+                
+                func formatDate(_ date: Date?) -> String {
+                    guard let date = date else { return "Unknown" }
+                    
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "MMMM d"
+                    let monthDay = dateFormatter.string(from: date)
+                    
+                    // Add the day suffix (th, st, nd, rd)
+                    let day = Calendar.current.component(.day, from: date)
+                    let daySuffix: String
+                    switch day {
+                    case 1, 21, 31: daySuffix = "st"
+                    case 2, 22: daySuffix = "nd"
+                    case 3, 23: daySuffix = "rd"
+                    default: daySuffix = "th"
+                    }
+                    
+                    // Time formatting
+                    dateFormatter.dateFormat = "h:mm a"
+                    let time = dateFormatter.string(from: date).lowercased()
+                    
+                    return "\(monthDay)\(daySuffix) at \(time)"
+                }
+            }
 struct CreateEventView: View {
     @Environment(\.presentationMode) var presentationMode
     var onEventCreated: (Event) -> Void
@@ -431,7 +640,7 @@ struct CreateEventView: View {
     }
     
 }
-
+// Event Detail View
 struct EventDetailView: View {
     let event: Event
     @State private var rsvpCount: Int = Int.random(in: 5...50)
@@ -506,7 +715,6 @@ struct EventDetailView: View {
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
-
 
                     Button(action: {
                         let activityVC = UIActivityViewController(

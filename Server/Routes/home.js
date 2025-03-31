@@ -2,7 +2,32 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../Models/Event'); // Ensure correct path to Event model
 const User = require('../Models/User');   // Ensure correct path to User model
+const HarrysCount = require('../Models/harrys'); // Ensure correct import
 const mongoose = require('mongoose');
+
+router.get('/harrys/line', async (req, res) => {
+    try {
+        console.log("Fetching data for Harry's...");
+
+        // Correct model usage
+        const harrysData = await HarrysCount.findOne({ _id: "harrys" });
+
+        if (!harrysData) {
+            console.log("❌ No data found in DB");
+            return res.status(404).json({ message: "No data found" });
+        }
+
+        console.log("✅ Data found:", harrysData);
+        res.json({
+            people_in_bar: harrysData.people_in_bar,
+            people_in_line: harrysData.people_in_line,
+            last_updated: harrysData.last_updated
+        });
+    } catch (err) {
+        console.error("❌ Error fetching Harry's data:", err);
+        res.status(500).json({ message: "Error fetching data", error: err });
+    }
+});
 
 router.post('/events', async (req, res) => {
     try {
