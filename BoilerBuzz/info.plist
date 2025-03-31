@@ -4,30 +4,23 @@
 <dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>We use FaceID to authenticate your access securely.</string>
-	<key>New item - 2</key>
+	<key>CFBundleIdentifier</key>
 	<string>com.Patrick.BoilerBuzz</string>
-	<key>New item - 3</key>
+	<key>CFBundleDisplayName</key>
 	<string>BoilerBuzz</string>
-	<key>New item - 4</key>
+	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
-	<key>New item - 5</key>
+	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>New item - 6</key>
+	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>New item - 7</key>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>need your location even in background</string>
-	<key>New item - 8</key>
+	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>need your location</string>
-	<key>CFBundleURLTypes</key>
+	<key>UIBackgroundModes</key>
 	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>mzlatnis.BoilerBuzz</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>boilerbuzz</string>
-			</array>
-		</dict>
+		<string>location</string>
 	</array>
 </dict>
 </plist>
