@@ -4,6 +4,7 @@
 //
 //  Created by Matt Zlatniski on 2/12/25.
 //
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -13,10 +14,16 @@ const profileRoutes = require('./Routes/profile');
 const drinksRoutes = require('./Routes/drinks');
 const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
+const locationRoutes = require('./Routes/location');
 const homeRoutes = require('./Routes/home');
+const ratingRoutes = require('./Routes/ratings');
+const notificationRoutes = require('./Routes/notification');
+const photoRoutes = require('./Routes/photo'); 
+const reportRoutes = require('./Routes/report');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
+const { exec } = require('child_process');
 
 
 
@@ -55,6 +62,23 @@ cron.schedule('0 0 1 * *', async () => {
     }
 });
 
+// Schedule aggregate.js to run every minute
+cron.schedule('* * * * *', () => {
+    console.log("Running aggregate.js...");
+
+    exec('node aggregate.js', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error executing aggregate.js: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`aggregate.js stderr: ${stderr}`);
+            return;
+        }
+        console.log(`aggregate.js output:\n${stdout}`);
+    });
+})
+
 app.use((req, res, next) => {
     console.log(`Incoming Request: ${req.method} ${req.url}`);
     next();
@@ -67,13 +91,14 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/drinks', drinksRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/spending', spendingRoutes);
+app.use('/api/location', locationRoutes);
 app.use('/api/home', homeRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/notification', notificationRoutes);
+app.use('/api/photo', photoRoutes);
+app.use('/api/report', reportRoutes);
 
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
-
-
-
-

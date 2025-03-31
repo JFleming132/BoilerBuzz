@@ -1,0 +1,9 @@
+SHELL=/bin/sh
+USER=user268436
+PATH=/opt/homebrew/bin:/usr/bin:/bin
+PWD=/Users/user268436
+SHLVL=1
+HOME=/Users/user268436
+LOGNAME=user268436
+_=/usr/bin/env
+user268436

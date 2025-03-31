@@ -126,6 +126,9 @@ struct FriendsListPopup: View {
             AccountView(viewedUserId: friend.id, adminStatus: adminStatus)
                 .presentationDetents([.large])
         }
+        .sheet(isPresented: $showAddFriend) {
+            FriendSearchView()
+        }
     }
     
     func fetchFriendsList() {
