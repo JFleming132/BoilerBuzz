@@ -158,8 +158,6 @@ struct AccountSettingsView: View {
 }
 
 // ImagePicker for selecting profile picture
-// Right now only allows to select picture, doesnt actually save it.
-// Also need to test edge cases
 import PhotosUI
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?

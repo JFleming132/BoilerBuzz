@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
-const User = require('../Models/User'); // if you're using Mongoose, though we use the native client here
+const User = require('../Models/User');
 
 // GET endpoint to search for users by username
 router.get('/search', async (req, res) => {
@@ -82,15 +82,12 @@ router.get('/status', async (req, res) => {
     }
   });
 
-//...was this written by AI? Why else add comments to document the log message? - Joseph
 // GET endpoint to retrieve the friends list for a given user
 router.get('/:userId', async (req, res) => {
   try {
     // Access the 'Boiler_Buzz' database using the MongoDB client
     const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
-    // log "Getting friends of id: {id}"
-    console.log(`Getting friends of id: ${req.params.userId}`);
 
     // Find the user by their _id (converted to ObjectId)
     const user = await db.collection('users').findOne({ _id: new ObjectId(req.params.userId) });

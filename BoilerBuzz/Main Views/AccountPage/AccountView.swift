@@ -1,8 +1,8 @@
 //
-//  MapView.swift
+//  AccountView.swift
 //  BoilerBuzz
 //
-//  Created by user269394 on 2/7/25.
+//  Created by Patrick on 2/7/25.
 //
 
 import SwiftUI
