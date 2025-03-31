@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isPromoted: {
+        type: Boolean,
+        default: false
+    },
     verificationToken: {
         type: String
     },
@@ -70,6 +74,9 @@ const userSchema = new mongoose.Schema({
             max: 5
         }
     }],
+    blockedUserIDs: [{
+        type: String
+    }],
     friends: [{
         type: String
     }],
@@ -97,6 +104,11 @@ const userSchema = new mongoose.Schema({
         name: String,
         amount: Number,
         date: { type: Date, default: Date.now }
+    }],
+     // Added RSVP events field
+    rsvpEvents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event'
     }],
     notificationPreferences: {
         drinkSpecials: {

@@ -16,10 +16,16 @@ class ProfileViewModel: ObservableObject {
     @Published var userId: String = ""
     @Published var profilePicture: UIImage = UIImage(systemName: "person.crop.circle.fill")!
     @Published var isAdmin: Bool = false
+    @Published var isPromoted: Bool = false
+
     @Published var rating: Float = 0.0
     @Published var ratingCount: Int = 0
     @Published var userEvents: [Event] = []
     @Published var userPhotos: [Photo] = []
+
+    // Function to fetch user data from the backend.
+
+
     @Published var isBanned: Bool = false
 
     
@@ -62,6 +68,8 @@ class ProfileViewModel: ObservableObject {
                     self.isAdmin = decodedResponse.isAdmin ?? false
 
                     self.isBanned = decodedResponse.isBanned ?? false
+                    
+                    self.isPromoted = decodedResponse.isPromoted ?? false
 
                     self.rating = decodedResponse.rating ?? 0.0
 
@@ -73,7 +81,6 @@ class ProfileViewModel: ObservableObject {
             }
         }.resume()
     }
-
     func fetchUserEvents() {
         // Should be able to fetch events by any user id
         let idToFetch: String
@@ -156,12 +163,14 @@ class ProfileViewModel: ObservableObject {
 
 }
 
+// Struct will need profilepic eventually
 struct Profile: Codable {
     let username: String
     let bio: String
     let profilePicture: String
     let isAdmin: Bool?
     let isBanned: Bool?
+    let isPromoted: Bool?
     let rating: Float?
     let ratingCount: Int?
 }

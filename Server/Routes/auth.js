@@ -160,6 +160,8 @@ router.post('/login', async (req, res) => {
             message: 'Login successful',
             userId: user._id,
             isAdmin: user.isAdmin,
+            isPromoted: user.isPromoted,
+            rsvpEvents: user.rsvpEvents
          });
     } catch (err) {
         console.error(err);

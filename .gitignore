@@ -23,6 +23,7 @@ BoilerBuzz.xcodeproj
 APIKeys.swift
 
 .DS_Store
+/BoilerBuzz.xcodeproj/xcuserdata
 /BoilerBuzz.xcodeproj
 
 # .env files

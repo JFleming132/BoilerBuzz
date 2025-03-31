@@ -56,7 +56,7 @@ router.get('/search', async (req, res) => {
       console.error("Error searching for users:", error.message);
       res.status(500).json({ error: "Failed to search for users. Please try again later." });
     }
-  });
+});
 
 router.get('/status', async (req, res) => {
     const { userId, friendId } = req.query;
@@ -174,6 +174,7 @@ router.post('/addFriend', async (req, res) => {
 });
 
 // POST endpoint to remove a friend
+//Note: Unused on frontend
 router.post('/removeFriend', async (req, res) => {
     const { userId, friendId } = req.body;
     
@@ -206,7 +207,5 @@ router.post('/removeFriend', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-  
-
+ 
 module.exports = router;

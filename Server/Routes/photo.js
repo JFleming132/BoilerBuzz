@@ -2,7 +2,7 @@
 // routes/photo.js
 const express = require('express');
 const cloudinary = require('../cloudinaryConfig.js'); // Adjust path if needed
-const Photo = require('../Models/Photo'); // Make sure this file exists and is correct
+const Photo = require('../Models/Photo.js'); // Make sure this file exists and is correct
 const router = express.Router();
 
 router.post('/uploadPhoto', async (req, res) => {

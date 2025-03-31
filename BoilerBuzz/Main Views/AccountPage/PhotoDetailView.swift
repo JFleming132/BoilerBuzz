@@ -83,4 +83,3 @@ struct PhotoDetailView: View {
         }.resume()
     }
 }
-

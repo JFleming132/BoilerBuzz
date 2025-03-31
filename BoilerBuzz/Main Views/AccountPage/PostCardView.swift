@@ -1,3 +1,11 @@
+//
+//  PostCardView.swift
+//  BoilerBuzz
+//
+//  Created by Patrick Barry on 3/31/25.
+//
+
+
 import SwiftUI
 
 struct PostCardView: View {

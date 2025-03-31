@@ -124,3 +124,4 @@ struct UserRatingPopup: View {
         }
     }
 }
+

@@ -200,6 +200,7 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 }
 
+
 // Preview
 struct AccountSettingsView_Previews: PreviewProvider {
     static var previews: some View {
