@@ -4,6 +4,7 @@
 //
 //  Created by Matt Zlatniski on 2/12/25.
 //
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -15,6 +16,10 @@ const friendsRoutes = require('./Routes/friends');
 const spendingRoutes = require('./Routes/spending');
 const locationRoutes = require('./Routes/location');
 const homeRoutes = require('./Routes/home');
+const ratingRoutes = require('./Routes/ratings');
+const notificationRoutes = require('./Routes/notification');
+const photoRoutes = require('./Routes/photo'); 
+const reportRoutes = require('./Routes/report');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -88,6 +93,10 @@ app.use('/api/friends', friendsRoutes);
 app.use('/api/spending', spendingRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/home', homeRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/notification', notificationRoutes);
+app.use('/api/photo', photoRoutes);
+app.use('/api/report', reportRoutes);
 
 // Start the server
 app.listen(port, () => {

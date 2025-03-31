@@ -2,8 +2,61 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
-const User = require('../Models/User'); // if you're using Mongoose, though we use the native client here
+const User = require('../Models/User');
 
+// GET endpoint to search for users by username
+router.get('/search', async (req, res) => {
+    try {
+      const { username, exclude } = req.query;
+      if (!username) {
+        return res.status(400).json({ error: "Username query parameter is required." });
+      }
+  
+      // Use a case-insensitive regex to find matching usernames.
+      const regex = new RegExp(username, "i");
+  
+      const filter = { username: { $regex: regex } };
+
+        // If an exclude parameter is provided and it's a valid ObjectId, exclude that user.
+      if (exclude && mongoose.Types.ObjectId.isValid(exclude)) {
+        filter._id = { $ne: new mongoose.Types.ObjectId(exclude) };
+        }
+    
+    
+      let friendIds = [];
+      if (exclude && mongoose.Types.ObjectId.isValid(exclude)) {
+          const currentUser = await User.findById(exclude).select('friends');
+          if (currentUser && currentUser.friends && currentUser.friends.length > 0) {
+            friendIds = currentUser.friends;
+            // Extend the _id filter with a $nin condition.
+            filter._id = Object.assign({}, filter._id, { 
+              $nin: friendIds.map(id => new mongoose.Types.ObjectId(id))
+            });
+          }
+        }
+
+        // Query the 'users' collection using Mongoose.
+      const users = await User.find(filter)
+        .select('username profilePicture')
+        .limit(20);
+  
+      if (!users || users.length === 0) {
+        return res.status(200).json([]);
+      }
+  
+      // Convert ObjectIds to strings and format the response.
+      const sanitizedUsers = users.map(user => ({
+        _id: user._id.toString(),
+        username: user.username,
+        profilePicture: user.profilePicture || "https://example.com/default-profile.png"
+      }));
+  
+      res.status(200).json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error searching for users:", error.message);
+      res.status(500).json({ error: "Failed to search for users. Please try again later." });
+    }
+  });
 
 router.get('/status', async (req, res) => {
     const { userId, friendId } = req.query;
@@ -35,8 +88,6 @@ router.get('/:userId', async (req, res) => {
     // Access the 'Boiler_Buzz' database using the MongoDB client
     const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
-    // log "Getting friends of id: {id}"
-    console.log(`Getting friends of id: ${req.params.userId}`);
 
     // Find the user by their _id (converted to ObjectId)
     const user = await db.collection('users').findOne({ _id: new ObjectId(req.params.userId) });
@@ -155,5 +206,7 @@ router.post('/removeFriend', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+  
 
 module.exports = router;
