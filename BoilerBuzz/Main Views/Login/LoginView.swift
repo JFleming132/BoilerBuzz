@@ -11,7 +11,7 @@ struct LoginView: View {
     // MARK: - Login Request Function
     func loginRequest() {
         print("Attempting login request...")
-        guard let url = URL(string: "http://10.1.54.171:3000/api/auth/login") else {
+        guard let url = URL(string: "http://localhost:3000/api/auth/login") else {
             print("Invalid URL")
             return
         }
@@ -114,7 +114,7 @@ struct LoginView: View {
     // MARK: - Server Availability Check
     func checkServerAvailability(completion: @escaping (Bool) -> Void) {
         // Adjust the URL to your server's health-check endpoint.
-        guard let url = URL(string: "http://10.1.54.171:3000/api/auth/health") else {
+        guard let url = URL(string: "http://localhost:3000/api/auth/health") else {
             completion(false)
             return
         }

@@ -309,7 +309,7 @@ struct AccountView: View {
             return
         }
         
-        guard let url = URL(string: "http://10.1.54.171:3000/api/profile/banUser") else {
+        guard let url = URL(string: "http://localhost:3000/api/profile/banUser") else {
             print("Invalid URL for banUser")
             return
         }
@@ -354,7 +354,7 @@ struct AccountView: View {
             print("Friend ID is missing")
             return
         }
-        guard let url = URL(string: "http://10.1.54.171:3000/api/friends/addFriend") else {
+        guard let url = URL(string: "http://localhost:3000/api/friends/addFriend") else {
             print("Invalid URL")
             return
         }
@@ -396,7 +396,7 @@ struct AccountView: View {
               let friendId = viewedUserId,
               !isOwnProfile else { return }
         
-        guard let url = URL(string: "http://10.1.54.171:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
+        guard let url = URL(string: "http://localhost:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
             print("Invalid URL for friend status")
             return
         }
@@ -426,7 +426,7 @@ struct AccountView: View {
 
     func fetchRandomProfile(completion: @escaping (String?) -> Void) {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
-            let url = URL(string: "http://10.1.54.171:3000/api/profile/random?exclude=\(myUserId)") else {
+            let url = URL(string: "http://localhost:3000/api/profile/random?exclude=\(myUserId)") else {
             completion(nil)
             return
         }

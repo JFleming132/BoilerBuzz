@@ -39,7 +39,7 @@ class ProfileViewModel: ObservableObject {
         
         self.userId = idToFetch
         
-        guard let url = URL(string: "http://10.1.54.171:3000/api/profile/\(idToFetch)") else {
+        guard let url = URL(string: "http://localhost:3000/api/profile/\(idToFetch)") else {
             print("Invalid URL")
             return
         }

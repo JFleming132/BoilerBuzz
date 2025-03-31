@@ -78,7 +78,7 @@ struct FavoritedDrinksPopup: View {
     }
     
     func fetchFavoriteDrinks() {
-        guard let url = URL(string: "http://10.1.54.171:3000/api/drinks/favoriteDrinks/\(userId)") else {
+        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
             errorMessage = "Invalid URL"
             return
         }
