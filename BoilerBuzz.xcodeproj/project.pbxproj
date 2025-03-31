@@ -42,6 +42,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		176C582B2D9464E700013048 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
+		};
 		179E624F2D70B9BB00B7C919 /* Exceptions for "BoilerBuzzTests" folder in "BoilerBuzz" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -87,13 +94,9 @@
 		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-
-
 			exceptions = (
-				F09B54152D946FE600105032 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
+				176C582B2D9464E700013048 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
 			);
-
-
 			path = BoilerBuzz;
 			sourceTree = "<group>";
 		};
@@ -480,7 +483,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = 5824N7QB8L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
@@ -494,7 +497,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Patrick.BoilerBuzz;
+				PRODUCT_BUNDLE_IDENTIFIER = mzlatnis.BoilerBuzz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -511,7 +514,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = 5824N7QB8L;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
@@ -525,7 +528,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Patrick.BoilerBuzz;
+				PRODUCT_BUNDLE_IDENTIFIER = mzlatnis.BoilerBuzz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
