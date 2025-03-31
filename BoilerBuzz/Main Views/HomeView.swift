@@ -452,10 +452,21 @@ struct EventDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(event.title)
-                        .font(.title)
-                        .bold()
-
+                    // HStack for the title and ProfileNavigation
+                    HStack {
+                        Text(event.title)
+                            .font(.title)
+                            .bold()
+                        
+                        Spacer() // Push the button to the right
+                        
+                        // TODO still have to fetch user details from event
+                        ProfileNavigationButton(
+                            userId: "67c208c071b197bb4b40fd84", // TODO
+                            username: "NOT DONE", // TODO
+                            profilePictureURL: nil
+                        )
+                    }
                     Text(event.description ?? "")
                         .font(.body)
 
@@ -559,5 +570,47 @@ struct EventDetailView: View {
                 dismiss()
             }
         }.resume()
+    }
+}
+
+struct ProfileNavigationButton: View {
+    let userId: String
+    let username: String
+    let profilePictureURL: String? // optional URL string for the user's profile picture
+
+    var body: some View {
+        NavigationLink(destination: AccountView(viewedUserId: userId, adminStatus: nil)) {
+            VStack(spacing: 4) {
+                // If a URL is available, load the image; otherwise, show a default icon.
+                if let urlString = profilePictureURL, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } else if phase.error != nil {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                        }
+                    }
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                }
+                Text(username)
+                    .font(.caption)
+                    .foregroundColor(.primary)
+            }
+            .padding(4)
+        }
     }
 }
