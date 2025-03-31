@@ -88,6 +88,10 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isIdentified: {
+      type: Boolean,
+      default: false
+    },
     spendLimit: {
         type: Number,
         default: 200.0

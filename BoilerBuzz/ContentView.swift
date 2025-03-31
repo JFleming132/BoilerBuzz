@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  BoilerBuzz
-//
-//  Created by user269394 on 2/5/25.
-//
-
 import SwiftUI
 
 enum Tab: Hashable {
@@ -12,52 +5,61 @@ enum Tab: Hashable {
 }
 
 struct ContentView: View {
-    @State private var selectedTab: Tab = .account  // Set Account as the initial tab
+    @State private var selectedTab: Tab
+    @State private var accountToView: String?
 
-    init() {
+    // Initialize with an initial tab and an optional accountToView parameter.
+    init(initialTab: Tab = .home, accountToView: String? = nil) {
+        self.accountToView = accountToView
+        self._selectedTab = State(initialValue: initialTab)
         UITabBar.appearance().backgroundColor = UIColor(primaryColor)
         UITabBar.appearance().unselectedItemTintColor = UIColor(secondaryColor)
     }
     
     var body: some View {
-        ZStack {
-            Color.red.ignoresSafeArea()
-            TabView(selection: $selectedTab) {
-                MapView()
-                    .tabItem {
-                        Label("Map", systemImage: "map")
+        TabView(selection: $selectedTab) {
+            MapView()
+                .tabItem {
+                    Label("Map", systemImage: "map")
+                }
+                .tag(Tab.map)
+            
+            CalendarView()
+                .tabItem {
+                    Label("Calendar", systemImage: "calendar")
+                }
+                .tag(Tab.calendar)
+            
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
+                }
+                .tag(Tab.home)
+            
+            DrinksView()
+                .tabItem {
+                    Label("Drinks", systemImage: "wineglass")
+                }
+                .tag(Tab.drinks)
+            
+            // Pass the accountToView to AccountView. If accountToView is nil,
+            // AccountView will fetch your own profile as before.
+            AccountView(deeplinkUserId: accountToView)
+                .tabItem {
+                    Label("Account", systemImage: "person")
+                }
+                .tag(Tab.account)
+                .onAppear {
+                    // Once the Account tab appears, clear the deep link value.
+                    if accountToView != nil {
+                        DispatchQueue.main.async {
+                            accountToView = nil
+                        }
                     }
-                    .tag(Tab.map)
-                
-                CalendarViewPage()
-                    .tabItem {
-                        Label("Calendar", systemImage: "calendar")
-                    }
-                    .tag(Tab.calendar)
-                
-                HomeView()
-                    .tabItem {
-                        Label("Home", systemImage: "house")
-                    }
-                    .tag(Tab.home)
-                
-                DrinksView()
-                    .tabItem {
-                        Label("Drinks", systemImage: "wineglass")
-                    }
-                    .tag(Tab.drinks)
-                
-                AccountView()
-                    .tabItem {
-                        Label("Account", systemImage: "person")
-                    }
-                    .tag(Tab.account)
-            }
-            .accentColor(tertiaryColor)
+                }
         }
+        .accentColor(tertiaryColor)
     }
 }
 
-#Preview {
-    ContentView()
-}
+

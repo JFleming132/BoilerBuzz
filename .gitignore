@@ -6,7 +6,14 @@ node_modules/
 
 # Xcode user-specific data
 *.xcuserdatad
+*.xcuserstate
+*.xcuserdata/
 xcuserdata/
+# Xcode user state files
+*.xcuserstate
+
+# Optionally ignore entire xcuserdata folders (recommended for team projects)
+*.xcuserdatad/
 
 # Xcode project files
 BoilerBuzz.xcodeproj

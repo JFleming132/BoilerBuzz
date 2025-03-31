@@ -89,11 +89,13 @@ struct AccountView: View {
     /* TESTING */
     @State private var randomProfileId: String? = nil
     @State private var showRandomProfile: Bool = false
+    @State private var showingShareSheet = false
     /* TESTING */
 
 
     // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
     var viewedUserId: String? = nil
+    var deeplinkUserId: String? = nil
     var adminStatus: Bool? = nil  // If passed, use this value for isAdmin
     
     var isOwnProfile: Bool {
@@ -135,6 +137,12 @@ struct AccountView: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
+            .sheet(isPresented: $showingShareSheet) {
+                // Create a deep link URL using your custom scheme.
+                let shareURL = URL(string: "boilerbuzz://account?id=\(profileData.userId)")!
+                let shareText = "Check out this profile: \(shareURL.absoluteString)"
+                ShareSheet(activityItems: [shareText])
+            }
             .sheet(isPresented: $showFavoritedDrinks) {
                 FavoritedDrinksPopup(isMyProfile: viewedUserId == nil, userId: profileData.userId)
                     .presentationDetents([.medium, .large])
@@ -175,6 +183,11 @@ struct AccountView: View {
                         profileData.fetchUserProfile()
                         profileData.fetchUserEvents()
                         profileData.fetchUserPhotos()
+                    }
+                    
+                    if let deeplinkId = deeplinkUserId {
+                        self.randomProfileId = deeplinkId
+                        self.showRandomProfile = true
                     }
                 }
         }
@@ -415,9 +428,20 @@ struct AccountView: View {
     
     // Toolbar content.
     var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            Text(viewedUserId == nil ? "Account" : "Profile")
-                .font(.system(size: 18, weight: .semibold))
+      Group {
+          ToolbarItem(placement: .navigationBarLeading) {
+              Text(viewedUserId == nil ? "Account" : "Profile")
+                  .font(.system(size: 18, weight: .semibold))
+          }
+          if !isOwnProfile {
+              ToolbarItem(placement: .navigationBarTrailing) {
+                  Button {
+                      showingShareSheet = true
+                  } label: {
+                      Image(systemName: "square.and.arrow.up")
+                  }
+                }
+            }
         }
     }
     
