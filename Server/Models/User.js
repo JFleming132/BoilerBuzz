@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    ratingCount: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
         enum: ["user", "admin"],
@@ -89,7 +93,34 @@ const userSchema = new mongoose.Schema({
         name: String,
         amount: Number,
         date: { type: Date, default: Date.now }
-    }]
+    }],
+    notificationPreferences: {
+        drinkSpecials: {
+            type: Boolean,
+            default: false
+        },
+        eventUpdates: {
+            type: Boolean,
+            default: false
+        },
+        eventReminders: {
+            type: Boolean,
+            default: false
+        },
+        announcements: {
+            type: Boolean,
+            default: false
+        },
+        locationBasedOffers: {
+            type: Boolean,
+            default: false
+        },
+        friendPosting: {
+            type: Map,
+            of: Boolean,
+            default: {}
+        }
+    }
 });
 
 const User = mongoose.model('User', userSchema);

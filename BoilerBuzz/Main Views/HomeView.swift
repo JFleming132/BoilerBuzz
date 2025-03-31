@@ -646,6 +646,9 @@ struct EventDetailView: View {
     @State private var rsvpCount: Int = Int.random(in: 5...50)
     @State private var hasRSVPed = false
     @Environment(\.dismiss) var dismiss
+    @State private var showDeleteAlert = false
+    @State private var showReportSheet = false
+    
 
     var body: some View {
         ScrollView {
@@ -659,10 +662,21 @@ struct EventDetailView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(event.title)
-                        .font(.title)
-                        .bold()
-
+                    // HStack for the title and ProfileNavigation
+                    HStack {
+                        Text(event.title)
+                            .font(.title)
+                            .bold()
+                        
+                        Spacer() // Push the button to the right
+                        
+                        // TODO still have to fetch user details from event
+                        ProfileNavigationButton(
+                            userId: "67c208c071b197bb4b40fd84", // TODO
+                            username: "NOT DONE", // TODO
+                            profilePictureURL: nil
+                        )
+                    }
                     Text(event.description ?? "")
                         .font(.body)
 
@@ -721,5 +735,267 @@ struct EventDetailView: View {
         }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+                if UserDefaults.standard.bool(forKey: "isAdmin") {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            showReportSheet = true
+                        } label: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                        }
+                        Button {
+                            showDeleteAlert = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                }
+                else {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            showReportSheet = true
+                        } label: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                        }
+                    }
+                }
+
+            }
+            .alert("Delete Event", isPresented: $showDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    deleteEvent()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete this event?")
+            }
+            .sheet(isPresented: $showReportSheet) {
+                ReportEventView(event: event)
+            }
+        }
+
+    func deleteEvent() {
+        guard let url = URL(string: "http://localhost:3000/api/home/delEvents/\(event.id)") else {
+            print("Invalid URL for event deletion")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error deleting event: \(error.localizedDescription)")
+                return
+            }
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                print("Unexpected response deleting event: \(response ?? "No response" as Any)")
+                return
+            }
+            DispatchQueue.main.async {
+                print("Event deleted successfully!")
+                dismiss()
+            }
+        }.resume()
+    }
+}
+
+struct ProfileNavigationButton: View {
+    let userId: String
+    let username: String
+    let profilePictureURL: String? // optional URL string for the user's profile picture idk yet
+
+    var body: some View {
+        NavigationLink(destination: AccountView(viewedUserId: userId, adminStatus: nil)) {
+            VStack(spacing: 4) {
+                // If a URL is available, load the image; otherwise, show a default icon.
+                if let urlString = profilePictureURL, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        } else if phase.error != nil {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "person.crop.circle.fill")
+                                .resizable()
+                                .scaledToFill()
+                        }
+                    }
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                }
+                Text(username)
+                    .font(.caption)
+                    .foregroundColor(.primary)
+            }
+            .padding(4)
+        }
+    }
+}
+
+struct ReportEventView: View {
+    let event: Event
+    @Environment(\.dismiss) var dismiss
+    @State private var selectedReason: String = "False Information"
+    @State private var customReason: String = ""
+    @State private var additionalInfo: String = ""
+    @State private var firstName: String = ""
+    @State private var lastName: String = ""
+    @State private var showConfirmation = false
+
+    let reasons = ["False Information", "Unsafe Content", "Spam", "Other"]
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 20) {
+
+                Text("Select a reason for reporting this event:")
+                    .font(.subheadline)
+                
+                // Picker for selecting a reason.
+                Picker("Reason", selection: $selectedReason) {
+                    ForEach(reasons, id: \.self) { reason in
+                        Text(reason).tag(reason)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                // If "Other" is selected, let the user enter a custom reason.
+                if selectedReason == "Other" {
+                    TextField("Enter your reason", text: $customReason)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                
+                Text("Additional Information (Optional):")
+                    .font(.subheadline)
+                TextEditor(text: $additionalInfo)
+                    .frame(height: 100)
+                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                Text("Your Details")
+                    .font(.subheadline)
+                    .padding(.top)
+                
+                TextField("First Name", text: $firstName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Last Name", text: $lastName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Spacer()
+                
+                Button(action: {
+                    submitReport()
+                }) {
+                    Text("Submit Report")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(buttonBackgroundColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(isSubmitDisabled)
+            }
+            .padding()
+            .navigationTitle("Report Event")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .alert("Report Submitted", isPresented: $showConfirmation) {
+                Button("OK") {
+                    dismiss()
+                }
+            } message: {
+                Text("Thank you for reporting this event. Our team will review it shortly.")
+            }
+        }
+    }
+    
+    // Disable the submit button if any required field is empty.
+    var isSubmitDisabled: Bool {
+        selectedReason.isEmpty ||
+        (selectedReason == "Other" && customReason.isEmpty) ||
+        firstName.isEmpty ||
+        lastName.isEmpty
+    }
+    
+    // Change the button color based on whether the form is complete.
+    var buttonBackgroundColor: Color {
+        isSubmitDisabled ? Color.gray : Color.red
+    }
+    
+    func submitReport() {
+        // Choose the final reason based on the selection.
+        let finalReason = selectedReason == "Other" ? customReason : selectedReason
+        guard let reporterId = UserDefaults.standard.string(forKey: "userId") else {
+            print("Reporter user ID not found")
+            return
+        }
+        
+        let reportData: [String: Any] = [
+            "eventId": event.id,
+            "reporterId": reporterId,
+            "reporterFirstName": firstName,
+            "reporterLastName": lastName,
+            "reason": finalReason,
+            "additionalInfo": additionalInfo
+        ]
+        
+        guard let url = URL(string: "http://localhost:3000/api/report/submit") else {
+            print("Invalid URL for submitting report")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: reportData, options: [])
+        } catch {
+            print("Error serializing report data: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error submitting report: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("No valid response received")
+                return
+            }
+            
+            if httpResponse.statusCode == 201 {
+                // Report successfully created
+                DispatchQueue.main.async {
+                    showConfirmation = true
+                }
+            } else {
+                print("Unexpected response code: \(httpResponse.statusCode)")
+                if let data = data,
+                let responseString = String(data: data, encoding: .utf8) {
+                    print("Response data: \(responseString)")
+                }
+            }
+        }.resume()
     }
 }
