@@ -3,6 +3,15 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../Models/Event'); // Ensure correct path
 const User = require('../Models/User');   // Ensure correct path
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'theboilerbuzz@gmail.com',
+        pass: 'zgfpwmppahiauhyc' // 🔐 Ideally, use process.env vars
+    }
+});
 
 // Create a new event (unchanged)
 router.post('/events', async (req, res) => {
@@ -212,7 +221,6 @@ router.post('/update-event', async (req, res) => {
 });
 
 
-// PUT /api/home/events/:id — Update event info
 router.put('/events/:id', async (req, res) => {
     const eventId = req.params.id;
 
@@ -242,8 +250,41 @@ router.put('/events/:id', async (req, res) => {
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        console.log("✅ Event updated:", updatedEvent);
-        res.status(200).json(updatedEvent);
+        const rsvpUsers = await User.find({ rsvpEvents: eventId });
+        const emails = rsvpUsers.map(user => user.email).filter(Boolean);
+
+        if (emails.length === 0) {
+            console.log("ℹ️ No RSVP’d users to notify.");
+        } else {
+            console.log("📧 Sending update email to RSVP’d users:");
+            console.log(emails);
+
+            const mailOptions = {
+                from: 'theboilerbuzz@gmail.com',
+                to: emails.join(','),
+                subject: `Update: ${title} has changed!`,
+                text: `Hi there!\n\nAn event you RSVP’d to has been updated:\n\n` +
+                      `Title: ${title}\n` +
+                      `Date: ${new Date(date).toLocaleString()}\n` +
+                      `Location: ${location}\n\n` +
+                      `Description:\n${description || 'No description'}\n\n` +
+                      `Visit the app to view the full details.`,
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error("❌ Email failed to send:", error);
+                } else {
+                    console.log("✅ Email sent:", info.response);
+                }
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            updatedEvent,
+            notifiedEmails: emails
+        });
 
     } catch (err) {
         console.error("❌ Error updating event:", err);
