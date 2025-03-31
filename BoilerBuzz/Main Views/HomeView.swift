@@ -438,6 +438,7 @@ struct EventDetailView: View {
     @State private var hasRSVPed = false
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteAlert = false
+    @State private var showReportSheet = false
     
 
     var body: some View {
@@ -528,7 +529,12 @@ struct EventDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
                 if UserDefaults.standard.bool(forKey: "isAdmin") {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            showReportSheet = true
+                        } label: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                        }
                         Button {
                             showDeleteAlert = true
                         } label: {
@@ -536,6 +542,16 @@ struct EventDetailView: View {
                         }
                     }
                 }
+                else {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Button {
+                            showReportSheet = true
+                        } label: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                        }
+                    }
+                }
+
             }
             .alert("Delete Event", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) {
@@ -544,6 +560,9 @@ struct EventDetailView: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("Are you sure you want to delete this event?")
+            }
+            .sheet(isPresented: $showReportSheet) {
+                ReportEventView(event: event)
             }
         }
 
@@ -612,5 +631,165 @@ struct ProfileNavigationButton: View {
             }
             .padding(4)
         }
+    }
+}
+
+struct ReportEventView: View {
+    let event: Event
+    @Environment(\.dismiss) var dismiss
+    @State private var selectedReason: String = "False Information"
+    @State private var customReason: String = ""
+    @State private var additionalInfo: String = ""
+    @State private var firstName: String = ""
+    @State private var lastName: String = ""
+    @State private var showConfirmation = false
+
+    // List of preset report reasons.
+    let reasons = ["False Information", "Unsafe Content", "Spam", "Other"]
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 20) {
+
+                Text("Select a reason for reporting this event:")
+                    .font(.subheadline)
+                
+                // Picker for selecting a reason.
+                Picker("Reason", selection: $selectedReason) {
+                    ForEach(reasons, id: \.self) { reason in
+                        Text(reason).tag(reason)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                // If "Other" is selected, let the user enter a custom reason.
+                if selectedReason == "Other" {
+                    TextField("Enter your reason", text: $customReason)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                
+                // Additional information (optional)
+                Text("Additional Information (Optional):")
+                    .font(.subheadline)
+                TextEditor(text: $additionalInfo)
+                    .frame(height: 100)
+                    .overlay(RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                
+                Text("Your Details")
+                    .font(.subheadline)
+                    .padding(.top)
+                
+                TextField("First Name", text: $firstName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                TextField("Last Name", text: $lastName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                Spacer()
+                
+                Button(action: {
+                    submitReport()
+                }) {
+                    Text("Submit Report")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(buttonBackgroundColor)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(isSubmitDisabled)
+            }
+            .padding()
+            .navigationTitle("Report Event")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            .alert("Report Submitted", isPresented: $showConfirmation) {
+                Button("OK") {
+                    dismiss()
+                }
+            } message: {
+                Text("Thank you for reporting this event. Our team will review it shortly.")
+            }
+        }
+    }
+    
+    // Disable the submit button if any required field is empty.
+    var isSubmitDisabled: Bool {
+        selectedReason.isEmpty ||
+        (selectedReason == "Other" && customReason.isEmpty) ||
+        firstName.isEmpty ||
+        lastName.isEmpty
+    }
+    
+    // Change the button color based on whether the form is complete.
+    var buttonBackgroundColor: Color {
+        isSubmitDisabled ? Color.gray : Color.red
+    }
+    
+    func submitReport() {
+        // Choose the final reason based on the selection.
+        let finalReason = selectedReason == "Other" ? customReason : selectedReason
+        guard let reporterId = UserDefaults.standard.string(forKey: "userId") else {
+            print("Reporter user ID not found")
+            return
+        }
+        
+        let reportData: [String: Any] = [
+            "eventId": event.id,
+            "reporterId": reporterId,
+            "reporterFirstName": firstName,
+            "reporterLastName": lastName,
+            "reason": finalReason,
+            "additionalInfo": additionalInfo
+        ]
+        
+        guard let url = URL(string: "http://localhost:3000/api/report/submit") else {
+            print("Invalid URL for submitting report")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: reportData, options: [])
+        } catch {
+            print("Error serializing report data: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error submitting report: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("No valid response received")
+                return
+            }
+            
+            if httpResponse.statusCode == 201 {
+                // Report successfully created
+                DispatchQueue.main.async {
+                    showConfirmation = true
+                }
+            } else {
+                print("Unexpected response code: \(httpResponse.statusCode)")
+                if let data = data,
+                let responseString = String(data: data, encoding: .utf8) {
+                    print("Response data: \(responseString)")
+                }
+            }
+        }.resume()
     }
 }

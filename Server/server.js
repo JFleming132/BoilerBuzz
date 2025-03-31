@@ -19,6 +19,7 @@ const homeRoutes = require('./Routes/home');
 const ratingRoutes = require('./Routes/ratings');
 const notificationRoutes = require('./Routes/notification');
 const photoRoutes = require('./Routes/photo'); 
+const reportRoutes = require('./Routes/report');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -95,6 +96,7 @@ app.use('/api/home', homeRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/notification', notificationRoutes);
 app.use('/api/photo', photoRoutes);
+app.use('/api/report', reportRoutes);
 
 // Start the server
 app.listen(port, () => {
