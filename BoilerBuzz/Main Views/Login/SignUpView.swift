@@ -292,3 +292,4 @@ struct OnboardingView: View {
         }
     }
 }
+

@@ -573,8 +573,15 @@ struct EventDetailView: View {
                 
                 Text("\u{1F465} RSVPs: \(rsvpCountDisplay)")
                     .font(.headline)
-                
-                if event.author == UserDefaults.standard.string(forKey: "userId") {
+                if event.rsvpCount >= event.capacity {
+                    Text("Event Full")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    
+                } else if event.author == UserDefaults.standard.string(forKey: "userId") {
                     Button("Edit Post") {
                         showEditSheet = true
                     }

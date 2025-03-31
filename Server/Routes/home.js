@@ -88,49 +88,67 @@ router.get('/events', async (req, res) => {
     }
 });
 
-//rsvp endpoint
 router.post('/rsvp', async (req, res) => {
     const { userId, eventId } = req.body;
 
-    console.log("📥 RSVP request received");
-    console.log("👉 userId:", userId);
-    console.log("👉 eventId:", eventId);
-
     if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(eventId)) {
-        return res.status(400).json({ error: 'Invalid user Id or event Id' });
+        return res.status(400).json({ error: 'Invalid user ID or event ID' });
     }
 
     try {
         const user = await User.findById(userId);
-        if (!user) {
-            console.log("❌ User not found");
-            return res.status(404).json({ error: "User not found" });
-        }
-
         const event = await Event.findById(eventId);
-        if (!event) {
-            console.log("❌ Event not found");
-            return res.status(404).json({ error: "Event not found" });
+
+        if (!user || !event) {
+            return res.status(404).json({ error: "User or Event not found" });
         }
 
-        // Initialize if undefined
         user.rsvpEvents = user.rsvpEvents || [];
 
         const alreadyRSVPed = user.rsvpEvents.includes(eventId);
-        console.log("✅ RSVP already exists?", alreadyRSVPed);
+        const isAtCapacity = (event.rsvpCount || 0) >= event.capacity;
 
-        if (!alreadyRSVPed) {
-            user.rsvpEvents.push(eventId);
-            event.rsvpCount = (event.rsvpCount || 0) + 1;
-
-            await user.save({ validateBeforeSave: false });
-            await event.save({ validateBeforeSave: false });
-
-            console.log("✅ RSVP added successfully");
+        if (alreadyRSVPed) {
+            return res.status(200).json({
+                message: "Already RSVPed",
+                rsvpEvents: user.rsvpEvents,
+                rsvpCount: event.rsvpCount
+            });
         }
-        
 
-        res.status(200).json({
+        if (isAtCapacity) {
+            return res.status(400).json({ message: "Event is at full capacity!" });
+        }
+
+        // ✅ Add RSVP
+        user.rsvpEvents.push(eventId);
+        event.rsvpCount = (event.rsvpCount || 0) + 1;
+
+        await user.save({ validateBeforeSave: false });
+        await event.save({ validateBeforeSave: false });
+
+        // ✅ If rsvpCount == capacity, email the creator
+        if (event.rsvpCount === event.capacity) {
+            const author = await User.findById(event.author);
+            if (author?.email) {
+                const mailOptions = {
+                    from: 'theboilerbuzz@gmail.com',
+                    to: author.email,
+                    subject: `🎉 Your event "${event.title}" is now full!`,
+                    text: `Hi ${author.username},\n\nYour event "${event.title}" has now reached full capacity (${event.capacity} RSVPs).\n\nYou may want to prepare accordingly or stop accepting RSVPs.\n\nCheers,\nBoilerBuzz`
+                };
+
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error("❌ Failed to email event creator:", error);
+                    } else {
+                        console.log("✅ Email sent to creator:", info.response);
+                    }
+                });
+            }
+        }
+
+        return res.status(200).json({
             success: true,
             rsvpEvents: user.rsvpEvents,
             rsvpCount: event.rsvpCount
