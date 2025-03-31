@@ -88,8 +88,6 @@ router.get('/:userId', async (req, res) => {
     // Access the 'Boiler_Buzz' database using the MongoDB client
     const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
-    // log "Getting friends of id: {id}"
-    console.log(`Getting friends of id: ${req.params.userId}`);
 
     // Find the user by their _id (converted to ObjectId)
     const user = await db.collection('users').findOne({ _id: new ObjectId(req.params.userId) });
