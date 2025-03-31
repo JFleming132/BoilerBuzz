@@ -1,4 +1,4 @@
-/*
+
 //
 //  MapView.swift
 //  BoilerBuzz
@@ -93,7 +93,10 @@ struct CalendarViewPage: View {
                     self.promotedEvents = fetchedEvents.filter { $0.promoted }
                     self.rsvpEvents = fetchedEvents.filter { !$0.promoted }
                     self.errorMessage = nil
+                    print(promotedEvents)
+                    print(rsvpEvents)
                 }
+                
                 print("Successfully fetched events")
             } catch {
                 print(" JSON Decoding Error: \(error)")
@@ -108,8 +111,8 @@ struct CalendarViewPage: View {
 #Preview {
     CalendarViewPage()
 }
-*/
 
+/*
 import SwiftUI
 
 // Dummy implementation of CalendarView
@@ -142,4 +145,4 @@ public struct CalendarViewPage: View {
         CalendarView() // Use the dummy CalendarView here.
     }
 }
-
+*/
