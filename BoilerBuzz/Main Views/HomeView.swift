@@ -452,6 +452,25 @@ struct CreateEventView: View {
     @State private var errorMessage = ""
     
     private let maxDescriptionLength = 200  //  Set max description length
+    
+    private func checkIfUserIsIdentified(completion: @escaping (Bool) -> Void) {
+        guard let userId = UserDefaults.standard.string(forKey: "userId"),
+              let url = URL(string: "http://localhost:3000/api/profile/isIdentified/\(userId)") else {
+            completion(false)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data,
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let isIdentified = json["isIdentified"] as? Bool {
+                completion(isIdentified)
+            } else {
+                completion(false)
+            }
+        }.resume()
+    }
+
 
     var body: some View {
         NavigationView {
@@ -534,7 +553,7 @@ struct CreateEventView: View {
             errorMessage = "Please fill in all required fields with valid values."
             return
         }
-        
+
         if description.count > maxDescriptionLength {
             showError = true
             errorMessage = "Description is too long!"
@@ -547,17 +566,28 @@ struct CreateEventView: View {
             return
         }
 
-        validateLocation { isValid in
-            DispatchQueue.main.async {
-                if isValid {
-                    createEvent(capacityInt: capacityInt)
-                } else {
+        // ✅ Check identity before continuing
+        checkIfUserIsIdentified { isIdentified in
+            if isIdentified {
+                validateLocation { isValid in
+                    DispatchQueue.main.async {
+                        if isValid {
+                            createEvent(capacityInt: capacityInt)
+                        } else {
+                            showError = true
+                            errorMessage = "Invalid location. Please enter a valid address."
+                        }
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
                     showError = true
-                    errorMessage = "Invalid location. Please enter a valid address."
+                    errorMessage = "You must complete identity verification before posting an event."
                 }
             }
         }
     }
+
     
     private func validateLocation(completion: @escaping (Bool) -> Void) {
         let geocoder = CLGeocoder()
