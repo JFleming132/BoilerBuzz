@@ -525,15 +525,16 @@ struct EventDetailView: View {
     @State private var hasRSVPed: Bool
     @State private var showEditSheet = false
     @Environment(\.dismiss) var dismiss
+    @State private var showDeleteAlert = false
+    @State private var showReportSheet = false
     
     init(event: Event) {
         self.event = event
         _rsvpCountDisplay = State(initialValue: event.rsvpCount)
         _hasRSVPed = State(initialValue: isRSVPed(event: event))
     }
-    
+
     var body: some View {
-        ScrollView {
             VStack(spacing: 20) {
                 if let image = event.eventImage {
                     Image(uiImage: image)
@@ -559,7 +560,6 @@ struct EventDetailView: View {
                             profilePictureURL: nil
                         )
                     }
-
                     Text(event.description ?? "")
                         .font(.body)
 
@@ -584,61 +584,62 @@ struct EventDetailView: View {
 
                     Divider()
 
-                    Text("\u{1F465} RSVPs: \(rsvpCountDisplay)")
-                    .font(.headline)
-                if event.rsvpCount >= event.capacity {
-                    Text("Event Full")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    
-                } else if event.author == UserDefaults.standard.string(forKey: "userId") {
-                    Button("Edit Post") {
-                        showEditSheet = true
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .sheet(isPresented: $showEditSheet) {
-                        EditEventView(event: event) { updatedEvent in
-                            // Handle updated event if needed
-                            print("✅ Event updated:", updatedEvent)
-                        }
-                    }
-                    
-                } else {
-                    Button(action: {
-                        toggleRSVP()
-                    }) {
-                        Text(hasRSVPed ? "You're Going \u{2705}" : "RSVP")
+                    Text("👥 RSVPs: \(rsvpCountDisplay)")
+                        .font(.headline)
+
+                    if event.rsvpCount >= event.capacity {
+                        Text("Event Full")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(hasRSVPed ? Color.green : Color.blue)
+                            .background(Color.gray)
                             .foregroundColor(.white)
+                            .cornerRadius(10)
+                        
+                    } else if event.author == UserDefaults.standard.string(forKey: "userId") {
+                        Button("Edit Post") {
+                            showEditSheet = true
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .sheet(isPresented: $showEditSheet) {
+                            EditEventView(event: event) { updatedEvent in
+                                // Handle updated event if needed
+                                print("✅ Event updated:", updatedEvent)
+                            }
+                        }
+                        
+                    } else {
+                        Button(action: {
+                            toggleRSVP()
+                        }) {
+                            Text(hasRSVPed ? "You're Going \u{2705}" : "RSVP")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(hasRSVPed ? Color.green : Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                    }
+
+                    Button(action: {
+                        let activityVC = UIActivityViewController(
+                            activityItems: ["Check out this event: \(event.title) at \(event.location)"],
+                            applicationActivities: nil
+                        )
+                        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
+                    }) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
                 }
-                
-                Button(action: {
-                    let activityVC = UIActivityViewController(
-                        activityItems: ["Check out this event: \(event.title) at \(event.location)"],
-                        applicationActivities: nil
-                    )
-                    UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
-                }) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(10)
-                }
+                .padding()
             }
-            .padding()
-        }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -720,6 +721,148 @@ struct EventDetailView: View {
             UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
             unrsvp(event: event)
         }
+    }
+}
+
+struct EditEventView: View {
+    @Environment(\.presentationMode) var presentationMode
+    var event: Event
+    var onEventUpdated: (Event) -> Void
+
+    @State private var title: String
+    @State private var description: String
+    @State private var location: String
+    @State private var capacity: String
+    @State private var is21Plus: Bool
+    @State private var promoted: Bool
+    @State private var date: Date
+    @State private var selectedImage: UIImage?
+    @State private var errorMessage: String?
+    @State private var showImagePicker = false
+
+    init(event: Event, onEventUpdated: @escaping (Event) -> Void) {
+        self.event = event
+        self.onEventUpdated = onEventUpdated
+        _title = State(initialValue: event.title)
+        _description = State(initialValue: event.description ?? "")
+        _location = State(initialValue: event.location)
+        _capacity = State(initialValue: "\(event.capacity)")
+        _is21Plus = State(initialValue: event.is21Plus)
+        _promoted = State(initialValue: event.promoted)
+        _date = State(initialValue: event.date)
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                if let error = errorMessage {
+                    Text(error).foregroundColor(.red)
+                }
+
+                Section(header: Text("Edit Event")) {
+                    TextField("Title", text: $title)
+                    TextField("Location", text: $location)
+                    TextField("Capacity", text: $capacity)
+                        .keyboardType(.numberPad)
+                    Toggle("21+ Event", isOn: $is21Plus)
+                    Toggle("Promoted", isOn: $promoted)
+                    DatePicker("Date", selection: $date)
+
+                    TextField("Description", text: $description)
+
+                    Button("Select New Image") {
+                        showImagePicker = true
+                    }
+                    .sheet(isPresented: $showImagePicker) {
+                        ImagePicker(image: Binding(
+                            get: { selectedImage ?? UIImage() },
+                            set: { selectedImage = $0 }
+                        ))
+                    }
+
+                    if let selectedImage = selectedImage {
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 200)
+                    }
+                }
+            }
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    presentationMode.wrappedValue.dismiss()
+                },
+                trailing: Button("Update") {
+                    updateEvent()
+                }
+            )
+            .navigationTitle("Edit Event")
+        }
+    }
+
+    func updateEvent() {
+        guard let capacityInt = Int(capacity) else {
+            errorMessage = "Invalid capacity"
+            return
+        }
+
+        let encodedImage = selectedImage?.base64
+
+        let updatedData: [String: Any] = [
+            "title": title,
+            "description": description,
+            "location": location,
+            "capacity": capacityInt,
+            "is21Plus": is21Plus,
+            "promoted": promoted,
+            "date": Int(date.timeIntervalSince1970 * 1000),
+            "imageUrl": encodedImage ?? event.imageUrl ?? ""
+        ]
+
+        guard let url = URL(string: "http://localhost:3000/api/home/events/\(event.id)") else {
+            errorMessage = "Invalid URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = UserDefaults.standard.string(forKey: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: updatedData)
+        } catch {
+            errorMessage = "Failed to encode update"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                errorMessage = "Error: \(error.localizedDescription)"
+                return
+            }
+
+            DispatchQueue.main.async {
+                let updatedEvent = Event(
+                    id: event.id,
+                    author: event.author,
+                    rsvpCount: event.rsvpCount,
+                    title: title,
+                    description: description,
+                    location: location,
+                    capacity: capacityInt,
+                    is21Plus: is21Plus,
+                    promoted: promoted,
+                    date: date,
+                    imageUrl: encodedImage ?? event.imageUrl,
+                    authorUsername: event.authorUsername
+                )
+                onEventUpdated(updatedEvent)
+                presentationMode.wrappedValue.dismiss()
+            }
+        }.resume()
     }
 }
 
@@ -918,148 +1061,6 @@ struct ReportEventView: View {
                 let responseString = String(data: data, encoding: .utf8) {
                     print("Response data: \(responseString)")
                 }
-            }
-        }.resume()
-    }
-}
-
-struct EditEventView: View {
-    @Environment(\.presentationMode) var presentationMode
-    var event: Event
-    var onEventUpdated: (Event) -> Void
-
-    @State private var title: String
-    @State private var description: String
-    @State private var location: String
-    @State private var capacity: String
-    @State private var is21Plus: Bool
-    @State private var promoted: Bool
-    @State private var date: Date
-    @State private var selectedImage: UIImage?
-    @State private var errorMessage: String?
-    @State private var showImagePicker = false
-
-    init(event: Event, onEventUpdated: @escaping (Event) -> Void) {
-        self.event = event
-        self.onEventUpdated = onEventUpdated
-        _title = State(initialValue: event.title)
-        _description = State(initialValue: event.description ?? "")
-        _location = State(initialValue: event.location)
-        _capacity = State(initialValue: "\(event.capacity)")
-        _is21Plus = State(initialValue: event.is21Plus)
-        _promoted = State(initialValue: event.promoted)
-        _date = State(initialValue: event.date)
-    }
-
-    var body: some View {
-        NavigationView {
-            Form {
-                if let error = errorMessage {
-                    Text(error).foregroundColor(.red)
-                }
-
-                Section(header: Text("Edit Event")) {
-                    TextField("Title", text: $title)
-                    TextField("Location", text: $location)
-                    TextField("Capacity", text: $capacity)
-                        .keyboardType(.numberPad)
-                    Toggle("21+ Event", isOn: $is21Plus)
-                    Toggle("Promoted", isOn: $promoted)
-                    DatePicker("Date", selection: $date)
-
-                    TextField("Description", text: $description)
-
-                    Button("Select New Image") {
-                        showImagePicker = true
-                    }
-                    .sheet(isPresented: $showImagePicker) {
-                        ImagePicker(image: Binding(
-                            get: { selectedImage ?? UIImage() },
-                            set: { selectedImage = $0 }
-                        ))
-                    }
-
-                    if let selectedImage = selectedImage {
-                        Image(uiImage: selectedImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 200)
-                    }
-                }
-            }
-            .navigationBarItems(
-                leading: Button("Cancel") {
-                    presentationMode.wrappedValue.dismiss()
-                },
-                trailing: Button("Update") {
-                    updateEvent()
-                }
-            )
-            .navigationTitle("Edit Event")
-        }
-    }
-
-    func updateEvent() {
-        guard let capacityInt = Int(capacity) else {
-            errorMessage = "Invalid capacity"
-            return
-        }
-
-        let encodedImage = selectedImage?.base64
-
-        let updatedData: [String: Any] = [
-            "title": title,
-            "description": description,
-            "location": location,
-            "capacity": capacityInt,
-            "is21Plus": is21Plus,
-            "promoted": promoted,
-            "date": Int(date.timeIntervalSince1970 * 1000),
-            "imageUrl": encodedImage ?? event.imageUrl ?? ""
-        ]
-
-        guard let url = URL(string: "http://localhost:3000/api/home/events/\(event.id)") else {
-            errorMessage = "Invalid URL"
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let token = UserDefaults.standard.string(forKey: "authToken") {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: updatedData)
-        } catch {
-            errorMessage = "Failed to encode update"
-            return
-        }
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                errorMessage = "Error: \(error.localizedDescription)"
-                return
-            }
-
-            DispatchQueue.main.async {
-                let updatedEvent = Event(
-                    id: event.id,
-                    author: event.author,
-                    rsvpCount: event.rsvpCount,
-                    title: title,
-                    description: description,
-                    location: location,
-                    capacity: capacityInt,
-                    is21Plus: is21Plus,
-                    promoted: promoted,
-                    date: date,
-                    imageUrl: encodedImage ?? event.imageUrl,
-                    authorUsername: event.authorUsername
-                )
-                onEventUpdated(updatedEvent)
-                presentationMode.wrappedValue.dismiss()
             }
         }.resume()
     }

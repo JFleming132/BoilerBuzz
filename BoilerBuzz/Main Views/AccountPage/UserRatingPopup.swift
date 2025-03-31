@@ -123,8 +123,5 @@ struct UserRatingPopup: View {
             .padding(40)
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> main
+
