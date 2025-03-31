@@ -60,7 +60,14 @@ struct AccountSettingsView: View {
                             }
                         }
                         .sheet(isPresented: $isImagePickerPresented) {
-                            ImagePicker(image: $profileData.profilePicture)
+                            ImagePicker(image: Binding<UIImage?>(
+                                get: { profileData.profilePicture },
+                                set: { newValue in
+                                    if let newImage = newValue {
+                                        profileData.profilePicture = newImage
+                                    }
+                                }
+                            ))
                         }
                         
                         // Username
@@ -155,40 +162,46 @@ struct AccountSettingsView: View {
 // Also need to test edge cases
 import PhotosUI
 struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: UIImage
-    
+    @Binding var image: UIImage?
+    var sourceType: UIImagePickerController.SourceType = .photoLibrary
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
-    func makeUIViewController(context: Context) -> PHPickerViewController {
-        var config = PHPickerConfiguration()
-        config.filter = .images
-        let picker = PHPickerViewController(configuration: config)
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
         picker.delegate = context.coordinator
+        picker.sourceType = sourceType
         return picker
     }
-
-    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {}
-
-    class Coordinator: NSObject, PHPickerViewControllerDelegate {
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
+        // No updates needed.
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let parent: ImagePicker
         
         init(_ parent: ImagePicker) {
             self.parent = parent
         }
-
-        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            picker.dismiss(animated: true)
-            guard let provider = results.first?.itemProvider else { return }
-            if provider.canLoadObject(ofClass: UIImage.self) {
-                provider.loadObject(ofClass: UIImage.self) { image, _ in
-                    self.parent.image = (image as? UIImage)!
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let selectedImage = info[.originalImage] as? UIImage {
+                DispatchQueue.main.async {
+                    self.parent.image = selectedImage
                 }
             }
+            picker.dismiss(animated: true)
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            picker.dismiss(animated: true)
         }
     }
 }
+
 
 // Preview
 struct AccountSettingsView_Previews: PreviewProvider {
