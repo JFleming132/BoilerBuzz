@@ -46,32 +46,36 @@ router.post('/events', async (req, res) => {
     }
 });
 
-// Get events endpoint (unchanged)
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
+        console.log("📆 Current timestamp:", currentDate);
+        console.log("🧠 Attempting to fetch upcoming events from DB...");
+
         const events = await Event.find({ date: { $gte: currentDate } });
-        
+        console.log(`✅ Found ${events.length} event(s)`);
+
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
             title: event.title,
-            author: event.author,
-            rsvpCount: event.rsvpCount,
+            author: event.author?.toString() || "", // Ensure author is a string
+            rsvpCount: event.rsvpCount || 0,
             description: event.description || "",
             location: event.location,
             capacity: Number(event.capacity),
             is21Plus: Boolean(event.is21Plus),
-            promoted: event.promoted,
+            promoted: Boolean(event.promoted),
             date: Number(event.date),
             imageUrl: event.imageUrl || "",
             authorUsername: event.authorUsername || ""
         }));
-        
-        console.log("📥 Fetching events from DB:", sanitizedEvents);
-        res.json(sanitizedEvents);
+
+        res.status(200).json(sanitizedEvents); // Return as a pure array
+
     } catch (err) {
-        console.error("❌ Error fetching events:", err);
-        res.status(500).json({ message: 'Error fetching events', error: err });
+        console.error("❌ Error fetching events:", err.message);
+        console.error("🔍 Stack trace:", err.stack);
+        res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
 
@@ -158,6 +162,92 @@ router.post('/unrsvp', async (req, res) => {
     } catch (error) {
         console.error('Error removing RSVP event:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update event and notify RSVP'd users
+router.post('/update-event', async (req, res) => {
+    try {
+        const { eventId, title, description, location, date, capacity } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(eventId)) {
+            return res.status(400).json({ error: 'Invalid event ID' });
+        }
+
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            {
+                title,
+                description,
+                location,
+                date: new Date(date).getTime(),
+                capacity
+            },
+            { new: true }
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        // Get users who RSVP'd
+        const rsvpUsers = await User.find({ rsvpEvents: eventId });
+
+        const emails = rsvpUsers.map(user => user.email).filter(Boolean);
+
+        // You would use a real email service here
+        console.log("📧 Sending emails to:", emails);
+
+        // Simulated email response
+        res.status(200).json({
+            success: true,
+            updatedEvent,
+            notifiedEmails: emails
+        });
+
+    } catch (err) {
+        console.error("❌ Error updating event:", err);
+        res.status(500).json({ error: 'Server error updating event' });
+    }
+});
+
+
+// PUT /api/home/events/:id — Update event info
+router.put('/events/:id', async (req, res) => {
+    const eventId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        return res.status(400).json({ error: 'Invalid event ID' });
+    }
+
+    try {
+        const { title, description, location, date, capacity, is21Plus, promoted, imageUrl } = req.body;
+
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            {
+                title,
+                description,
+                location,
+                date: new Date(date).getTime(),
+                capacity,
+                is21Plus,
+                promoted,
+                imageUrl
+            },
+            { new: true }
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        console.log("✅ Event updated:", updatedEvent);
+        res.status(200).json(updatedEvent);
+
+    } catch (err) {
+        console.error("❌ Error updating event:", err);
+        res.status(500).json({ error: 'Server error updating event' });
     }
 });
 
