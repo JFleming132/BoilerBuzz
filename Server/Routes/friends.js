@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
-const User = require('../Models/User'); // if you're using Mongoose, though we use the native client here
+const User = require('../Models/User');
 
 // GET endpoint to search for users by username
 router.get('/search', async (req, res) => {

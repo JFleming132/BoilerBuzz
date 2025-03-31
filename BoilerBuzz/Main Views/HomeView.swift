@@ -595,7 +595,7 @@ struct EventDetailView: View {
 struct ProfileNavigationButton: View {
     let userId: String
     let username: String
-    let profilePictureURL: String? // optional URL string for the user's profile picture
+    let profilePictureURL: String? // optional URL string for the user's profile picture idk yet
 
     var body: some View {
         NavigationLink(destination: AccountView(viewedUserId: userId, adminStatus: nil)) {
@@ -644,7 +644,6 @@ struct ReportEventView: View {
     @State private var lastName: String = ""
     @State private var showConfirmation = false
 
-    // List of preset report reasons.
     let reasons = ["False Information", "Unsafe Content", "Spam", "Other"]
 
     var body: some View {
@@ -670,7 +669,6 @@ struct ReportEventView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
-                // Additional information (optional)
                 Text("Additional Information (Optional):")
                     .font(.subheadline)
                 TextEditor(text: $additionalInfo)

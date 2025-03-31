@@ -20,11 +20,6 @@ class ProfileViewModel: ObservableObject {
     @Published var ratingCount: Int = 0
     @Published var userEvents: [Event] = []
     @Published var userPhotos: [Photo] = []
-
-
-    // Function to fetch user data from the backend.
-
-
     @Published var isBanned: Bool = false
 
     
@@ -108,10 +103,10 @@ class ProfileViewModel: ObservableObject {
                 return
             }
             
-            // Print the raw response string for debugging
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("Raw response from events endpoint: \(responseString)")
-            }
+            // // Print the raw response string for debugging
+            // if let responseString = String(data: data, encoding: .utf8) {
+            //     print("Raw response from events endpoint: \(responseString)")
+            // }
             
             do {
                 let decoder = JSONDecoder()
@@ -161,7 +156,6 @@ class ProfileViewModel: ObservableObject {
 
 }
 
-// Struct will need profilepic eventually
 struct Profile: Codable {
     let username: String
     let bio: String
@@ -178,7 +172,7 @@ struct Photo: Identifiable, Codable {
     let optimizedUrl: String?
     let autoCropUrl: String?
     let creator: String?
-    let createdAt: String?  // or Date? if you set an appropriate decoding strategy
+    let createdAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"

@@ -54,6 +54,7 @@ struct FriendSearchView: View {
                         }) {
                             HStack {
                                 // Optionally load profile picture.
+                                // Maybe a TODO, but then well have to fetch that
                                 Image(systemName: "person.crop.circle.fill")
                                     .resizable()
                                     .frame(width: 40, height: 40)
@@ -104,7 +105,6 @@ struct FriendSearchView: View {
             return
         }
         
-        // Build the URL for your search endpoint.
         guard let url = URL(string: "http://localhost:3000/api/friends/search?username=\(searchQuery)&exclude=\(currentUserId)") else {
             errorMessage = "Invalid URL."
             isLoading = false
@@ -181,8 +181,8 @@ struct FriendSearchView: View {
             DispatchQueue.main.async {
                 friendAdded = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    friendAdded = false  // Hide the success message after 2 seconds.
-                    presentationMode.wrappedValue.dismiss()  // Optionally dismiss the view.
+                    friendAdded = false  
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
         }.resume()

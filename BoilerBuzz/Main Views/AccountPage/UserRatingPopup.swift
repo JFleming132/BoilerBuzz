@@ -75,7 +75,6 @@ struct UserRatingPopup: View {
 
     var body: some View {
         ZStack {
-            // Semi-transparent background that dismisses the popup when tapped.
             Color.black.opacity(0.4)
                 .edgesIgnoringSafeArea(.all)
                 .onTapGesture {

@@ -60,7 +60,6 @@ struct AccountSettingsView: View {
                             }
                         }
                         .sheet(isPresented: $isImagePickerPresented) {
-                            // Wrap the non-optional binding in an optional binding.
                             ImagePicker(image: Binding<UIImage?>(
                                 get: { profileData.profilePicture },
                                 set: { newValue in
@@ -159,12 +158,10 @@ struct AccountSettingsView: View {
 }
 
 // ImagePicker for selecting profile picture
-// Right now only allows to select picture, doesnt actually save it.
-// Also need to test edge cases
 import PhotosUI
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?
-    var sourceType: UIImagePickerController.SourceType = .photoLibrary // Default to photo library; can be .camera
+    var sourceType: UIImagePickerController.SourceType = .photoLibrary
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)

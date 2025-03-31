@@ -36,7 +36,6 @@ struct StarRatingView: View {
                     Image(systemName: "star.fill")
                         .foregroundColor(.yellow)
                 } else if rating + 0.5 >= Float(index) {
-                    // SF Symbol for a half star may differ based on iOS version.
                     Image(systemName: "star.leadinghalf.filled")
                         .foregroundColor(.yellow)
                 } else {
@@ -75,10 +74,6 @@ struct AccountView: View {
         case none, post, photo
     }
     
-    /* TESTING */
-    @State private var randomProfileId: String? = nil
-    @State private var showRandomProfile: Bool = false
-    /* TESTING */
 
 
     // Optional parameter: if nil, show self-profile; if non-nil, show another user's profile.
@@ -157,12 +152,12 @@ struct AccountView: View {
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
                         profileData.fetchUserEvents()
-                        profileData.fetchUserPhotos()  // Assuming you have a method for fetching photos.
+                        profileData.fetchUserPhotos()  
                         fetchFriendStatus()
                     } else {
                         profileData.fetchUserProfile()
                         profileData.fetchUserEvents()
-                        profileData.fetchUserPhotos()  // Assuming you have a method for fetching photos.
+                        profileData.fetchUserPhotos()
                     }
                 }
         }
@@ -293,7 +288,11 @@ struct AccountView: View {
             .confirmationDialog("Create New", isPresented: $showPostPhotoAction, titleVisibility: .visible) {
                             Button("New Post") {
                                 uploadMode = .post
-                                // Insert your new post creation workflow here.
+                                // TODO: Implement the post creation logic.
+                                // This is the View, but cannot find events, maybe dont need it?
+                                // CreateEventView(onEventCreated: { newEvent in
+                                //     events.append(newEvent)
+                                // })
                             }
                             Button("New Photo") {
                                 uploadMode = .photo
@@ -415,8 +414,7 @@ struct AccountView: View {
                                             .resizable()
                                             .scaledToFit()
                                     case .failure(let error):
-                                        // Print the error to debug
-                                        Text("Error loading photo: \(error)")
+
                                         Color.red
                                     @unknown default:
                                         Color.gray.opacity(0.3)
@@ -451,10 +449,8 @@ struct AccountView: View {
             return
         }
         
-        // Encode the image data to a Base64 string.
         let base64String = imageData.base64EncodedString()
         
-        // Create a unique public ID if desired.
         let publicId = UUID().uuidString
         
         // Get the current user's ID to set as the creator.
@@ -493,11 +489,9 @@ struct AccountView: View {
             }
             
             do {
-                // Assume your backend returns a JSON response with at least the uploaded photo's URL and other details.
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     // print("Upload response: \(json)")
                     DispatchQueue.main.async {
-                        // For example, refetch photos to update the UI.
                         profileData.fetchUserPhotos()
                     }
                 }
@@ -633,7 +627,6 @@ struct AccountView: View {
             
             DispatchQueue.main.async {
                 print("Friend added successfully!")
-                // Optionally, show a confirmation message or update local state
                 isFriend = true
             }
         }.resume()
