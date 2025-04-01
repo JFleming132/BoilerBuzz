@@ -77,6 +77,9 @@ struct AccountView: View {
     @State private var showPostPhotoAction: Bool = false
     @State private var showSourceChoice: Bool = false
     
+    @State private var showCreateEvent: Bool = false  // New state variable for CreateEventView
+
+    
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage? = nil
     @State private var uploadMode: UploadMode = .none  
@@ -151,6 +154,15 @@ struct AccountView: View {
                 FriendsListPopup(isMyProfile: isOwnProfile, userId: profileData.userId, adminStatus: adminStatus)
                     .presentationDetents([.medium, .large])
             }
+            // New sheet for creating an event
+                        .sheet(isPresented: $showCreateEvent) {
+                            CreateEventView(onEventCreated: { newEvent in
+                                // Optionally update profileData or your events list here.
+                                // For example, you could insert newEvent into profileData.userEvents.
+                                // Then, dismiss the sheet.
+                                showCreateEvent = false
+                            })
+                        }
             // Present image picker for photo uploads.
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage, sourceType: selectedSourceType)
@@ -338,6 +350,7 @@ struct AccountView: View {
             .confirmationDialog("Create New", isPresented: $showPostPhotoAction, titleVisibility: .visible) {
                             Button("New Post") {
                                 uploadMode = .post
+                                showCreateEvent = true
                                 // TODO: Implement the post creation logic.
                                 // This is the View, but cannot find events, maybe dont need it?
                                 // CreateEventView(onEventCreated: { newEvent in
