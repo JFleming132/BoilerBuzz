@@ -1838,6 +1838,7 @@
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
 				GoogleMapViewRepresentableTests.swift,
+				postsTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 				ProfileSettingsTests.swift,
 			);
@@ -1849,6 +1850,7 @@
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
 				GoogleMapViewRepresentableTests.swift,
+				postsTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 				ProfileSettingsTests.swift,
 			);
