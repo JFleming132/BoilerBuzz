@@ -7,14 +7,18 @@ enum Tab: Hashable {
 struct ContentView: View {
     @State private var selectedTab: Tab
     @State private var accountToView: String?
+    @State private var eventToView: String?
 
     // Initialize with an initial tab and an optional accountToView parameter.
-    init(initialTab: Tab = .home, accountToView: String? = nil) {
-        self.accountToView = accountToView
+    init(initialTab: Tab = .home, accountToView: String? = nil, eventToView: String? = nil) {
         self._selectedTab = State(initialValue: initialTab)
+        self._accountToView = State(initialValue: accountToView)
+        self._eventToView = State(initialValue: eventToView)
+
         UITabBar.appearance().backgroundColor = UIColor(primaryColor)
         UITabBar.appearance().unselectedItemTintColor = UIColor(secondaryColor)
     }
+
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -30,11 +34,18 @@ struct ContentView: View {
                 }
                 .tag(Tab.calendar)
             
-            HomeView()
+            HomeView(eventToView: eventToView)
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
                 .tag(Tab.home)
+                .onAppear {
+                    if eventToView != nil {
+                        DispatchQueue.main.async {
+                            eventToView = nil
+                        }
+                    }
+                }
             
             DrinksView()
                 .tabItem {
