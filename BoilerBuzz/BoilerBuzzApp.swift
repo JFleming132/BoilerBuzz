@@ -11,7 +11,6 @@ struct BoilerBuzzApp: App {
     @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var initialTab: Tab = .home
     @State private var deepLinkUserId: String? = nil
-    @State private var deepLinkEventId: String? = nil
     
     init() {
         GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
@@ -29,23 +28,9 @@ struct BoilerBuzzApp: App {
             Group {
                 if isLoggedIn {
                     if let userId = deepLinkUserId {
-                        ContentView(initialTab: .account, accountToView: userId, eventToView: nil)
-                            .onAppear {
-                                DispatchQueue.main.async {
-                                    deepLinkUserId = nil
-                                }
-                            }
-                    }
-                    else if let eventId = deepLinkEventId {
-                        ContentView(initialTab: .home, accountToView: nil, eventToView: eventId)
-                            /*.onAppear {
-                                DispatchQueue.main.async {
-                                    deepLinkEventId = nil
-                                }
-                            }*/
-                    }
-                    else {
-                        ContentView(initialTab: .home, accountToView: nil, eventToView: nil)
+                        ContentView(initialTab: .account, accountToView: userId)
+                    } else {
+                        ContentView()
                     }
                 } else {
                     LoginView(isLoggedIn: $isLoggedIn)
@@ -54,24 +39,14 @@ struct BoilerBuzzApp: App {
             .onOpenURL { url in
                 print("Received deep link: \(url)")
                 isLoggedIn = false
-
                 if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let host = components.host,
-                   let queryItems = components.queryItems {
-
-                    if host.lowercased() == "account",
-                       let idItem = queryItems.first(where: { $0.name.lowercased() == "id" }),
-                       let userId = idItem.value {
-                        deepLinkUserId = userId
-                        initialTab = .account
-                        print("Deep link userId: \(userId)")
-                    } else if host.lowercased() == "event",
-                              let idItem = queryItems.first(where: { $0.name.lowercased() == "id" }),
-                              let eventId = idItem.value {
-                        deepLinkEventId = eventId
-                        initialTab = .home
-                        print("Deep link eventId: \(eventId)")
-                    }
+                   host.lowercased() == "account",
+                   let queryItems = components.queryItems,
+                   let idItem = queryItems.first(where: { $0.name.lowercased() == "id" }),
+                   let userId = idItem.value {
+                    deepLinkUserId = userId
+                    print("Deep link userId: \(userId)")
                 }
             }
         }

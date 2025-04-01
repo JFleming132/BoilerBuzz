@@ -53,25 +53,9 @@ struct HomeView: View {
     @State private var isCreatingEvent = false
     @State private var events: [Event] = []
     @State private var errorMessage: String?
-    
-    @State private var selectedEvent: Event? = nil
-    @State private var showEventDetail: Bool = false
-
-    
-    var eventToView: String? = nil
-    
-    @ViewBuilder
-    private func NavigationDestinationView() -> some View {
-        if let event = selectedEvent {
-            EventDetailView(event: event)
-        } else {
-            EmptyView()
-        }
-    }
-
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack {
                 // Custom Top Tab Bar
                 HStack {
@@ -83,7 +67,7 @@ struct HomeView: View {
                         .foregroundColor(selectedTab == 0 ? .blue : .gray)
                     }
                     .frame(maxWidth: .infinity)
-
+                    
                     Button(action: { selectedTab = 1 }) {
                         VStack {
                             Image(systemName: "cup.and.saucer")
@@ -94,7 +78,9 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .padding()
-                .background(Color(uiColor: UIColor.systemBackground))
+                .background(
+                    Color(uiColor: UIColor.systemBackground) // Adaptive to light/dark mode
+                )
                 .shadow(radius: 2)
 
                 // Tab Content
@@ -111,21 +97,13 @@ struct HomeView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(uiColor: UIColor.systemBackground))
-                
+                .background(Color(uiColor: UIColor.systemBackground)) // Ensure background adapts
             }
             .onAppear {
                 fetchEvents()
             }
-            .navigationDestination(isPresented: $showEventDetail) {
-                if let event = selectedEvent {
-                    EventDetailView(event: event)
-                }
-            }
-
         }
     }
-
 
     private func fetchEvents() {
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
@@ -163,11 +141,6 @@ struct HomeView: View {
                 DispatchQueue.main.async {
                     self.events = fetchedEvents.filter { $0.date >= Date() }
                     self.errorMessage = nil
-                    if let targetId = eventToView,
-                        let matched = self.events.first(where: { $0.id == targetId }) {
-                        self.selectedEvent = matched
-                        self.showEventDetail = true
-                    }
                 }
             } catch {
                 print("JSON Decoding Error: \(error)")
@@ -803,13 +776,6 @@ struct EventDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteAlert = false
     @State private var showReportSheet = false
-    @State private var isShareSheetPresented = false
-
-    var shareMessage: String {
-        let shareURL = URL(string: "boilerbuzz://event?id=\(event.id)")!
-        return "Check out this event: \(shareURL.absoluteString)"
-    }
-
     
     init(event: Event) {
         self.event = event
@@ -908,16 +874,17 @@ struct EventDetailView: View {
                     }
 
                     Button(action: {
-                        isShareSheetPresented = true
+                        let activityVC = UIActivityViewController(
+                            activityItems: ["Check out this event: \(event.title) at \(event.location)"],
+                            applicationActivities: nil
+                        )
+                        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
                     }) {
                         Label("Share", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
-                    }
-                    .sheet(isPresented: $isShareSheetPresented) {
-                        ShareSheet(activityItems: [shareMessage])
                     }
                 }
                 .padding()

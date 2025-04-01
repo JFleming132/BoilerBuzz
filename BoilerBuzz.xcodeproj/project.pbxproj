@@ -6814,14 +6814,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = 5824N7QB8L;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = BoilerBuzz;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use FaceID to authenticate your access securely.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "need your location even in background";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "need your location";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -6832,7 +6828,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mzBoilerBuzz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Patrick.BoilerBuzz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -6849,14 +6845,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = 5824N7QB8L;
+				DEVELOPMENT_TEAM = P7U37BCD8D;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = BoilerBuzz;
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use FaceID to authenticate your access securely.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "need your location even in background";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "need your location";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -6867,7 +6859,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = mzBoilerBuzz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Patrick.BoilerBuzz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
