@@ -98,8 +98,13 @@ struct FavoritedDrinksPopup: View {
                 return
             }
             
-            do {
-            let fetchedDrinks = try JSONDecoder().decode([Drink].self, from: data)
+            // Debug: print the raw JSON string
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Favorite Drinks JSON Response: \(jsonString)")
+            }
+            
+            let fetchedDrinks = decodeDrinksSafely(from: data)
+            
             DispatchQueue.main.async {
                 if fetchedDrinks.isEmpty {
                     let message = isMyProfile ? "You do not have any favorite drinks." : "They do not have any favorite drinks."
@@ -111,13 +116,9 @@ struct FavoritedDrinksPopup: View {
                     errorMessage = nil
                 }
             }
-            } catch {
-                DispatchQueue.main.async {
-                    errorMessage = "Failed to decode drinks: \(error.localizedDescription)"
-                }
-            }
         }.resume()
     }
+
     
     func getCategoryIcon(for category: String) -> String {
         switch category.lowercased() {
@@ -156,5 +157,25 @@ struct FavoritedDrinksPopup_Previews: PreviewProvider {
         NavigationView {
             FavoritedDrinksPopup(isMyProfile: true, userId: "67b3905fd41f8758ccbe2714")
         }
+    }
+}
+
+
+func decodeDrinksSafely(from data: Data) -> [Drink] {
+    // First try to decode the raw JSON as an array of Any
+    guard let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [Any] else {
+        return []
+    }
+    
+    let decoder = JSONDecoder()
+    // If your backend uses snake_case keys, uncomment the next line:
+    // decoder.keyDecodingStrategy = .convertFromSnakeCase
+    
+    // Attempt to decode each object and return only those that decode successfully.
+    return jsonArray.compactMap { object in
+        if let objectData = try? JSONSerialization.data(withJSONObject: object) {
+            return try? decoder.decode(Drink.self, from: objectData)
+        }
+        return nil
     }
 }
