@@ -146,7 +146,9 @@ struct DrinksDetailView: View {
     @State private var triedDrinksRatings: [String: Int] = [:]
     
     @State private var showSortingSidebar: Bool = false
-    @State private var selectedSortOption: String? = nil
+    @State private var selectedSortOption: String? = "Tried Drinks Last"
+    
+    @State private var searchText: String = ""
 
 
     @State private var selectedBar: Int = 0
@@ -169,6 +171,14 @@ struct DrinksDetailView: View {
             (minRating == nil || drink.averageRating >= minRating!) &&
             //new filter logic
             (selectedBar == 0 || (drink.barServed.count >= selectedBar && drink.barServed[drink.barServed.index(drink.barServed.startIndex, offsetBy: selectedBar - 1)] == "1"))
+        }
+    }
+    
+    var displayedDrinks: [Drink] {
+        if searchText.isEmpty {
+            return sortedDrinks
+        } else {
+            return sortedDrinks.filter { $0.name.lowercased().contains(searchText.lowercased()) }
         }
     }
 
@@ -199,6 +209,12 @@ struct DrinksDetailView: View {
                             .padding()
                     }
                 }
+                
+                TextField("Search drinks...", text: $searchText)
+                    .padding(8)
+                    .background(Color(.systemGray5))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
 
 
                 if let errorMessage = errorMessage {
@@ -309,8 +325,6 @@ struct DrinksDetailView: View {
                         maxCalories = tempMaxCalories
                         minRating = tempMinRating
                         
-                        print(selectedCategory ?? "Unknown Category")
-
                         showFilterSidebar = false
                     }) {
                         Text("Save Filters")
@@ -432,7 +446,7 @@ struct DrinksDetailView: View {
     private var drinksGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160))], spacing: 16) {
-                ForEach(filteredDrinks) { drink in
+                ForEach(displayedDrinks) { drink in
                     drinkButton(drink: drink)
                 }
             }
