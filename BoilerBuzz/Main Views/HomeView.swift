@@ -804,6 +804,8 @@ struct EventDetailView: View {
     @State private var showDeleteAlert = false
     @State private var showReportSheet = false
     @State private var isShareSheetPresented = false
+    @StateObject private var creatorProfile = ProfileViewModel()
+    
 
     var shareMessage: String {
         let shareURL = URL(string: "boilerbuzz://event?id=\(event.id)")!
@@ -838,9 +840,9 @@ struct EventDetailView: View {
                         
                         // TODO still have to fetch user details from event
                         ProfileNavigationButton(
-                            userId: "67c208c071b197bb4b40fd84", // TODO
-                            username: "NOT DONE", // TODO
-                            profilePictureURL: nil
+                            userId: event.author, // TODO
+                            username: creatorProfile.username, // TODO
+                            profilePicture: creatorProfile.profilePicture
                         )
                     }
                     Text(event.description ?? "")
@@ -921,6 +923,9 @@ struct EventDetailView: View {
                     }
                 }
                 .padding()
+            }
+            .onAppear {
+                creatorProfile.fetchUserProfile(userId: event.author)
             }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
@@ -1151,33 +1156,22 @@ struct EditEventView: View {
 struct ProfileNavigationButton: View {
     let userId: String
     let username: String
-    let profilePictureURL: String? // optional URL string for the user's profile picture idk yet
+    let profilePicture: UIImage?
 
     var body: some View {
         NavigationLink(destination: AccountView(viewedUserId: userId, adminStatus: nil)) {
             VStack(spacing: 4) {
                 // If a URL is available, load the image; otherwise, show a default icon.
-                if let urlString = profilePictureURL, let url = URL(string: urlString) {
-                    AsyncImage(url: url) { phase in
-                        if let image = phase.image {
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        } else if phase.error != nil {
-                            Image(systemName: "person.crop.circle.fill")
-                                .resizable()
-                                .scaledToFill()
-                        } else {
-                            Image(systemName: "person.crop.circle.fill")
-                                .resizable()
-                                .scaledToFill()
-                        }
-                    }
-                    .frame(width: 50, height: 50)
-                    .clipShape(Circle())
+                if let image = profilePicture {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
                 } else {
                     Image(systemName: "person.crop.circle.fill")
                         .resizable()
+                        .scaledToFill()
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())
                 }
