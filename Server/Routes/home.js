@@ -340,8 +340,9 @@ router.get('/events/byUser/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
+        // Make sure userId is a string
         if (!mongoose.Types.ObjectId.isValid(userId)) {
-            userId = mongoose.Types.ObjectId(userId);
+            return res.status(400).json({ error: 'Invalid user ID format' });
         }
 
         // Find events where the creator field matches the provided userId
@@ -356,14 +357,17 @@ router.get('/events/byUser/:userId', async (req, res) => {
         // Sanitize the events similar to the general events endpoint
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
-            title: event.title,
+            title: event.title || "Untitled Event",
+            author: event.author ? event.author.toString() : "",
+            rsvpCount: event.rsvpCount !== undefined ? Number(event.rsvpCount) : 0,
             description: event.description || "",
-            location: event.location,
-            capacity: Number(event.capacity),
-            is21Plus: Boolean(event.is21Plus),
-            date: Number(event.date),
+            location: event.location || "",
+            capacity: event.capacity !== undefined ? Number(event.capacity) : 0,
+            is21Plus: event.is21Plus !== undefined ? Boolean(event.is21Plus) : false,
+            promoted: event.promoted !== undefined ? Boolean(event.promoted) : false,
+            date: event.date ? Number(event.date) : Date.now(),
             imageUrl: event.imageUrl || "",
-            author: event.author ? event.author.toString() : null
+            authorUsername: event.authorUsername || ""
         }));
 
         console.log(`📥 Fetching events for user ${userId}:`, sanitizedEvents.length);
