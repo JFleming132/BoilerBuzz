@@ -53,9 +53,24 @@ struct HomeView: View {
     @State private var isCreatingEvent = false
     @State private var events: [Event] = []
     @State private var errorMessage: String?
+    
+    @State private var selectedEvent: Event? = nil
+    @State private var showEventDetail: Bool = false
+
+
+    var eventToView: String? = nil
+
+    @ViewBuilder
+    private func NavigationDestinationView() -> some View {
+        if let event = selectedEvent {
+            EventDetailView(event: event)
+        } else {
+            EmptyView()
+        }
+    }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Custom Top Tab Bar
                 HStack {
@@ -78,9 +93,7 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .padding()
-                .background(
-                    Color(uiColor: UIColor.systemBackground) // Adaptive to light/dark mode
-                )
+                .background(Color(uiColor: UIColor.systemBackground))
                 .shadow(radius: 2)
 
                 // Tab Content
@@ -101,6 +114,11 @@ struct HomeView: View {
             }
             .onAppear {
                 fetchEvents()
+            }
+            .navigationDestination(isPresented: $showEventDetail) {
+                if let event = selectedEvent {
+                    EventDetailView(event: event)
+                }
             }
         }
     }
@@ -141,6 +159,12 @@ struct HomeView: View {
                 DispatchQueue.main.async {
                     self.events = fetchedEvents.filter { $0.date >= Date() }
                     self.errorMessage = nil
+                    
+                    if let targetId = eventToView,
+                        let matched = self.events.first(where: { $0.id == targetId }) {
+                        self.selectedEvent = matched
+                        self.showEventDetail = true
+                    }
                 }
             } catch {
                 print("JSON Decoding Error: \(error)")
@@ -777,6 +801,14 @@ struct EventDetailView: View {
     @State private var showDeleteAlert = false
     @State private var showReportSheet = false
     
+    @State private var isShareSheetPresented = false
+
+    var shareMessage: String {
+        let shareURL = URL(string: "boilerbuzz://event?id=\(event.id)")!
+        return "Check out this event: \(shareURL.absoluteString)"
+    }
+
+    
     init(event: Event) {
         self.event = event
         _rsvpCountDisplay = State(initialValue: event.rsvpCount)
@@ -874,17 +906,16 @@ struct EventDetailView: View {
                     }
 
                     Button(action: {
-                        let activityVC = UIActivityViewController(
-                            activityItems: ["Check out this event: \(event.title) at \(event.location)"],
-                            applicationActivities: nil
-                        )
-                        UIApplication.shared.windows.first?.rootViewController?.present(activityVC, animated: true)
+                        isShareSheetPresented = true
                     }) {
                         Label("Share", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
+                    }
+                    .sheet(isPresented: $isShareSheetPresented) {
+                        ShareSheet(activityItems: [shareMessage])
                     }
                 }
                 .padding()

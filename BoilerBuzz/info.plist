@@ -22,5 +22,16 @@
 	<array>
 		<string>location</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+  	  <dict>
+    	    <key>CFBundleURLName</key>
+    	    <string>com.yourcompany.boilerbuzz</string>
+    	    <key>CFBundleURLSchemes</key>
+    	    <array>
+     	       <string>boilerbuzz</string>
+    	    </array>
+    	</dict>
+	</array>
 </dict>
 </plist>
