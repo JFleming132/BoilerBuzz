@@ -26,13 +26,12 @@ const calendarRoutes = require('./Routes/calendar');
 const cron = require('node-cron');
 const User = require('./Models/User');
 const { exec } = require('child_process');
-
+const cors = require('cors');
 
 
 const app = express();
 const port = 3000;
 
-const cors = require('cors');
 app.use(cors());
 
 //app.use(express.json());
@@ -103,6 +102,22 @@ app.use('/api/blocked', blockedRoutes);
 app.use('/api/calendar', calendarRoutes);
 
 // Start the server
-app.listen(port, () => {
+const http = require('http');
+const { Server } = require('socket.io');
+
+// Create an HTTP server from the Express app
+const server = http.createServer(app);
+
+// Create the Socket.IO server instance
+const io = new Server(server, {
+    cors: { origin: '*' }
+});
+
+// Import and start the event watcher (listening for new events)
+const { startEventWatcher } = require('./eventWatcher');
+startEventWatcher(io);
+
+// Start the HTTP server
+server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

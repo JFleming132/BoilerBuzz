@@ -4,18 +4,49 @@ const router = express.Router();
 const User = require('../Models/User');
 
 // GET notification preferences for a user
-router.get('/:userId', async (req, res) => {
+router.get('/friends/:userId', async (req, res) => {
     try {
-      const user = await User.findById(req.params.userId).select('notificationPreferences');
+      const user = await User.findById(req.params.userId).select('friends');
+  
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.status(200).json(user.notificationPreferences);
+  
+      const friends = await User.find(
+        { _id: { $in: user.friends } },
+        { _id: 1, username: 1 }
+      );
+  
+      const friendList = friends.map(friend => ({
+        id: friend._id,
+        name: friend.username
+      }));
+  
+      res.status(200).json(friendList);
     } catch (error) {
-      console.error("Error fetching notification preferences:", error);
+      console.error("Error fetching simplified friend list:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
+  
+  module.exports = router;
+
+  // GET notification preferences for a user
+router.get('/:userId', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).select('notificationPreferences').lean();
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user.notificationPreferences);
+
+    } catch (error) {
+        console.error("Error fetching notification preferences:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
   
   // PUT update notification preferences for a user
   router.put('/:userId', async (req, res) => {
