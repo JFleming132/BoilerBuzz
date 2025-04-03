@@ -151,21 +151,26 @@ struct FriendsListPopup: View {
                 }
                 return
             }
-            // print out data
-            // Decode the JSON data into an array of Friend objects
-            do {
-                let fetchedFriends = try JSONDecoder().decode([Friend].self, from: data)
-                DispatchQueue.main.async {
+            
+            // Debug: print out the raw JSON
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("Friends JSON Response: \(jsonString)")
+            }
+            
+            // Use safe decoding to skip over any corrupted friend entries.
+            let fetchedFriends = decodeFriendsSafely(from: data)
+            
+            DispatchQueue.main.async {
+                if fetchedFriends.isEmpty {
+                    errorMessage = "No valid friends found."
+                } else {
                     self.friends = fetchedFriends
                     errorMessage = nil
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    errorMessage = "Failed to decode friends: \(error.localizedDescription)"
                 }
             }
         }.resume()
     }
+
 
     func removeFriend(friend: Friend) {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
@@ -219,5 +224,19 @@ struct FriendsListPopup_Previews: PreviewProvider {
         NavigationView {
             FriendsListPopup(isMyProfile: true, userId: "12345")
         }
+    }
+}
+
+func decodeFriendsSafely(from data: Data) -> [Friend] {
+    guard let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [Any] else {
+        return []
+    }
+    
+    let decoder = JSONDecoder()
+    return jsonArray.compactMap { object in
+        if let objectData = try? JSONSerialization.data(withJSONObject: object) {
+            return try? decoder.decode(Friend.self, from: objectData)
+        }
+        return nil
     }
 }

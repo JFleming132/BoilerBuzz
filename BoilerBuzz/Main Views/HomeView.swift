@@ -206,24 +206,11 @@ struct EventsTab: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    Button(action: {
-                        isCreatingEvent.toggle()
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.blue)
-                            .shadow(radius: 4)
-                    }
-                    .padding()
+                    
                 }
             }
         }
-        .sheet(isPresented: $isCreatingEvent) {
-            CreateEventView(onEventCreated: { _ in
-                // Placeholder for event creation
-            })
-        }
+        
     }
 }
 
