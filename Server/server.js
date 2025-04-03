@@ -22,6 +22,7 @@ const photoRoutes = require('./Routes/photo');
 const reportRoutes = require('./Routes/report');
 const blockedRoutes = require('./Routes/blocked');
 const calendarRoutes = require('./Routes/calendar');
+const eventRoutes = require('./Routes/eventRoutes');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -101,6 +102,7 @@ app.use('/api/photo', photoRoutes);
 app.use('/api/report', reportRoutes);
 app.use('/api/blocked', blockedRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/pin', eventRoutes);
 
 // Start the server
 app.listen(port, () => {
