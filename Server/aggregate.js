@@ -38,7 +38,7 @@ async function runAggregation() {
             {
                 $match: {
                     lastUpdate: {
-                        $gte: new Date(new Date().getTime() - 1000 * 60 * 60 * 24) // Last 24 hours
+                        $gte: new Date(new Date().getTime() - 1000 * 60 * 10) // Last 10 min
                     }
                 }
             },
