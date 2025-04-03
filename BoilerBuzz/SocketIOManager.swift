@@ -15,12 +15,10 @@ class SocketIOManager: ObservableObject {
     private var manager: SocketManager
     private var socket: SocketIOClient
     
-    // Change the URL as needed; for development, we use localhost.
     private init() {
         guard let url = URL(string: "http://localhost:3000") else {
             fatalError("Invalid URL for Socket.IO server")
         }
-        // Configure the SocketManager with options such as logging and compression.
         manager = SocketManager(socketURL: url, config: [.log(false), .compress])
         socket = manager.defaultSocket
     }
@@ -79,7 +77,6 @@ class SocketIOManager: ObservableObject {
             print("Socket encountered an error: \(data)")
         }
         
-        // Connect the socket.
         socket.connect()
     }
 

@@ -104,11 +104,7 @@ app.use('/api/calendar', calendarRoutes);
 // Start the server
 const http = require('http');
 const { Server } = require('socket.io');
-
-// Create an HTTP server from the Express app
 const server = http.createServer(app);
-
-// Create the Socket.IO server instance
 const io = new Server(server, {
     cors: { origin: '*' }
 });

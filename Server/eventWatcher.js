@@ -12,11 +12,10 @@ function startEventWatcher(io) {
 
   changeStream.on('change', (change) => {
     console.log("Change detected:", change);
-    // We are only interested in new events (insert operations)
+    // only for insert right now (THIS IS FOR NEW POSTS)
     if (change.operationType === 'insert') {
       const newEvent = change.fullDocument;
       console.log("New event inserted:", newEvent);
-      // Broadcast the new event to all connected clients via websockets.
       io.emit('newEvent', newEvent);
     }
   });
