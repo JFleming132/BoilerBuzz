@@ -14,8 +14,13 @@ struct ContentView: View {
         self._selectedTab = State(initialValue: initialTab)
         self._accountToView = State(initialValue: accountToView)
         self._eventToView = State(initialValue: eventToView)
-
-        UITabBar.appearance().backgroundColor = UIColor(primaryColor)
+        
+        let appearance = UITabBarAppearance()
+        appearance.backgroundColor = .black
+        appearance.shadowColor = .clear
+        
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
         UITabBar.appearance().unselectedItemTintColor = UIColor(secondaryColor)
     }
 
