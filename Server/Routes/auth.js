@@ -161,7 +161,8 @@ router.post('/login', async (req, res) => {
             userId: user._id,
             isAdmin: user.isAdmin,
             isPromoted: user.isPromoted,
-            rsvpEvents: user.rsvpEvents
+            rsvpEvents: user.rsvpEvents,
+            notificationPreferences: user.notificationPreferences || {},
          });
     } catch (err) {
         console.error(err);

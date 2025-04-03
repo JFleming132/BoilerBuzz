@@ -58,6 +58,7 @@ struct BlockedStatusResponse: Codable {
 
 struct AccountView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var notificationManager: NotificationManager
     
     @StateObject var profileData = ProfileViewModel()
 
@@ -238,14 +239,25 @@ struct AccountView: View {
             }
             Spacer()
             if isOwnProfile {
-                NavigationLink(destination: NotificationCenterView()) {
-                    Image(systemName: "bell.fill")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(.primary)
-                        .padding(14)
-                        .clipShape(Circle())
-                        .contentShape(Circle())
+                ZStack(alignment: .topTrailing) {
+                    NavigationLink(destination: NotificationCenterView()) {
+                        Image(systemName: "bell.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.primary)
+                            .padding(14)
+                            .clipShape(Circle())
+                            .contentShape(Circle())
+                    }
+
+                    if notificationManager.notifications.contains(where: { !$0.isRead }) {
+                        Text("\(notificationManager.notifications.filter { !$0.isRead }.count)")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .padding(5)
+                            .background(Circle().fill(Color.red))
+                            .offset(x: -4, y: 4)
+                    }
                 }
                 NavigationLink(destination: SettingsView(profileData: profileData)) {
                     Image(systemName: "gearshape.fill")
