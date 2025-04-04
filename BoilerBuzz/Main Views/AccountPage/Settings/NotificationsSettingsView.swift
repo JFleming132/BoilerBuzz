@@ -53,9 +53,6 @@ struct NotificationsSettingsView: View {
                                         set: { newValue in
                                             friendNotificationPreferences[friend.id] = newValue
                                             updateNotificationPreferences()
-                                            if newValue {
-                                                scheduleLocalNotification(for: friend.name)
-                                            }
                                         }
                                     ))
                                 }
@@ -105,25 +102,25 @@ struct NotificationsSettingsView: View {
         }
     }
 
-    func scheduleLocalNotification(for friendName: String) {
-        let content = UNMutableNotificationContent()
-        content.title = "New Event!"
-        content.body = "\(friendName) just posted a new event. Check it out!"
-        content.sound = .default
+    // func scheduleLocalNotification(for friendName: String) {
+    //     let content = UNMutableNotificationContent()
+    //     content.title = "New Event!"
+    //     content.body = "\(friendName) just posted a new event. Check it out!"
+    //     content.sound = .default
 
-        // Trigger notification after 5 seconds for testing purposes.
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+    //     // Trigger notification after 5 seconds for testing purposes.
+    //     let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
 
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+    //     let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
 
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Error scheduling notification: \(error.localizedDescription)")
-            } else {
-                print("Notification scheduled for friend: \(friendName)")
-            }
-        }
-    }
+    //     UNUserNotificationCenter.current().add(request) { error in
+    //         if let error = error {
+    //             print("Error scheduling notification: \(error.localizedDescription)")
+    //         } else {
+    //             print("Notification scheduled for friend: \(friendName)")
+    //         }
+    //     }
+    // }
 
 
     
