@@ -312,6 +312,14 @@ struct AccountView: View {
                         .background(Color.red)
                         .cornerRadius(4)
                 }
+                if profileData.isPromoted {
+                    Text("Promoted")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(4)
+                        .background(Color.blue)
+                        .cornerRadius(4)
+                }
             }
             Text(profileData.bio)
                 .font(.subheadline)
