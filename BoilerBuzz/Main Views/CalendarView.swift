@@ -11,24 +11,67 @@ import EventKit
 import UIKit
 import CalendarView
 
+
 struct CalendarViewPage: View {
     @State var events : [Event] = []
     @State var rsvpEvents : [Event] = []
     @State var promotedEvents : [Event] = []
     @State var errorMessage: String?
-
+    @State var selectedDates: [DateComponents] = [] //should only ever contain one element but is an array anyway? just trust me
+    @State private var showingEventSheet: Bool = false
     var body: some View {
-        CalendarView()
-            .decorating(
-                parseEvents(events: rsvpEvents),
-                systemImage: "star"
-            ) //turn events date data into dateComponents set
-            .decorating(
-                parseEvents(events: promotedEvents),
-                systemImage: "star.fill"
-            ).onAppear(perform: fetchEvents) //TODO: clicking on an event should pull up a card with information about it
+        VStack {
+            CalendarView(selection: $selectedDates)
+                .decorating(
+                    parseEvents(events: rsvpEvents),
+                    systemImage: "star"
+                ) //turn events date data into dateComponents set
+                .decorating(
+                    parseEvents(events: promotedEvents),
+                    systemImage: "star.fill"
+                )
+                .onAppear(perform: fetchEvents) //TODO: clicking on an event should pull up a card with information about it
+                .onChange(of: selectedDates, { oldValue, newValue in
+                    if !newValue.isEmpty {
+                        showingEventSheet = true
+                    }
+                })
+                .sheet(isPresented: $showingEventSheet, onDismiss: onSheetDismissed) {
+                    let allEvents = rsvpEvents + promotedEvents
+                    let selectedEvents = allEvents.filter{
+                        sameDay(dc: selectedDates.first!, d: $0.date)
+                    }
+                    NavigationStack() {
+                        VStack() {
+                            //TODO: Add header to sheet that gives current selected date, which is selectedDates!
+                            ForEach(selectedEvents) { e in
+                                NavigationLink(destination: EventDetailView(event: e)) {
+                                    EventCardView(event: e)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                }
+        }
     }
     
+    func sameDay(dc: DateComponents, d: Date) -> Bool {
+        let dc1 = Calendar.current.dateComponents([.day, .year, .month], from: d)
+        if (dc.year! == dc1.year) {
+            if (dc.month! == dc1.month) {
+                if (dc.day! == dc1.day) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func onSheetDismissed() {
+        selectedDates = []
+    }
+                          
     private func parseEvents(events: ([Event])) -> Set<DateComponents> {
         var DateComponentsArray: [DateComponents] = [] //will be returned, parsed
         for event in events { //for every event we fetched in init()
@@ -39,11 +82,7 @@ struct CalendarViewPage: View {
         return Set(DateComponentsArray) //convert array to set for CalendarView()
     }
     
-    private func fetchEvents() { //literally copied from Sophie's code in HomeView
-        //Done: Rewrite to only fetch RSVP'd and Promoted events via a new backend call
-        //...also, wherever we make a backend call, shouldnt we dynamically build
-        //it with a global variable that represents the IP of the server so we
-        //dont have to change tons of backend calls when it comes time to deploy?
+    private func fetchEvents() { //literally copied from Sophie's code
         guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
             print("My user ID not found")
             return
@@ -112,37 +151,3 @@ struct CalendarViewPage: View {
     CalendarViewPage()
 }
 
-/*
-import SwiftUI
-
-// Dummy implementation of CalendarView
-public struct CalendarView: View {
-    public init() { }
-    
-    public var body: some View {
-        // Display dummy text as a placeholder
-        Text("Dummy CalendarView")
-            .font(.title)
-            .padding()
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(8)
-    }
-}
-
-public extension CalendarView {
-    // Dummy chainable function to mimic the API
-    func decorating(_ events: Set<DateComponents>, systemImage: String?) -> CalendarView {
-        // Just return self; ignore parameters for now.
-        return self
-    }
-}
-
-// Wrapper view to be used by content.js or elsewhere.
-public struct CalendarViewPage: View {
-    public init() { }
-    
-    public var body: some View {
-        CalendarView() // Use the dummy CalendarView here.
-    }
-}
-*/
