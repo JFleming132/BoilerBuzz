@@ -83,11 +83,9 @@ router.post('/events', async (req, res) => {
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
-        console.log("📆 Current timestamp:", currentDate);
-        console.log("🧠 Attempting to fetch upcoming events from DB...");
 
         const events = await Event.find({ date: { $gte: currentDate } });
-        console.log(`✅ Found ${events.length} event(s)`);
+        console.log(` Found ${events.length} event(s)`);
 
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
@@ -108,7 +106,7 @@ router.get('/events', async (req, res) => {
 
     } catch (err) {
         console.error("❌ Error fetching events:", err.message);
-        console.error("🔍 Stack trace:", err.stack);
+        console.error(" Stack trace:", err.stack);
         res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
@@ -370,7 +368,7 @@ router.get('/events/byUser/:userId', async (req, res) => {
             authorUsername: event.authorUsername || ""
         }));
 
-        console.log(`📥 Fetching events for user ${userId}:`, sanitizedEvents.length);
+        console.log(`Fetching events for user ${userId}:`, sanitizedEvents.length);
         res.json(sanitizedEvents);
 
     } catch (err) {
