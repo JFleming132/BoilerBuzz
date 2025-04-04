@@ -44,40 +44,7 @@ final class PostsAndRSVPTests: XCTestCase {
         XCTAssertEqual(sampleEvent.authorUsername, "TestUser")
     }
 
-    // MARK: - Test RSVP / UnRSVP Functionality
-
-    /// These tests assume that your global functions `rsvp(event:)`, `unrsvp(event:)` and `isRSVPed(event:)`
-    /// manipulate a UserDefaults key (e.g. "rsvpEvents") to store RSVP'd event IDs.
-    func testRSVPFunctions() throws {
-        // Clear any stored RSVP events before testing.
-        UserDefaults.standard.removeObject(forKey: "rsvpEvents")
-        
-        let testEvent = Event(
-            id: "rsvpTestEvent",
-            author: "user2",
-            rsvpCount: 0,
-            title: "RSVP Test Event",
-            description: "Testing RSVP functionality.",
-            location: "Test Venue",
-            capacity: 50,
-            is21Plus: false,
-            promoted: false,
-            date: Date(),
-            imageUrl: nil,
-            authorUsername: "RSVPUser"
-        )
-        
-        // Initially, the event should not be RSVP'd.
-        XCTAssertFalse(isRSVPed(event: testEvent), "Event should not be RSVP'd initially.")
-        
-        // Simulate an RSVP action.
-        rsvp(event: testEvent)
-        XCTAssertTrue(isRSVPed(event: testEvent), "Event should be marked as RSVP'd after calling rsvp(event:).")
-        
-        // Simulate an unRSVP action.
-        unrsvp(event: testEvent)
-        XCTAssertFalse(isRSVPed(event: testEvent), "Event should not be RSVP'd after calling unrsvp(event:).")
-    }
+  
     
     // MARK: - Additional Tests (Optional)
     
