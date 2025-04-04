@@ -484,16 +484,12 @@ struct HarrysView: View {
                                     self.peopleInLine = apiResponse.peopleInLine ?? 0
                                     // In your data handling code
                                     if let date = apiResponse.lastUpdated {
-                                                    // Add 1 hour to the decoded date
-                                                    let calendar = Calendar.current
-                                                    if let newDate = calendar.date(byAdding: .hour, value: 1, to: date) {
-                                                        self.lastUpdated = formatDate(newDate) // Pass the adjusted date to formatDate
-                                                    } else {
-                                                        self.lastUpdated = "Error adjusting time"
-                                                    }
-                                                }                                    else {
+                                        self.lastUpdated = formatDate(date) // Use the original date
+                                    }
+                                    else {
                                         self.lastUpdated = "Not available"
-                                    }                    }
+                                    }
+                                }
                             }
                         } catch {
                             DispatchQueue.main.async {
