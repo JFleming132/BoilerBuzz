@@ -74,7 +74,7 @@ struct AccountView: View {
     
     @State private var showRatingPopup: Bool = false
     
-    @State private var selectedTab: String = "Posts"
+    @State private var selectedTab: String = "Events"
     @State private var showPostPhotoAction: Bool = false
     @State private var showSourceChoice: Bool = false
     
@@ -87,7 +87,7 @@ struct AccountView: View {
     @State private var selectedSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     enum UploadMode {
-        case none, post, photo
+        case none, event, photo
     }
     
     /* TESTING */
@@ -360,8 +360,8 @@ struct AccountView: View {
                     .padding()
             }
             .confirmationDialog("Create New", isPresented: $showPostPhotoAction, titleVisibility: .visible) {
-                            Button("New Post") {
-                                uploadMode = .post
+                            Button("New Event") {
+                                uploadMode = .event
                                 showCreateEvent = true
                                 // TODO: Implement the post creation logic.
                                 // This is the View, but cannot find events, maybe dont need it?
@@ -424,13 +424,13 @@ struct AccountView: View {
     var contentTabs: some View {
         VStack {
             Picker("Select Content", selection: $selectedTab) {
-                Text("Posts").tag("Posts")
+                Text("Events").tag("Events")
                 Text("Photos").tag("Photos")
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
             
-            if selectedTab == "Posts" {
+            if selectedTab == "Events" {
                 postsGrid
             } else {
                 photosGrid
