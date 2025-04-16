@@ -258,17 +258,6 @@ struct AccountView: View {
                             .background(Circle().fill(Color.red))
                             .offset(x: -4, y: 4)
                     }
-                    
-                }
-                // Direct Messages Button
-                NavigationLink(destination: DirectMessagesView(userId: UserDefaults.standard.string(forKey: "userId") ?? "me")) {
-                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                       .resizable()
-                       .frame(width: 30, height: 30)
-                       .foregroundColor(.primary)
-                       .padding(14)
-                       .clipShape(Circle())
-                       .contentShape(Circle())
                 }
                 NavigationLink(destination: SettingsView(profileData: profileData)) {
                     Image(systemName: "gearshape.fill")
