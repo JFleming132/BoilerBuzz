@@ -259,6 +259,15 @@ struct AccountView: View {
                             .offset(x: -4, y: 4)
                     }
                 }
+                NavigationLink(destination: DirectMessagesView(userId: UserDefaults.standard.string(forKey: "userId") ?? "self")) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.primary)
+                        .padding(14)
+                        .clipShape(Circle())
+                        .contentShape(Circle())
+                }
                 NavigationLink(destination: SettingsView(profileData: profileData)) {
                     Image(systemName: "gearshape.fill")
                         .resizable()
@@ -270,6 +279,7 @@ struct AccountView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityIdentifier("settingsButton")
+
             } else {
                 Button(action: { showRatingPopup = true }) {
                     Image(systemName: "star.bubble.fill")
@@ -282,6 +292,26 @@ struct AccountView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityIdentifier("rateUserButton")
+                
+                NavigationLink(
+                    destination: DirectMessagesView(
+                        userId: UserDefaults.standard.string(forKey: "userId") ?? "self",
+                        openConversationWith: UserModel(
+                            id: profileData.userId,
+                            username: profileData.username,
+                            profileImageName: "person.crop.circle"
+                        )
+                    )
+                ) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.blue)
+                        .padding(14)
+                        .clipShape(Circle())
+                        .contentShape(Circle())
+                }
+
             }
         }
         .padding(.horizontal)
