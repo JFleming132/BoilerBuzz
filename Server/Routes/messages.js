@@ -8,39 +8,47 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const Conversation = require('../Models/Conversation');
-const Message = require('../Models/Message');
+const Messages = require('../Models/Messages');
 
-// Get all conversations for a user (requests + accepted)
-// GET /api/conversations?userId={userId}
-router.get('/conversations', async (req, res) => {
-  console.log("GOT CONVERSATION REQUEST")
+// GET /api/getConversations?userId={userId}
+router.get('/getConversations', async (req, res) => {
   try {
     const userId = req.query.userId;
     if (!userId) return res.status(400).json({ error: 'userId query required' });
 
-    // Find any conversation where user is initiator or recipient
     const convos = await Conversation.find({
-      $or: [
-        { initiator: userId },
-        { recipient: userId }
-      ]
+      $or: [{ initiator: userId }, { recipient: userId }]
     })
     .populate('initiator', 'username profilePicture')
     .populate('recipient', 'username profilePicture')
+    .populate({
+      path: 'messages',
+      select: 'text sentAt',
+      options: { sort: { sentAt: 1 } }
+    })
     .sort('-updatedAt');
 
-    // Map to DTO
-    const result = convos.map(c => ({
-      _id: c._id,
-      initiator: c.initiator,
-      recipient: c.recipient,
-      status: c.status,
-      hasUnread: c.messages.some(msgId => {
-        // For simplicity, assume Message schema has readBy array
-        return true; // clients will check unread based on readBy
-      }),
-      updatedAt: c.updatedAt
-    }));
+    const result = convos.map(c => {
+      const other = c.initiator._id.toString() === userId
+        ? c.recipient
+        : c.initiator;
+
+      // grab only the final message text
+      const lastMsgObj = c.messages[c.messages.length - 1];
+      const lastText = lastMsgObj ? lastMsgObj.text : null;
+
+      console.log(lastText)
+
+      return {
+        id: c._id.toString(),
+        otherUser: {
+          id: other._id.toString(),
+          username: other.username,
+          profilePicture: other.profilePicture
+        },
+        lastMessage: lastText
+      };
+    });
 
     res.json(result);
   } catch (err) {
@@ -48,6 +56,7 @@ router.get('/conversations', async (req, res) => {
     res.status(500).json({ error: 'Server error fetching conversations' });
   }
 });
+
 
 // Create a new conversation (initial message request)
 // POST /api/conversations

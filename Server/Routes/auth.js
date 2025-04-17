@@ -21,6 +21,7 @@ router.post('/health', async (req, res) => {
 });
 
 
+
 router.post('/update-password', async (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
 
