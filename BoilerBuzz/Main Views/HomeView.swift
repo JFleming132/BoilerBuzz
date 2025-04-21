@@ -2,6 +2,7 @@ import SwiftUI
 import PhotosUI
 import MapKit
 import UIKit
+import CoreLocation
 
 
 //api data for harrys
@@ -56,7 +57,8 @@ struct HomeView: View {
     
     @State private var selectedEvent: Event? = nil
     @State private var showEventDetail: Bool = false
-
+    @AppStorage("eventRadius") private var radiusMiles: Double = 10.0
+    @EnvironmentObject var locationManager: LocationManager
 
     var eventToView: String? = nil
 
@@ -124,55 +126,62 @@ struct HomeView: View {
     }
 
     private func fetchEvents() {
-        guard let url = URL(string: "http://localhost:3000/api/home/events") else {
-            errorMessage = "Invalid API URL"
+        guard let userLoc = locationManager.location else {
+            DispatchQueue.main.async { self.errorMessage = "Waiting for location…" }
             return
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-
-        if let token = UserDefaults.standard.string(forKey: "authToken") {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Error fetching events: \(error.localizedDescription)"
-                }
+        let url = URL(string: "http://localhost:3000/api/home/events")!
+        URLSession.shared.dataTask(with: url) { data, _, err in
+            if let err = err {
+                DispatchQueue.main.async { self.errorMessage = err.localizedDescription }
                 return
             }
-
             guard let data = data else {
-                DispatchQueue.main.async {
-                    self.errorMessage = "No data received"
-                }
+                DispatchQueue.main.async { self.errorMessage = "No data received" }
                 return
             }
 
             do {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .millisecondsSince1970
-                
-                let fetchedEvents = try decoder.decode([Event].self, from: data)
-                DispatchQueue.main.async {
-                    self.events = fetchedEvents.filter { $0.date >= Date() }
-                    self.errorMessage = nil
-                    
-                    if let targetId = eventToView,
-                        let matched = self.events.first(where: { $0.id == targetId }) {
-                        self.selectedEvent = matched
-                        self.showEventDetail = true
+                let all = try decoder.decode([Event].self, from: data)
+
+                // only future events
+                let upcoming = all.filter { $0.date >= Date() }
+
+                // now geocode & filter by radius
+                let dispatchGroup = DispatchGroup()
+                var withinRadius: [Event] = []
+
+                for event in upcoming {
+                    dispatchGroup.enter()
+                    // create one geocoder per lookup
+                    CLGeocoder().geocodeAddressString(event.location) { placemarks, _ in
+                        defer { dispatchGroup.leave() }
+                        if let coord = placemarks?.first?.location {
+                            let distanceMiles = userLoc.distance(from: coord) / 1609.34
+                            if distanceMiles <= radiusMiles {
+                                withinRadius.append(event)
+                            }
+                        }
                     }
                 }
+
+                dispatchGroup.notify(queue: .main) {
+                    self.events = withinRadius
+                    self.errorMessage = withinRadius.isEmpty
+                        ? "No events within \(Int(self.radiusMiles)) miles."
+                        : nil
+                }
+
             } catch {
-                print("JSON Decoding Error: \(error)")
                 DispatchQueue.main.async {
-                    self.errorMessage = "JSON Decoding Error: \(error.localizedDescription)"
+                    self.errorMessage = "Decoding error: \(error.localizedDescription)"
                 }
             }
-        }.resume()
+        }
+        .resume()
     }
 }
 

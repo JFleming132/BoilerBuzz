@@ -11,6 +11,9 @@ struct SettingsView: View {
 
     @ObservedObject var profileData: ProfileViewModel
     
+    @AppStorage("eventRadius") private var radiusMiles: Double = 10.0
+
+    
     var body: some View {
         List {
             Section {
@@ -37,6 +40,24 @@ struct SettingsView: View {
                     SettingsRow(icon: "checkmark.seal.fill", title: "Identification")
                 }
             }
+            
+            // ───── Default Radius Slider ─────
+                       Section(header: Text("Default Search Radius")) {
+                           VStack(alignment: .leading) {
+                               // show the live value
+                               Text("Radius: \(Int(radiusMiles)) miles")
+                                   .font(.subheadline)
+                                   .foregroundColor(.secondary)
+
+                               Slider(
+                                   value: $radiusMiles,
+                                   in: 1...50,
+                                   step: 1
+                               )
+                               .accessibility(value: Text("\(Int(radiusMiles)) miles"))
+                           }
+                           .padding(.vertical, 4)
+                       }
         }
         .navigationTitle("Settings")
     }
