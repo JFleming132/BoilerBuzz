@@ -127,7 +127,6 @@ router.post('/rsvp', async (req, res) => {
         }
 
         user.rsvpEvents = user.rsvpEvents || [];
-
         const alreadyRSVPed = user.rsvpEvents.includes(eventId);
         const isAtCapacity = (event.rsvpCount || 0) >= event.capacity;
 
@@ -150,33 +149,18 @@ router.post('/rsvp', async (req, res) => {
         await user.save({ validateBeforeSave: false });
         await event.save({ validateBeforeSave: false });
 
-        // ✅ If rsvpCount == capacity, email the creator
+        // Instead of sending an email, prepare a notification message when the event becomes full.
+        let notificationMessage = null;
         if (event.rsvpCount === event.capacity) {
-            const author = await User.findById(event.author);
-            if (author?.email) {
-                const mailOptions = {
-                    from: 'theboilerbuzz@gmail.com',
-                    to: author.email,
-                    subject: `🎉 Your event "${event.title}" is now full!`,
-                    text: `Hi ${author.username},\n\nYour event "${event.title}" has now reached full capacity (${event.capacity} RSVPs).\n\nYou may want to prepare accordingly or stop accepting RSVPs.\n\nCheers,\nBoilerBuzz`
-                };
-
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        console.error("❌ Failed to email event creator:", error);
-                    } else {
-                        console.log("✅ Email sent to creator:", info.response);
-                    }
-                });
-            }
+            notificationMessage = `Your event "${event.title}" has now reached full capacity (${event.capacity} RSVPs).`;
         }
 
         return res.status(200).json({
             success: true,
             rsvpEvents: user.rsvpEvents,
-            rsvpCount: event.rsvpCount
+            rsvpCount: event.rsvpCount,
+            notificationMessage
         });
-
     } catch (error) {
         console.error("❌ RSVP error:", error);
         res.status(500).json({ error: "Internal server error" });
