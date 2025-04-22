@@ -62,7 +62,6 @@ function startEventWatcher(io) {
                     return `Event image was updated`;
                   case 'authorUsername':
                     return `Host changed to “${value}”`;
-                  // you can add more cases here if needed...
                   default:
                     return `${field} updated`;
                 }
@@ -87,7 +86,6 @@ function startEventWatcher(io) {
         }
 
         case 'delete': {
-         // before image is under `fullDocumentBeforeChange`
             const before = change.fullDocumentBeforeChange;
             console.log("Event deleted:", before);
             const title  = before?.title || 'Unknown event';

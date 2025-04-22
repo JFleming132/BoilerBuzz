@@ -24,7 +24,6 @@ class SocketIOManager: ObservableObject {
     }
     
     /// Establishes the connection and sets up event listeners.
-    /// Establishes the connection and sets up event listeners.
     func establishConnection() {
         socket.on(clientEvent: .connect) { data, ack in
             print("Socket connected: \(data)")
@@ -35,7 +34,7 @@ class SocketIOManager: ObservableObject {
             self.handleNewEvent(data: data)
         }
         
-        // Event fields updated (e.g., title, location)
+        // Event fields updated
         socket.on("eventUpdated") { data, ack in
             self.handleEventUpdated(data: data)
         }
