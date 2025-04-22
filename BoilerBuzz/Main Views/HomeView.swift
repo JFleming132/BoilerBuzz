@@ -6,6 +6,16 @@ import CoreLocation
 import UserNotifications
 
 
+func openInGoogleMaps(address: String) {
+    let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+    if let url = URL(string: "comgooglemaps://?q=\(encoded)"),
+       UIApplication.shared.canOpenURL(url) {
+        UIApplication.shared.open(url)
+    } else if let url = URL(string: "https://maps.google.com/?q=\(encoded)") {
+        UIApplication.shared.open(url)
+    }
+}
+
 //api data for harrys
 struct APIResponse: Codable {
     let peopleInBar: Int?
@@ -253,13 +263,10 @@ struct EventListView: View {
 // Event Card View
 struct EventCardView: View {
     let event: Event
-    
-    //maybe by saving eventIDs in an array in the UserDefaults and simply testing if event.id is in that array?
     @Environment(\.colorScheme) var colorScheme
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Only show image if it's available
             if let eventImage = event.eventImage {
                 Image(uiImage: eventImage)
                     .resizable()
@@ -267,26 +274,30 @@ struct EventCardView: View {
                     .frame(height: 200)
                     .clipped()
             }
-            
             VStack(alignment: .leading, spacing: 5) {
                 Text(event.title)
                     .font(.headline)
                     .foregroundColor(.primary)
-                
                 if let description = event.description {
                     Text(description)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .lineLimit(2)
                 }
-                
                 HStack {
-                    Text(event.location)
-                        .font(.footnote)
-                        .foregroundColor(.blue)
-                    
+                    Button(action: {
+                        openInGoogleMaps(address: event.location)
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "mappin.and.ellipse")
+                            Text(event.location)
+                                .font(.footnote)
+                                .foregroundColor(.blue)
+                                .underline()
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     Spacer()
-                    
                     Text(event.date.formatted(date: .abbreviated, time: .shortened))
                         .font(.footnote)
                         .foregroundColor(.gray)
@@ -303,6 +314,7 @@ struct EventCardView: View {
         .shadow(radius: 3)
     }
 }
+
 func isRSVPed(event: Event) -> Bool {
     let arr: [String] = UserDefaults.standard.array(forKey: "rsvpEvents") as? [String] ?? []
         if arr.contains(event.id) {
@@ -840,12 +852,18 @@ struct EventDetailView: View {
                         .font(.body)
 
                     HStack {
-                        Label(event.location, systemImage: "mappin.and.ellipse")
+                        Button(action: {
+                            openInGoogleMaps(address: event.location)
+                        }) {
+                            Label(event.location, systemImage: "mappin.and.ellipse")
+                                .foregroundColor(.blue)
+                                .underline()
+                        }
+                        .buttonStyle(PlainButtonStyle())
                         Spacer()
                         Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
                     }
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
 
                     HStack {
                         Label("Capacity: \(event.capacity)", systemImage: "person.3")
