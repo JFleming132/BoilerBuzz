@@ -29,48 +29,19 @@ class SocketIOManager: ObservableObject {
             print("Socket connected: \(data)")
         }
         
-        // Listen for the "newEvent" event from the backend.
+        // New event posted by a friend
         socket.on("newEvent") { data, ack in
-            print("Received newEvent: \(data)")
-            
-            // Process event data
-            if let eventData = data.first as? [String: Any] {
-                // Extract the author ID from the event.
-                guard let authorId = eventData["author"] as? String else {
-                    print("No author ID found in event data.")
-                    return
-                }
-                // If the author ID is the same as the UserId
-                guard let userId = UserDefaults.standard.string(forKey: "userId"), userId != authorId else {
-                    print("Ignoring event from the same user (authorId: \(authorId)).")
-                    return
-                }
-                
-                // Retrieve the user's friend notification preferences from UserDefaults.
-                if let storedPrefs = UserDefaults.standard.dictionary(forKey: "notificationPreferences") as? [String: Any],
-                   let friendPostingPrefs = storedPrefs["friendPosting"] as? [String: Bool] {
-                    print("Friend posting preferences found: \(friendPostingPrefs)")
-                    
-                    // Check if notifications are enabled for this author.
-                    if friendPostingPrefs[authorId] == true {
-                        let title = eventData["title"] as? String ?? "New Event"
-                        let authorUsername = eventData["authorUsername"] as? String ?? "Unknown"
-                        let message = "\(authorUsername) posted a new event!"
-                        
-                        DispatchQueue.main.async {
-                            // Only if you want the notification to populate the center
-                            // NotificationManager.shared.addNotification(title: title, message: message)
-
-                            // if you want the banner and the notification
-                            self.scheduleLocalNotification(title: title, message: message)
-                        }
-                    } else {
-                        print("Notifications for events from author \(authorId) are disabled by preferences.")
-                    }
-                } else {
-                    print("No notification preferences found in UserDefaults.")
-                }
-            }
+            self.handleNewEvent(data: data)
+        }
+        
+        // Event fields updated
+        socket.on("eventUpdated") { data, ack in
+            self.handleEventUpdated(data: data)
+        }
+        
+        // Event deleted/cancelled
+        socket.on("eventDeleted") { data, ack in
+            self.handleEventDeleted(data: data)
         }
         
         socket.on(clientEvent: .error) { data, ack in
@@ -78,6 +49,65 @@ class SocketIOManager: ObservableObject {
         }
         
         socket.connect()
+    }
+    
+    /// Handles notifications for new events from friends.
+    private func handleNewEvent(data: [Any]) {
+        guard let eventData = data.first as? [String: Any],
+              let authorId = eventData["author"] as? String,
+              let userId = UserDefaults.standard.string(forKey: "userId"), userId != authorId,
+              let prefs = UserDefaults.standard.dictionary(forKey: "notificationPreferences") as? [String: Any],
+              let friendPrefs = prefs["friendPosting"] as? [String: Bool],
+              friendPrefs[authorId] == true else {
+            return
+        }
+        let title = eventData["title"] as? String ?? "New Event"
+        let authorUsername = eventData["authorUsername"] as? String ?? "Someone"
+        let body = "\(authorUsername) posted a new event!"
+        scheduleLocalNotification(title: title, message: body)
+    }
+    
+    /// Handles notifications when an event is updated.
+    private func handleEventUpdated(data: [Any]) {
+        print("Event updated data: \(data)")
+        guard
+        let updateData = data.first as? [String: Any],
+        let eventId    = updateData["id"] as? String,
+        let title      = updateData["title"] as? String,
+        let summary    = updateData["summary"] as? String,
+
+        // only if user has toggled on update notifications
+        let prefs      = UserDefaults.standard.dictionary(forKey: "notificationPreferences") as? [String: Any],
+        let updatesOn  = prefs["eventUpdates"] as? Bool, updatesOn,
+
+        // and only if the user has RSVPd to this event
+        let rsvpList   = UserDefaults.standard.stringArray(forKey: "rsvpEvents"),
+        rsvpList.contains(eventId)
+        else {
+        return
+        }
+
+        // schedule it
+        DispatchQueue.main.async {
+        self.scheduleLocalNotification(title: title, message: summary)
+        }
+    }
+    
+    /// Handles notifications when an event is deleted/cancelled.
+    private func handleEventDeleted(data: [Any]) {
+        guard let deleteData = data.first as? [String: Any],
+              let eventId = deleteData["id"] as? String,
+              let titleText = deleteData["title"] as? String,
+              let prefs = UserDefaults.standard.dictionary(forKey: "notificationPreferences") as? [String: Any],
+              let updatesEnabled = prefs["eventUpdates"] as? Bool, updatesEnabled == true else {
+            return
+        }
+        // Only notify if the user had RSVPd to this event
+        let rsvpd = UserDefaults.standard.stringArray(forKey: "rsvpEvents")?.contains(eventId) ?? false
+        guard rsvpd else { return }
+        let title = "Event Cancelled"
+        let body = "The event \"\(titleText)\" was cancelled."
+        scheduleLocalNotification(title: title, message: body)
     }
 
     /// Schedules a local notification to show a banner.

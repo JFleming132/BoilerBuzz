@@ -3,6 +3,7 @@ import PhotosUI
 import MapKit
 import UIKit
 import CoreLocation
+import UserNotifications
 
 
 //api data for harrys
@@ -986,17 +987,26 @@ struct EventDetailView: View {
         hasRSVPed.toggle()
         rsvpCountDisplay += hasRSVPed ? 1 : -1
         var tempArr: [String] = UserDefaults.standard.stringArray(forKey: "rsvpEvents") ?? []
-        
+
         if hasRSVPed {
             if !tempArr.contains(event.id) {
                 tempArr.append(event.id)
                 UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
             }
             rsvp(event: event)
+            // Only schedule if user has reminders enabled
+            let prefs = UserDefaults.standard.dictionary(forKey: "notificationPreferences") as? [String: Any]
+            let remindersOn = prefs?["eventReminders"] as? Bool ?? false
+            guard remindersOn else { return }
+
+            // Convert timestamp to Date and schedule
+            let eventDate = event.date
+            NotificationManager.shared.scheduleEventReminder(eventID: event.id, eventDate: eventDate)
         } else {
             tempArr.removeAll { $0 == event.id }
             UserDefaults.standard.set(tempArr, forKey: "rsvpEvents")
             unrsvp(event: event)
+            NotificationManager.shared.cancelEventReminder(eventID: event.id)
         }
     }
 }

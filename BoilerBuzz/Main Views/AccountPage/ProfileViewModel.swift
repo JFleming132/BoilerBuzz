@@ -119,7 +119,6 @@ class ProfileViewModel: ObservableObject {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .millisecondsSince1970
                 let events = try decoder.decode([Event].self, from: data)
-                print("Decoded events: \(events)")
                 DispatchQueue.main.async {
                     self.userEvents = events
                 }
