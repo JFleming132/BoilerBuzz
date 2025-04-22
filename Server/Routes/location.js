@@ -24,7 +24,7 @@ router.post('/updateLocation', async (req, res) => {
 
         // Log to check if the location was updated or created
         if (updatedLocation) {
-            console.log("✅ Location updated or created:", updatedLocation);
+            // console.log("✅ Location updated or created:", updatedLocation);
         } else {
             console.log("❌ No location was created or updated.");
         }
