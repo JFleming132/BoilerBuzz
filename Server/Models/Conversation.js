@@ -6,6 +6,7 @@ const conversationSchema = new mongoose.Schema({
   recipient:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   status:      { type: String, enum: ['pending','accepted','declined'], default: 'pending' },
   messages:    [{ type: mongoose.Schema.Types.ObjectId, ref: 'Messages' }],
+  hasUnread:   [{type: Boolean, default: 'false' }],
   updatedAt:   { type: Date, default: Date.now },
   acceptedAt:  { type: Date }
 });

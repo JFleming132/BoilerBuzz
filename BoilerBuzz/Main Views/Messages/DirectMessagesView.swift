@@ -3,28 +3,52 @@ import UIKit
 
 // MARK: - Models
 
+/// Simple message model with id, text, sender
+struct MessageModel: Identifiable, Decodable {
+    let id: String
+    let text: String
+    let sender: String
+}
+
+/// User model
 struct UserModel: Identifiable, Decodable {
     let id: String
     let username: String
     let profileImageURL: String?
 }
 
+// MARK: - API Decodable Structures
+
+/// Decodable version of a message from API
+private struct APIMessage: Decodable {
+    let id: String
+    let text: String
+    let sender: String
+}
+
+/// Decodable version of a user from API
 private struct APIUser: Decodable {
     let id: String
     let username: String
     let profilePicture: String?
 }
 
+/// Decodable version of a conversation from API
 private struct APIConversation: Decodable {
     let id: String
     let otherUser: APIUser
     let lastMessage: String
+    let messages: [APIMessage]
 }
 
+// MARK: - App Conversation Model
+
+/// Conversation model used in UI
 struct Conversation: Identifiable {
     let id: String
     let otherUser: UserModel
-    let lastMessage: String
+    var lastMessage: String
+    var messages: [MessageModel] = []
 }
 
 // MARK: - ViewModel
@@ -34,13 +58,15 @@ final class DirectMessagesViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
 
+    /// Fetch conversations including message lists
     func fetchConversations(userId: String) {
         guard let url = URL(string: "http://localhost:3000/api/messages/getConversations?userId=\(userId)") else {
-            self.errorMessage = "Invalid URL"
+            errorMessage = "Invalid URL"
             return
         }
         isLoading = true
-        URLSession.shared.dataTask(with: url) { data, response, error in
+        let decoder = JSONDecoder()
+        URLSession.shared.dataTask(with: url) { data, _, error in
             DispatchQueue.main.async {
                 self.isLoading = false
                 if let error = error {
@@ -52,16 +78,20 @@ final class DirectMessagesViewModel: ObservableObject {
                     return
                 }
                 do {
-                    let apiConvos = try JSONDecoder().decode([APIConversation].self, from: data)
+                    let apiConvos = try decoder.decode([APIConversation].self, from: data)
                     self.conversations = apiConvos.map { api in
-                        Conversation(
+                        let mappedMessages = api.messages.map { msg in
+                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender)
+                        }
+                        return Conversation(
                             id: api.id,
                             otherUser: UserModel(
                                 id: api.otherUser.id,
                                 username: api.otherUser.username,
                                 profileImageURL: api.otherUser.profilePicture
                             ),
-                            lastMessage: api.lastMessage
+                            lastMessage: api.lastMessage,
+                            messages: mappedMessages
                         )
                     }
                 } catch {
@@ -69,6 +99,68 @@ final class DirectMessagesViewModel: ObservableObject {
                 }
             }
         }.resume()
+    }
+}
+
+// MARK: - ProfileImageView
+
+struct ProfileImageView: View {
+    let urlString: String?
+
+    var body: some View {
+        if let str = urlString {
+            if let url = URL(string: str), url.scheme?.hasPrefix("http") == true {
+                AsyncImage(url: url) { phase in
+                    if let image = phase.image {
+                        image.resizable().scaledToFill()
+                    } else {
+                        Image(systemName: "person.circle").resizable().scaledToFit()
+                    }
+                }
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+            } else if let data = Data(base64Encoded: str), let uiImg = UIImage(data: data) {
+                Image(uiImage: uiImg)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "person.circle")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .clipShape(Circle())
+            }
+        } else {
+            Image(systemName: "person.circle")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .clipShape(Circle())
+        }
+    }
+}
+
+// MARK: - ConversationRow
+
+struct ConversationRow: View {
+    let convo: Conversation
+
+    var body: some View {
+        HStack(spacing: 15) {
+            ProfileImageView(urlString: convo.otherUser.profileImageURL)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(convo.otherUser.username)
+                    .font(.headline)
+                Text(convo.lastMessage)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 6)
     }
 }
 
@@ -90,7 +182,8 @@ struct DirectMessagesView: View {
         NavigationView {
             Group {
                 if viewModel.isLoading {
-                    ProgressView("Loading...")
+                    ProgressView("Loading…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = viewModel.errorMessage {
                     Text(error)
                         .foregroundColor(.red)
@@ -98,58 +191,16 @@ struct DirectMessagesView: View {
                         .padding()
                 } else {
                     List(filteredConversations) { convo in
-                        HStack(spacing: 15) {
-                            // Profile Image: URL or Base64
-                            if let str = convo.otherUser.profileImageURL {
-                                // Remote URL
-                                if let url = URL(string: str), let scheme = url.scheme, scheme.hasPrefix("http") {
-                                    AsyncImage(url: url) { phase in
-                                        if let image = phase.image {
-                                            image.resizable().scaledToFill()
-                                        } else {
-                                            Image(systemName: "person.circle").resizable().scaledToFit()
-                                        }
-                                    }
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(Circle())
-                                }
-                                // Base64 Image
-                                else if let data = Data(base64Encoded: str), let uiImg = UIImage(data: data) {
-                                    Image(uiImage: uiImg)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 50, height: 50)
-                                        .clipShape(Circle())
-                                } else {
-                                    // Fallback placeholder
-                                    Image(systemName: "person.circle")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .clipShape(Circle())
-                                }
-                            } else {
-                                Image(systemName: "person.circle")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 50, height: 50)
-                                    .clipShape(Circle())
+                        if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
+                            NavigationLink(
+                                destination: ChatDetailView(conversation: $viewModel.conversations[index], ownUserId: userId)
+                            ) {
+                                ConversationRow(convo: convo)
                             }
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(convo.otherUser.username)
-                                    .font(.headline)
-                                Text(convo.lastMessage)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                            }
-                            Spacer()
                         }
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 4)
                     }
                     .listStyle(PlainListStyle())
-                    .searchable(text: $searchQuery, prompt: "Search")
+                    .searchable(text: $searchQuery, prompt: "Search…")
                 }
             }
             .navigationTitle("Messages")
@@ -157,11 +208,5 @@ struct DirectMessagesView: View {
         .onAppear {
             viewModel.fetchConversations(userId: userId)
         }
-    }
-}
-
-struct DirectMessagesView_Previews: PreviewProvider {
-    static var previews: some View {
-        DirectMessagesView(userId: "self")
     }
 }

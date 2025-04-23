@@ -23,29 +23,37 @@ router.get('/getConversations', async (req, res) => {
     .populate('recipient', 'username profilePicture')
     .populate({
       path: 'messages',
-      select: 'text sentAt',
+      select: 'text sender sentAt',
       options: { sort: { sentAt: 1 } }
     })
     .sort('-updatedAt');
 
+    // inside your GET /getConversations handler:
     const result = convos.map(c => {
       const other = c.initiator._id.toString() === userId
         ? c.recipient
         : c.initiator;
 
-      // grab only the final message text
-      const lastMsgObj = c.messages[c.messages.length - 1];
-      const lastText = lastMsgObj ? lastMsgObj.text : null;
+      // Build simple messages array, now with id:
+      const simpleMessages = c.messages.map(msg => ({
+        id:      msg._id.toString(),    // ← include the message id
+        text:    msg.text,
+        sender:  msg.sender.toString()
+      }));
 
-      console.log(lastText)
+      // Grab just the text of the last message
+      const lastText = simpleMessages.length
+        ? simpleMessages[simpleMessages.length - 1].text
+        : null;
 
       return {
-        id: c._id.toString(),
-        otherUser: {
-          id: other._id.toString(),
-          username: other.username,
-          profilePicture: other.profilePicture
+        id:         c._id.toString(),
+        otherUser:  {
+          id:               other._id.toString(),
+          username:         other.username,
+          profilePicture:   other.profilePicture
         },
+        messages:    simpleMessages,
         lastMessage: lastText
       };
     });
@@ -56,6 +64,7 @@ router.get('/getConversations', async (req, res) => {
     res.status(500).json({ error: 'Server error fetching conversations' });
   }
 });
+
 
 
 // Create a new conversation (initial message request)
@@ -174,6 +183,39 @@ router.patch('/conversations/:convId/messages/:msgId/read', async (req, res) => 
     res.status(500).json({ error: 'Server error marking read' });
   }
 });
+
+// GET /api/messages/conversations/:id/messages
+router.get('/conversations/:id/messages', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      return res.status(400).json({ error: 'Invalid conversation id' });
+    }
+
+    // Load the conversation and populate its messages (sorted by sentAt)
+    const conversation = await Conversation.findById(convId).populate({
+      path: 'messages',
+      select: 'text sender sentAt',
+      options: { sort: { sentAt: 1 } }
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Map to only text + sender string
+    const simpleMessages = conversation.messages.map(msg => ({
+      text: msg.text,
+      sender: msg.sender.toString()
+    }));
+
+    res.json(simpleMessages);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error fetching messages' });
+  }
+});
+
 
 module.exports = router;
 
