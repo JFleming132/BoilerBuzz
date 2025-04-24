@@ -9,55 +9,72 @@ const { ObjectId } = require('mongodb');
 router.get('/user-events/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        console.log(`🔍 Fetching future RSVP events for user: ${userId}`);
+        console.log(`🔍 Fetching user data for: ${userId}`);
         
+        // Validate ObjectId
         if (!ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid user ID format' 
+            });
         }
         
-        // Find the user to get their RSVP'd events
-        const user = await User.findById(userId);
+        // Find user and populate their data
+        const user = await User.findById(userId)
+            .select('rsvpEvents friends')
+            .lean();
         
-        if (!user || !user.rsvpEvents || user.rsvpEvents.length === 0) {
-            console.log(`ℹ️ User ${userId} has no RSVP events`);
-            return res.status(200).json([]);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
         }
         
-        // Convert all event IDs to ObjectId format
+        // 1. Get RSVP Events
         const rsvpEventIds = user.rsvpEvents.map(id => 
             typeof id === 'string' ? new ObjectId(id) : id
         );
         
         const currentDate = new Date().getTime();
-        console.log("📆 Current timestamp:", currentDate);
-        
-        // Find all future events that the user has RSVP'd to
         const events = await Event.find({
             _id: { $in: rsvpEventIds },
             date: { $gte: currentDate }
-        });
+        })
+        .select('_id title description location date author authorUsername')
+        .lean();
         
-        console.log(`✅ Found ${events.length} future RSVP event(s) for user ${userId}`);
+        // 2. Get Friends List
+        const friends = user.friends || [];
         
-        // Print event IDs to console as requested
-        events.forEach(event => {
-            console.log(`Future RSVP Event ID: ${event._id}`);
-        });
+        // 3. Format Response
+        const response = {
+            success: true,
+            data: {
+                events: events.map(event => ({
+                    _id: event._id.toString(),
+                    title: event.title,
+                    description: event.description || "",
+                    location: event.location,
+                    date: Number(event.date),
+                    authorUsername: event.authorUsername || "",
+                    authorUserId: event.author.toString()
+                })),
+                friends: friends.map(friendId => friendId.toString())
+            }
+        };
         
-        const sanitizedEvents = events.map(event => ({
-            _id: event._id.toString(),
-            title: event.title,
-            description: event.description || "",
-            location: event.location,
-            date: Number(event.date),
-            authorUsername: event.authorUsername || ""
-        }));
+        res.status(200).json(response);
         
-        res.status(200).json(sanitizedEvents);
     } catch (err) {
-        console.error("❌ Error fetching user's RSVP events:", err.message);
+        console.error("❌ Error in /user-events:", err.message);
         console.error("🔍 Stack trace:", err.stack);
-        res.status(500).json({ message: 'Error fetching RSVP events', error: err.message });
+        
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 });
 
