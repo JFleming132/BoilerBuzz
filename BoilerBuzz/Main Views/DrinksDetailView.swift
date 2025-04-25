@@ -731,7 +731,7 @@ struct DrinksDetailView: View {
             return
         }
 
-        guard let url = URL(string: "http://localhost:3000/api/drinks/triedDrinks/\(userId)") else {
+        guard let url = URL(string: backendURL + "api/drinks/triedDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -771,7 +771,7 @@ struct DrinksDetailView: View {
     }
     
     func fetchDrinks() {
-        guard let url = URL(string: "http://localhost:3000/api/auth/drinks") else {
+        guard let url = URL(string: backendURL + "api/auth/drinks") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -794,7 +794,7 @@ struct DrinksDetailView: View {
             do {
                 // Print raw JSON response
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    print("🚀 API Response:\n\(jsonString)")
+                    print(" API Response:\n\(jsonString)")
                 }
 
                 // Decode as a general JSON object first
@@ -807,8 +807,8 @@ struct DrinksDetailView: View {
                             let decodedDrink = try JSONDecoder().decode(Drink.self, from: drinkData)
                             decodedDrinks.append(decodedDrink)
                         } catch {
-                            print("❌ Failed to decode drink at index \(index): \(drinkJSON)")
-                            print("🔴 Decoding error: \(error)\n")
+                            print(" Failed to decode drink at index \(index): \(drinkJSON)")
+                            print(" Decoding error: \(error)\n")
                         }
                     }
 
@@ -948,13 +948,15 @@ struct DrinkDetailsPopup: View {
         }
     }
 
+    //function to check if a drink is favorited
+    //TODO: This backend call is very inefficient. If all it does is check if a drink is favorited, it can be rewritten
     func fetchFavoriteStatus() {
         guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
+        guard let url = URL(string: backendURL + "api/drinks/favoriteDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -982,14 +984,14 @@ struct DrinkDetailsPopup: View {
         }.resume()
     }
 
-        
+    //function to toggle if a drink is favorited or not
     func toggleFavorite() {
         guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/drinks/toggleFavoriteDrink") else {
+        guard let url = URL(string: backendURL + "api/drinks/toggleFavoriteDrink") else {
             print("Invalid URL")
             return
         }

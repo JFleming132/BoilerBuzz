@@ -90,7 +90,7 @@ struct NotificationsSettingsView: View {
             self.errorMessage = "User ID not found."
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/friends/\(userId)") else {
+        guard let url = URL(string: backendURL + "api/friends/\(userId)") else {
             self.errorMessage = "Invalid URL."
             return
         }
@@ -135,7 +135,7 @@ struct NotificationsSettingsView: View {
             self.errorMessage = "User ID not found."
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/notifications/\(userId)") else {
+        guard let url = URL(string: backendURL + "api/notifications/\(userId)") else {
             self.errorMessage = "Invalid URL."
             return
         }
@@ -178,7 +178,7 @@ struct NotificationsSettingsView: View {
             print("User ID not found")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/notification/\(userId)") else {
+        guard let url = URL(string: backendURL + "api/notification/\(userId)") else {
             print("Invalid URL")
             return
         }

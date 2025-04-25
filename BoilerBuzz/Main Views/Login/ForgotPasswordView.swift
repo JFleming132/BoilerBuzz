@@ -125,7 +125,7 @@ struct ForgotPasswordView: View {
         successMessage = nil
 
         // API Call to backend for sending reset code
-        let url = URL(string: "http://localhost:3000/api/auth/forgotPasswordCode")!
+        let url = URL(string: backendURL + "api/auth/forgotPasswordCode")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -164,7 +164,7 @@ struct ForgotPasswordView: View {
         }
 
         // API Call to backend for resetting the password with the code
-        let url = URL(string: "http://localhost:3000/api/auth/changePassword")!
+        let url = URL(string: backendURL + "api/auth/changePassword")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -70,7 +70,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let latitude = location.coordinate.latitude
         let longitude = location.coordinate.longitude
 
-        let url = URL(string: "http://localhost:3000/api/location/updateLocation")!
+        let url = URL(string: backendURL + "api/location/updateLocation")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

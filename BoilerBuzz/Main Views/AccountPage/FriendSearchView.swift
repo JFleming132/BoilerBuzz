@@ -105,7 +105,7 @@ struct FriendSearchView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/friends/search?username=\(searchQuery)&exclude=\(currentUserId)") else {
+        guard let url = URL(string: backendURL + "api/friends/search?username=\(searchQuery)&exclude=\(currentUserId)") else {
             errorMessage = "Invalid URL."
             isLoading = false
             return
@@ -150,7 +150,7 @@ struct FriendSearchView: View {
             return
         }
         let friendId = friend.id  // Use the id from the Friend object
-        guard let url = URL(string: "http://localhost:3000/api/friends/addFriend") else {
+        guard let url = URL(string: backendURL + "api/friends/addFriend") else {
             print("Invalid URL")
             return
         }

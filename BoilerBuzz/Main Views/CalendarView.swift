@@ -88,7 +88,7 @@ struct CalendarViewPage: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/calendar/events?currentUserID=\(myUserId)") else {
+        guard let url = URL(string: backendURL + "api/calendar/events?currentUserID=\(myUserId)") else {
             errorMessage = "Invalid API URL"
             return
         }
@@ -119,7 +119,7 @@ struct CalendarViewPage: View {
 
             // Debug raw JSON response
             if let jsonString = String(data: data, encoding: .utf8) {
-                print("🚀 API Response:\n\(jsonString)")
+                print(" API Response:\n\(jsonString)")
             }
 
             do {
