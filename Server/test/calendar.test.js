@@ -16,7 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 
 describe('Calendar Endpoints', function () {
-    let userId, rsvpEventId, promotedEventId, bothEventId, neitherEventId, blockedPromotedEventId;
+    var userId, rsvpEventId, promotedEventId, bothEventId, neitherEventId, blockedPromotedEventId, tr;
 
     // Before tests, connect to a test database and create two test users.
     before(async function () {
@@ -33,12 +33,101 @@ describe('Calendar Endpoints', function () {
             password: "password"
         })
         
-        //TODO: Add some dummy events to calendar:
-        //one promoted
-        //one rsvpd
-        //one both
-        //one neither
-        //one promoted but authored by a blocked user
+        const formattedDate = new Date().getTime();
+        if (isNaN(formattedDate)) {
+            return res.status(400).json({ message: 'Invalid date format' });
+        }
+        
+        //set up 5 test events
+        const newPromotedEvent = new Event({
+            "promotedTest",
+            "unblockedUserTest",
+            0,
+            true,
+            "test event",
+            "NA",
+            20,
+            false, 
+            date: formattedDate,
+            imageUrl: "",
+            "unblockedUserTest"
+        });
+        tr = await newPromotedEvent.save()
+        if (tr) {
+            promotedEventId = tr._id
+        }
+        
+        const newRSVPEvent = new Event({
+            "RSVPTest",
+            "unblockedUserTest",
+            0,
+            false,
+            "test event",
+            "NA",
+            20,
+            false,
+            date: formattedDate,
+            imageUrl: "",
+            "unblockedUserTest"
+        });
+        var tr = await newRSVPEvent.save()
+        if (tr) {
+            rsvpEventId = tr._id
+        }
+        
+        const newBothEvent = new Event({
+            "promotedTest",
+            "unblockedUserTest",
+            0,
+            true,
+            "test event",
+            "NA",
+            20,
+            false,
+            date: formattedDate,
+            imageUrl: "",
+            "unblockedUserTest"
+        });
+        var tr = await newBothEvent.save()
+        if (tr) {
+            bothEventId = tr._id
+        }
+        
+        const newNeitherEvent = new Event({
+            "promotedTest",
+            "unblockedUserTest",
+            0,
+            false,
+            "test event",
+            "NA",
+            20,
+            false,
+            date: formattedDate,
+            imageUrl: "",
+            "unblockedUserTest"
+        });
+        var tr = await newNeitherEvent.save()
+        if (tr) {
+            neitherEventId = tr._id
+        }
+        
+        const newBlockedPromotedEvent = new Event({
+            "promotedTest",
+            blockedUser,
+            0,
+            true,
+            "test event",
+            "NA",
+            20,
+            false,
+            date: formattedDate,
+            imageUrl: "",
+            "blockedUser"
+        });
+        var tr = await newBlockedPromotedEvent.save()
+        if (tr) {
+            blockedPromotedEventId = tr._id
+        }
         
         // Create primary test user.
         const primaryUser = new User({
@@ -47,8 +136,7 @@ describe('Calendar Endpoints', function () {
             password: "password",
             friends: [] // Initially no friends.
             blockedUserIDs: [blockedUser]
-            //TODO: Add some RSVP events
-            //TODO: Add a blocked user
+            rsvpEvents = [rsvpEventId, bothEventId]
         });
         await primaryUser.save();
         userId = primaryUser._id.toString();
@@ -58,7 +146,7 @@ describe('Calendar Endpoints', function () {
     after(async function () {
         this.timeout(20000); // 20 seconds
         await User.deleteMany({ email: { $in: ["calendartest1@example.com", "calendartest2@example.com"] } });
-        //Delete test events
+        await Event.deleteMany({ _id: { $in: [promotedEventId, rsvpEventId, bothEventId, neitherEventId, blockedPromotedEventId]}})
         await mongoose.connection.close();
     });
 

@@ -82,7 +82,7 @@ struct CalendarViewPage: View {
         return Set(DateComponentsArray) //convert array to set for CalendarView()
     }
     
-    private func fetchEvents() { //literally copied from Sophie's code
+    private func fetchEvents() {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
             print("My user ID not found")
             return

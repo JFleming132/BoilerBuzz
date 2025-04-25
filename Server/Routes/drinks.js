@@ -130,6 +130,22 @@ router.get('/triedDrinks/:userId', async (req, res) => {
   }
 });
 
+router.get('/isDrinkTried/:userId/:drinkId'), asynch (req, res) => {
+    const userId = req.params.userId
+    const drinkId = req.params.drinkId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: 'Invalid user Id' })
+    }
+    else if (!mongoose.Types.ObjectId.isValid(drinkId)) {
+        return res.status(400).json({ error: 'Invalid drink Id' })
+    }
+    try {
+        //TODO: Write an aggregate that returns null if drink is not tried, and nonnull otherwise
+    } catch (error) {
+        console.error('Error fetching drink\'s tried status by user:', error);
+        return res.status(500).json({ error: 'Internal server error' })
+    }
+}
 
 // GET endpoint to retrieve favorite drinks for a given user
 router.get('/favoriteDrinks/:userId', async (req, res) => {

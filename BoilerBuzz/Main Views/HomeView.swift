@@ -223,7 +223,6 @@ struct EventsTab: View {
         }
         .sheet(isPresented: $isCreatingEvent) {
             CreateEventView(onEventCreated: { _ in
-                // Placeholder for event creation
             })
         }
     }
@@ -258,8 +257,6 @@ struct EventListView: View {
 // Event Card View
 struct EventCardView: View {
     let event: Event
-    
-    //maybe by saving eventIDs in an array in the UserDefaults and simply testing if event.id is in that array?
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
