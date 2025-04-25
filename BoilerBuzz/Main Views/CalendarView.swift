@@ -21,16 +21,16 @@ struct CalendarViewPage: View {
     @State private var showingEventSheet: Bool = false
     var body: some View {
         VStack {
-            CalendarView(selection: $selectedDates)
+            CalendarView(selection: $selectedDates) //TODO: Make these decorations nicer and more noticable
                 .decorating(
                     parseEvents(events: rsvpEvents),
                     systemImage: "star"
-                ) //turn events date data into dateComponents set
+                )
                 .decorating(
                     parseEvents(events: promotedEvents),
                     systemImage: "star.fill"
                 )
-                .onAppear(perform: fetchEvents) //TODO: clicking on an event should pull up a card with information about it
+                .onAppear(perform: fetchEvents)
                 .onChange(of: selectedDates, { oldValue, newValue in
                     if !newValue.isEmpty {
                         showingEventSheet = true
