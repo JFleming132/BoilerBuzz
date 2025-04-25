@@ -123,6 +123,7 @@ struct HomeView: View {
         }
     }
 
+    //Function to fetch all valid events from the backend
     //TODO: Does the backend function omit blocked users?
     private func fetchEvents() {
         guard let url = URL(string: backendURL + "api/home/events") else {
