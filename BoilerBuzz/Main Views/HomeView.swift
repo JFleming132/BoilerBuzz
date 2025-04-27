@@ -96,6 +96,15 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
+                    Button(action: { selectedTab = 2 }) {
+                        VStack {
+                            Image(systemName: "sparkles")
+                            Text("Specials")
+                        }
+                        .foregroundColor(selectedTab == 2 ? .blue : .gray)
+                    }
+                    .frame(maxWidth: .infinity)
+
                     Button(action: { selectedTab = 1 }) {
                         VStack {
                             Image(systemName: "cup.and.saucer")
@@ -104,6 +113,7 @@ struct HomeView: View {
                         .foregroundColor(selectedTab == 1 ? .blue : .gray)
                     }
                     .frame(maxWidth: .infinity)
+
                 }
                 .padding()
                 .background(Color(uiColor: UIColor.systemBackground))
@@ -120,6 +130,9 @@ struct HomeView: View {
                         )
                     } else if selectedTab == 1 {
                         HarrysView()
+                    }
+                    else if selectedTab == 2 {
+                        SpecialsView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

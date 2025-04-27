@@ -43,12 +43,39 @@ class SocketIOManager: ObservableObject {
         socket.on("eventDeleted") { data, ack in
             self.handleEventDeleted(data: data)
         }
+
+        socket.on("drinkSpecialCreated") { data, ack in
+            self.handleDrinkSpecial(data: data)
+        }
+
+        
         
         socket.on(clientEvent: .error) { data, ack in
             print("Socket encountered an error: \(data)")
         }
         
         socket.connect()
+    }
+
+    private func handleDrinkSpecial(data: [Any]) {
+        // 1) unwrap payload
+        guard let payload = data.first as? [String: Any],
+              let title     = payload["title"]    as? String,
+              let barName   = payload["barName"]  as? String else {
+            return
+        }
+        
+        // 2) check user preference
+        let prefs = UserDefaults.standard
+                       .dictionary(forKey: "notificationPreferences") as? [String: Any]
+        let drinksOn = prefs?["drinkSpecials"] as? Bool ?? false
+        guard drinksOn else { return }
+
+        // 3) schedule the local notification
+        let notifTitle = "New Drink Special!"
+        let notifBody  = "\(barName) just posted “\(title)”"
+        scheduleLocalNotification(title: notifTitle, message: notifBody)
+
     }
     
     /// Handles notifications for new events from friends.

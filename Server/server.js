@@ -23,6 +23,7 @@ const reportRoutes = require('./Routes/report');
 const blockedRoutes = require('./Routes/blocked');
 const calendarRoutes = require('./Routes/calendar');
 const eventRoutes = require('./Routes/eventRoutes');
+const drinkSpecialsRoutes = require('./Routes/drinkSpecials');
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -110,6 +111,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: { origin: '*' }
 });
+
+app.use('/api/drinkspecials', drinkSpecialsRoutes(io)); // Pass the Socket.IO instance to the drinkSpecials routes
 
 // Import and start the event watcher (listening for new events)
 const { startEventWatcher } = require('./eventWatcher');

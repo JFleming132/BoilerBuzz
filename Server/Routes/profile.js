@@ -154,7 +154,7 @@ router.get('/random', async (req, res) => {
 router.get('/:userId', async (req, res) => {
     try {
         console.log("Why are we here")
-        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned rating ratingCount'); //TODO: Add isPromoted status
+        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned isPromoted rating ratingCount'); //TODO: Add isPromoted status
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

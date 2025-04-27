@@ -78,7 +78,8 @@ struct AccountView: View {
     @State private var showPostPhotoAction: Bool = false
     @State private var showSourceChoice: Bool = false
     
-    @State private var showCreateEvent: Bool = false  // New state variable for CreateEventView
+    @State private var showCreateEvent: Bool = false
+    @State private var showCreateDrinkSpecial: Bool = false
 
     
     @State private var showImagePicker: Bool = false
@@ -87,7 +88,7 @@ struct AccountView: View {
     @State private var selectedSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     enum UploadMode {
-        case none, event, photo
+        case none, event, photo, drinkSpecial
     }
     
     /* TESTING */
@@ -172,6 +173,11 @@ struct AccountView: View {
                             uploadPhoto(image: image)
                         }
                     }
+            }
+            .sheet(isPresented: $showCreateDrinkSpecial) {
+                CreateDrinkSpecialView(onCreated: { special in
+                    // Insert `special` into your specials list or trigger a refresh
+                  })
             }
         }
     }
@@ -382,6 +388,13 @@ struct AccountView: View {
                                 // Present an action sheet to choose source type
                                 showSourceChoice = true
                             }
+                            // Only if the account is promoted
+                            if profileData.isPromoted {
+                                Button("New Drink Special") {
+                                    uploadMode = .drinkSpecial
+                                    showCreateDrinkSpecial = true
+                                }
+                            }
                             Button("Cancel", role: .cancel) {
                                 uploadMode = .none
                             }
@@ -434,14 +447,21 @@ struct AccountView: View {
             Picker("Select Content", selection: $selectedTab) {
                 Text("Events").tag("Events")
                 Text("Photos").tag("Photos")
+                if profileData.isPromoted {
+                   Text("Specials").tag("Specials")
+                }
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
             
             if selectedTab == "Events" {
                 postsGrid
-            } else {
+            } else if selectedTab == "Photos" {
                 photosGrid
+            }
+            else if selectedTab == "Specials" {
+                BarSpecialsView(barId: profileData.userId)
+                    .padding(.horizontal)
             }
         }
     }
