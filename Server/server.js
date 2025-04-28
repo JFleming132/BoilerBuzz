@@ -69,7 +69,7 @@ cron.schedule('0 0 1 * *', async () => {
 
 // Schedule aggregate.js to run every minute
 cron.schedule('* * * * *', () => {
-    console.log("Running aggregate.js...");
+    //console.log("Running aggregate.js...");
 
     exec('node aggregate.js', (error, stdout, stderr) => {
         if (error) {

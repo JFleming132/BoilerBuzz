@@ -45,7 +45,7 @@ router.get('/:userId/campus-status', async (req, res) => {
       );
 
     // Check if location is recent (within 1 hours)
-    const locationExpiryMinutes = 60;
+    const locationExpiryMinutes = 1440;
     const isLocationRecent = recentLocation && 
       (Date.now() - new Date(recentLocation.lastUpdate).getTime()) < 
       locationExpiryMinutes * 60 * 1000;
