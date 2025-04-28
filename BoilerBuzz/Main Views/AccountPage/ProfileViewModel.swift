@@ -162,24 +162,45 @@ class ProfileViewModel: ObservableObject {
     }
     
     func fetchCampusStatus(userId: String? = nil) {
-            let id = userId ?? self.userId
-            guard let url = URL(string: "http://localhost:3000/api/users/\(id)/campus-status") else { return }
+        let id = userId ?? self.userId
+        guard let url = URL(string: "http://localhost:3000/api/users/\(id)/campus-status") else {
+            print("Invalid URL")
+            return
+        }
 
-            let task = URLSession.shared.dataTask(with: url) { data, response, error in
-                guard let data = data,
-                      error == nil,
-                      let decoded = try? JSONDecoder().decode(CampusStatusResponse.self, from: data) else {
-                    print("Failed to fetch campus status")
-                    return
-                }
-
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            // Check for network errors
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                return
+            }
+            
+            // Check for valid HTTP response
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                print("Invalid response: \(String(describing: response))")
+                return
+            }
+            
+            // Check for data
+            guard let data = data else {
+                print("No data received")
+                return
+            }
+            
+            // Decode JSON
+            do {
+                let decoded = try JSONDecoder().decode(CampusStatusResponse.self, from: data)
                 DispatchQueue.main.async {
                     self.isOnCampus = decoded.isOnCampus
                     self.campusStatusLastChecked = decoded.lastChecked
                 }
+            } catch {
+                print("Decoding error: \(error)")
             }
-            task.resume()
         }
+        task.resume()
+    }
 
 }
 
