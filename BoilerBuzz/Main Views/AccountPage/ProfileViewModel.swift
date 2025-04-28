@@ -163,45 +163,35 @@ class ProfileViewModel: ObservableObject {
     
     func fetchCampusStatus(userId: String? = nil) {
         let id = userId ?? self.userId
-        guard let url = URL(string: "http://localhost:3000/api/users/\(id)/campus-status") else {
-            print("Invalid URL")
-            return
-        }
+        guard let url = URL(string: "http://localhost:3000/api/users/\(id)/campus-status") else { return }
 
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            // Check for network errors
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
+            guard let data = data, error == nil else {
+                print("Failed to fetch campus status")
                 return
             }
             
-            // Check for valid HTTP response
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                print("Invalid response: \(String(describing: response))")
-                return
+            // Print raw response for debugging
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                print("Raw API Response:", rawJSON)
             }
             
-            // Check for data
-            guard let data = data else {
-                print("No data received")
-                return
-            }
-            
-            // Decode JSON
             do {
-                let decoded = try JSONDecoder().decode(CampusStatusResponse.self, from: data)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let decoded = try decoder.decode(CampusStatusResponse.self, from: data)
+                
                 DispatchQueue.main.async {
                     self.isOnCampus = decoded.isOnCampus
                     self.campusStatusLastChecked = decoded.lastChecked
+                    print("DEBUG: Successfully decoded - isOnCampus =", decoded.isOnCampus)
                 }
             } catch {
-                print("Decoding error: \(error)")
+                print("Decoding error:", error)
             }
         }
         task.resume()
     }
-
 }
 
 // Struct will need profilepic eventually
@@ -237,4 +227,26 @@ struct Photo: Identifiable, Codable {
 struct CampusStatusResponse: Codable {
     let isOnCampus: Bool
     let lastChecked: Date?
+    let lastLocation: LocationData?
+    
+    enum CodingKeys: String, CodingKey {
+        case isOnCampus, lastChecked, lastLocation
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isOnCampus = try container.decode(Bool.self, forKey: .isOnCampus)
+        
+        // Manually decode the date
+        let dateString = try container.decode(String.self, forKey: .lastChecked)
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        lastChecked = formatter.date(from: dateString)
+        
+        lastLocation = try container.decode(LocationData.self, forKey: .lastLocation)
+    }
+}
+struct LocationData: Codable {
+    let latitude: Double
+    let longitude: Double
 }

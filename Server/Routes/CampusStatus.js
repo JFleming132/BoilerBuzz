@@ -6,7 +6,7 @@ const CampusStatus = require('../Models/CampusStatus');
 // Geofence calculation
 function isWithinCampus(location) {
   const campusCenter = { lat: 40.4237, lng: -86.9232 };
-  const radius = 2000; // meters
+  const radius = 16000; // meters which is a 10 mi radius
 
   const R = 6371000; // Earth's radius
   const dLat = (location.latitude - campusCenter.lat) * Math.PI/180;
@@ -32,18 +32,26 @@ router.get('/:userId/campus-status', async (req, res) => {
       return res.status(400).json({ error: 'Invalid userId format' });
     }
 
-    // Convert to ObjectId
     const objectId = new mongoose.Types.ObjectId(userId);
 
     // Get most recent location
     const recentLocation = await mongoose.connection.db.collection('user_locations')
       .findOne(
         { userId: objectId },
-        { sort: { lastUpdate: -1 }, projection: { _id: 0, latitude: 1, longitude: 1 } }
+        { 
+          sort: { lastUpdate: -1 }, 
+          projection: { _id: 0, latitude: 1, longitude: 1, lastUpdate: 1 } 
+        }
       );
 
+    // Check if location is recent (within 1 hours)
+    const locationExpiryMinutes = 60;
+    const isLocationRecent = recentLocation && 
+      (Date.now() - new Date(recentLocation.lastUpdate).getTime()) < 
+      locationExpiryMinutes * 60 * 1000;
+
     // Calculate campus status
-    const isOnCampus = recentLocation ? 
+    const isOnCampus = isLocationRecent ? 
       isWithinCampus(recentLocation) : false;
 
     // Update status record
@@ -61,7 +69,8 @@ router.get('/:userId/campus-status', async (req, res) => {
     res.json({
       isOnCampus,
       lastChecked: new Date(),
-      lastLocation: recentLocation || null
+      lastLocation: recentLocation || null,
+      isLocationRecent // For debugging
     });
 
   } catch (error) {
@@ -71,4 +80,3 @@ router.get('/:userId/campus-status', async (req, res) => {
 });
 
 module.exports = router;
-
