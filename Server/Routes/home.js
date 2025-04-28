@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Event = require('../Models/Event'); // Ensure correct path to Event model
+const NameList = require('../Models/NameList'); // Adjust path as needed
 const User = require('../Models/User');   // Ensure correct path to User model
 const HarrysCount = require('../Models/harrys'); // Ensure correct import
 const nodemailer = require('nodemailer');
@@ -41,38 +42,29 @@ router.get('/harrys/line', async (req, res) => {
 
 router.post('/events', async (req, res) => {
     try {
-        const { title, author, rsvpCount, promoted, description, location, capacity, is21Plus, date, imageUrl, authorUsername } = req.body;
+        const { title, author, authorUsername, /* other fields */ } = req.body;
 
-        if (!title || !location || !capacity || !date) {
-            return res.status(400).json({ message: 'Missing required fields' });
-        }
+        // 1. Look up organizer's name
+        const nameEntry = await NameList.findOne({ 
+            username: authorUsername 
+        }).lean();
 
-        const formattedDate = new Date(date).getTime();
-        if (isNaN(formattedDate)) {
-            return res.status(400).json({ message: 'Invalid date format' });
-        }
+        const organizerName = nameEntry 
+            ? `${nameEntry.firstName} ${nameEntry.lastName}`
+            : authorUsername; // Fallback to username
 
+        // 2. Create event with organizerName
         const newEvent = new Event({
             title,
             author,
-            rsvpCount,  // Should be 0 on creation
-            promoted,
-            description,
-            location,
-            capacity,
-            is21Plus,
-            date: formattedDate,
-            imageUrl: imageUrl || "",
-            authorUsername
+            authorUsername,
+            organizerName, // <-- Add this line
+            // ... other fields
         });
 
         await newEvent.save();
-	
-	// Add event ID to user's pastEvents
-        await User.findByIdAndUpdate(author, {
-            $push: { pastEvents: newEvent._id }
-        });
-        console.log("✅ Event created successfully:", newEvent);
+
+        // 3. Return event with verified name
         res.status(201).json(newEvent);
     } catch (err) {
         console.error("❌ Error creating event:", err);
@@ -80,17 +72,34 @@ router.post('/events', async (req, res) => {
     }
 });
 
+
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
 
+        // 1. Fetch events
         const events = await Event.find({ date: { $gte: currentDate } });
         console.log(` Found ${events.length} event(s)`);
 
+        // 2. Get unique author usernames
+        const usernames = [...new Set(events.map(e => e.authorUsername))];
+        
+        // 3. Fetch names from NameList
+        const nameListEntries = await NameList.find({ 
+            username: { $in: usernames } 
+        }).lean();
+
+        // 4. Create name lookup map
+        const nameMap = nameListEntries.reduce((acc, entry) => {
+            acc[entry.username] = `${entry.firstName} ${entry.lastName}`;
+            return acc;
+        }, {});
+
+        // 5. Sanitize events with organizer names
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
             title: event.title,
-            author: event.author?.toString() || "", // Ensure author is a string
+            author: event.author?.toString() || "",
             rsvpCount: event.rsvpCount || 0,
             description: event.description || "",
             location: event.location,
@@ -99,14 +108,14 @@ router.get('/events', async (req, res) => {
             promoted: Boolean(event.promoted),
             date: Number(event.date),
             imageUrl: event.imageUrl || "",
-            authorUsername: event.authorUsername || ""
+            authorUsername: event.authorUsername || "",
+            organizerName: nameMap[event.authorUsername] || event.authorUsername // NEW FIELD
         }));
 
-        res.status(200).json(sanitizedEvents); // Return as a pure array
+        res.status(200).json(sanitizedEvents);
 
     } catch (err) {
         console.error("❌ Error fetching events:", err.message);
-        console.error(" Stack trace:", err.stack);
         res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
