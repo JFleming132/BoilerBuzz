@@ -22,6 +22,8 @@ class ProfileViewModel: ObservableObject {
     @Published var ratingCount: Int = 0
     @Published var userEvents: [Event] = []
     @Published var userPhotos: [Photo] = []
+    @Published var isOnCampus: Bool = false
+    @Published var campusStatusLastChecked: Date? = nil
 
     // Function to fetch user data from the backend.
 
@@ -158,7 +160,26 @@ class ProfileViewModel: ObservableObject {
             }
         }.resume()
     }
+    
+    func fetchCampusStatus(userId: String? = nil) {
+            let id = userId ?? self.userId
+            guard let url = URL(string: "http://localhost:3000/api/users/\(id)/campus-status") else { return }
 
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                guard let data = data,
+                      error == nil,
+                      let decoded = try? JSONDecoder().decode(CampusStatusResponse.self, from: data) else {
+                    print("Failed to fetch campus status")
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    self.isOnCampus = decoded.isOnCampus
+                    self.campusStatusLastChecked = decoded.lastChecked
+                }
+            }
+            task.resume()
+        }
 
 }
 
@@ -190,4 +211,9 @@ struct Photo: Identifiable, Codable {
         case creator
         case createdAt
     }
+}
+
+struct CampusStatusResponse: Codable {
+    let isOnCampus: Bool
+    let lastChecked: Date?
 }

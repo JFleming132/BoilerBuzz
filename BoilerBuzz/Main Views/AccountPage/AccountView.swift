@@ -194,12 +194,14 @@ struct AccountView: View {
                 .onAppear {
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
+                        profileData.fetchCampusStatus(userId: uid)
                         profileData.fetchUserEvents()
-                        profileData.fetchUserPhotos()  
+                        profileData.fetchUserPhotos()
                         fetchFriendStatus()
                         fetchBlockedStatus()
                     } else {
                         profileData.fetchUserProfile()
+                        profileData.fetchCampusStatus()
                         profileData.fetchUserEvents()
                         profileData.fetchUserPhotos()
                     }
@@ -350,7 +352,25 @@ struct AccountView: View {
                         .background(Color.blue)
                         .cornerRadius(4)
                 }
+                // New campus status badge
+                if profileData.isOnCampus {
+                        Text("On Campus")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .padding(4)
+                            .background(Color.green.opacity(0.2))
+                            .cornerRadius(4)
+                            .transition(.opacity)
+                } else {
+                    Text("Off Campus")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(4)
+                        .transition(.opacity)
             }
+        }
             Text(profileData.bio)
                 .font(.subheadline)
                 .foregroundColor(.gray)
