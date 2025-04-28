@@ -297,20 +297,6 @@ struct AccountView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityIdentifier("rateUserButton")
-                
-                NavigationLink(
-                    destination: DirectMessagesView(
-                        userId: UserDefaults.standard.string(forKey: "userId") ?? "self"
-                    )
-                ) {
-                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(.blue)
-                        .padding(14)
-                        .clipShape(Circle())
-                        .contentShape(Circle())
-                }
 
             }
         }

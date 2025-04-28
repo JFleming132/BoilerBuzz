@@ -8,7 +8,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const Conversation = require('../Models/Conversation');
-const Messages = require('../Models/Messages');
+const Message = require('../Models/Messages');
+const User = require('../Models/User')
 
 // GET /api/getConversations?userId={userId}
 router.get('/getConversations', async (req, res) => {
@@ -213,6 +214,184 @@ router.get('/conversations/:id/messages', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error fetching messages' });
+  }
+});
+
+// Post API endpoint for sendMessage
+router.post("/conversations/:id/sendMessage", async(req, res) => {
+  try {
+    const convoId = req.params.id;
+    const { messageText, sender, other } = req.body;
+
+    if (!messageText || !sender || !other) {
+      res.status(400).json({ error: 'Message text or one of the user ids were empty'});
+    }
+
+    const senderExists = await User.findById(sender);
+    if (!senderExists) {
+      return res.status(400).json({ error: 'sender user id is not valid' })
+    }
+
+    const otherExists = await User.findById(other);
+    if (!otherExists) {
+      return res.status(400).json({ error: 'recieving user id is not valid' })
+    }
+
+    const conversation = await Conversation.findById(convoId);
+    if (!conversation) {
+      return res.status(400).json({ error: 'conversation not found' });
+    }
+
+    const validMembers =
+      (conversation.initiator.toString() === sender && conversation.recipient.toString() === other) ||
+      (conversation.initiator.toString() === other && conversation.recipient.toString() === sender);
+
+    if (!validMembers) {
+      return res.status(400).json({ error: 'users are not part of this conversation' });
+    }
+
+    const message = new Message({
+      sender,
+      text: messageText,
+      sentAt: Date.now(),
+      read: false
+    });
+
+    await message.save();
+
+    conversation.messages.push(message._id);
+    conversation.updatedAt = Date.now();
+    await conversation.save()
+
+    res.status(200).json({
+      message: 'Message sent successfully',
+      messageData: {
+        id: message._id.toString(),
+        text: message.text,
+        sender: message.sender.toString()
+      }
+    })
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error fetching messages' });
+  }
+});
+
+// GET /api/messages/getAvailableUsers?userId={userId}
+router.get('/getAvailableUsers', async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId) return res.status(400).json({ error: 'userId query required' });
+
+    // First, find all conversations the user is part of
+    const convos = await Conversation.find({
+      $or: [{ initiator: userId }, { recipient: userId }]
+    });
+
+    // Build a set of userIds already in conversation with
+    const connectedUserIds = new Set();
+    convos.forEach(c => {
+      if (c.initiator.toString() !== userId) connectedUserIds.add(c.initiator.toString());
+      if (c.recipient.toString() !== userId) connectedUserIds.add(c.recipient.toString());
+    });
+
+    // Also add yourself to the set to exclude yourself
+    connectedUserIds.add(userId);
+
+    // Find all users not in the set
+    const availableUsers = await User.find({
+      _id: { $nin: Array.from(connectedUserIds) }
+    }).select('username profilePicture');
+
+    const formattedUsers = availableUsers.map(u => ({
+      id: u._id.toString(),
+      username: u.username,
+      profileImageURL: u.profilePicture || null
+    }));
+
+    res.json(formattedUsers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error fetching available users' });
+  }
+});
+
+router.post('/startConversation', async (req, res) => {
+  try {
+    const { initiator, recipient, messageText } = req.body;
+
+    if (!initiator || !recipient || !messageText) {
+      return res.status(400).json({ error: 'initiator, recipient, and messageText are required.' });
+    }
+
+    // Check if a conversation already exists
+    let convo = await Conversation.findOne({ initiator, recipient })
+      || await Conversation.findOne({ initiator: recipient, recipient: initiator });
+
+    if (convo) {
+      return res.status(400).json({ error: 'Conversation already exists.' });
+    }
+
+    // Create the new conversation
+    convo = new Conversation({ initiator, recipient, status: 'accepted', acceptedAt: Date.now() });
+    await convo.save();
+
+    // Create the first message
+    const message = new Message({
+      sender: initiator,
+      text: messageText,
+      sentAt: Date.now(),
+      read: false
+    });
+    await message.save();
+
+    // Attach message to conversation
+    convo.messages.push(message._id);
+    convo.updatedAt = Date.now();
+    await convo.save();
+
+    // Populate initiator and recipient properly
+    await convo.populate('initiator', 'username profilePicture');
+    await convo.populate('recipient', 'username profilePicture');
+    await convo.populate({
+      path: 'messages',
+      select: 'text sender sentAt',
+      options: { sort: { sentAt: 1 } }
+    });
+
+    const other = convo.initiator._id.toString() === initiator
+      ? convo.recipient
+      : convo.initiator;
+
+    const simpleMessages = convo.messages.map(msg => ({
+      id: msg._id.toString(),
+      text: msg.text,
+      sender: msg.sender.toString()
+    }));
+
+    const lastText = simpleMessages.length
+      ? simpleMessages[simpleMessages.length - 1].text
+      : null;
+
+    const formattedConversation = {
+      id: convo._id.toString(),
+      otherUser: {
+        id: other._id.toString(),
+        username: other.username,
+        profilePicture: other.profilePicture || null
+      },
+      messages: simpleMessages,
+      lastMessage: lastText
+    };
+
+    console.log(formattedConversation)
+
+    res.status(201).json(formattedConversation);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error starting conversation' });
   }
 });
 

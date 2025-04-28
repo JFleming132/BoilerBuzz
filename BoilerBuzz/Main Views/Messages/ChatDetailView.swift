@@ -14,6 +14,60 @@ struct ChatDetailView: View {
     @Binding var conversation: Conversation
     let ownUserId: String
     @State private var newMessage: String = ""
+    
+    func sendMessageBackend(convoId: String, messageText: String, sender: String, other: String) {
+        guard let postUrl = URL(string: "http://localhost:3000/api/messages/conversations/\(convoId)/sendMessage") else {
+            print("Invalid URL")
+            return
+        }
+        
+        var request = URLRequest(url: postUrl)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+
+        let body: [String: Any] = [
+            "messageText": messageText,
+            "sender": sender,
+            "other": other
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Failed to encode body: \(error.localizedDescription)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Failed to send message: \(error.localizedDescription)")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data received from server")
+                return
+            }
+            
+            do {
+                // First decode the top-level server response
+                struct MessageResponse: Decodable {
+                    let message: String
+                    let messageData: MessageModel
+                }
+                
+                let decoded = try JSONDecoder().decode(MessageResponse.self, from: data)
+                let newMsg = decoded.messageData
+                conversation.messages.append(newMsg)
+                conversation.lastMessage = newMessage
+                newMessage = ""
+                
+            } catch {
+                print("Failed to decode message response: \(error.localizedDescription)")
+                return
+            }
+        }.resume()
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -104,14 +158,7 @@ struct ChatDetailView: View {
                     .clipShape(Capsule())
 
                 Button(action: {
-                    let newMsg = MessageModel(
-                        id: UUID().uuidString,
-                        text: newMessage,
-                        sender: ownUserId
-                    )
-                    conversation.messages.append(newMsg)
-                    conversation.lastMessage = newMessage
-                    newMessage = ""
+                    sendMessageBackend(convoId: conversation.id, messageText: newMessage, sender: ownUserId, other: conversation.otherUser.id)
                 }) {
                     Image(systemName: "paperplane.fill")
                         .rotationEffect(.degrees(45))
