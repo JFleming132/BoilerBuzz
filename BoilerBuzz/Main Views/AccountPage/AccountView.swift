@@ -78,7 +78,8 @@ struct AccountView: View {
     @State private var showPostPhotoAction: Bool = false
     @State private var showSourceChoice: Bool = false
     
-    @State private var showCreateEvent: Bool = false  // New state variable for CreateEventView
+    @State private var showCreateEvent: Bool = false
+    @State private var showCreateDrinkSpecial: Bool = false
 
     
     @State private var showImagePicker: Bool = false
@@ -87,7 +88,7 @@ struct AccountView: View {
     @State private var selectedSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     enum UploadMode {
-        case none, event, photo
+        case none, event, photo, drinkSpecial
     }
     
     /* TESTING */
@@ -173,6 +174,11 @@ struct AccountView: View {
                         }
                     }
             }
+            .sheet(isPresented: $showCreateDrinkSpecial) {
+                CreateDrinkSpecialView(onCreated: { special in
+                    // Insert `special` into your specials list or trigger a refresh
+                  })
+            }
         }
     }
 
@@ -188,12 +194,14 @@ struct AccountView: View {
                 .onAppear {
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
+                        profileData.fetchCampusStatus(userId: uid)
                         profileData.fetchUserEvents()
-                        profileData.fetchUserPhotos()  
+                        profileData.fetchUserPhotos()
                         fetchFriendStatus()
                         fetchBlockedStatus()
                     } else {
                         profileData.fetchUserProfile()
+                        profileData.fetchCampusStatus()
                         profileData.fetchUserEvents()
                         profileData.fetchUserPhotos()
                     }
@@ -360,7 +368,25 @@ struct AccountView: View {
                         .background(Color.blue)
                         .cornerRadius(4)
                 }
+                // New campus status badge
+                if profileData.isOnCampus {
+                        Text("On Campus")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .padding(4)
+                            .background(Color.green.opacity(0.2))
+                            .cornerRadius(4)
+                            .transition(.opacity)
+                } else {
+                    Text("Off Campus")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(4)
+                        .transition(.opacity)
             }
+        }
             Text(profileData.bio)
                 .font(.subheadline)
                 .foregroundColor(.gray)
@@ -397,6 +423,13 @@ struct AccountView: View {
                                 uploadMode = .photo
                                 // Present an action sheet to choose source type
                                 showSourceChoice = true
+                            }
+                            // Only if the account is promoted
+                            if profileData.isPromoted {
+                                Button("New Drink Special") {
+                                    uploadMode = .drinkSpecial
+                                    showCreateDrinkSpecial = true
+                                }
                             }
                             Button("Cancel", role: .cancel) {
                                 uploadMode = .none
@@ -450,14 +483,21 @@ struct AccountView: View {
             Picker("Select Content", selection: $selectedTab) {
                 Text("Events").tag("Events")
                 Text("Photos").tag("Photos")
+                if profileData.isPromoted {
+                   Text("Specials").tag("Specials")
+                }
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
             
             if selectedTab == "Events" {
                 postsGrid
-            } else {
+            } else if selectedTab == "Photos" {
                 photosGrid
+            }
+            else if selectedTab == "Specials" {
+                BarSpecialsView(barId: profileData.userId)
+                    .padding(.horizontal)
             }
         }
     }

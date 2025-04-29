@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const EventSchema = new mongoose.Schema({
     //Done: Add Author, RSVPcount, and Promoted status
     title: { type: String, required: true },
-    author: { type: String, required: true},
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     rsvpCount: {type: Number, required: true},
     description: { type: String },
     location: { type: String, required: true },

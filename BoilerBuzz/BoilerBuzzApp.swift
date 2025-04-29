@@ -24,6 +24,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct BoilerBuzzApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    @StateObject private var locationManager = LocationManager()
     @State var isLoggedIn: Bool = false
     @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var initialTab: Tab = .home
@@ -83,7 +84,7 @@ struct BoilerBuzzApp: App {
                     )
                 }
             }
-
+            .environmentObject(locationManager)
             .onOpenURL { url in
                 print("Received deep link: \(url)")
                 isLoggedIn = false

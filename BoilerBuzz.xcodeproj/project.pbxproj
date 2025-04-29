@@ -1857,6 +1857,14 @@
 			);
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
 		};
+		F002E5DD2DBA8E38008A38A3 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				info.plist,
+				"Preview Content/Preview Assets.xcassets",
+			);
+			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -1871,6 +1879,9 @@
 		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F002E5DD2DBA8E38008A38A3 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
+			);
 			path = BoilerBuzz;
 			sourceTree = "<group>";
 		};
@@ -6518,6 +6529,7 @@
 			buildPhases = (
 				8B0A40182D5444BF001C0A7D /* Sources */,
 				8B0A40192D5444BF001C0A7D /* Frameworks */,
+				F002E5DC2DBA8E38008A38A3 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -6643,6 +6655,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8B0A40342D5444C1001C0A7D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F002E5DC2DBA8E38008A38A3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -6816,11 +6835,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BoilerBuzz/BoilerBuzz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
@@ -6847,11 +6867,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BoilerBuzz/BoilerBuzz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Event = require('../Models/Event'); // Ensure correct path to Event model
+const NameList = require('../Models/NameList'); // Adjust path as needed
 const User = require('../Models/User');   // Ensure correct path to User model
 const HarrysCount = require('../Models/harrys'); // Ensure correct import
 const nodemailer = require('nodemailer');
@@ -84,13 +85,29 @@ router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
 
+        // 1. Fetch events
         const events = await Event.find({ date: { $gte: currentDate } });
         console.log(` Found ${events.length} event(s)`);
 
+        // 2. Get unique author usernames
+        const usernames = [...new Set(events.map(e => e.authorUsername))];
+        
+        // 3. Fetch names from NameList
+        const nameListEntries = await NameList.find({ 
+            username: { $in: usernames } 
+        }).lean();
+
+        // 4. Create name lookup map
+        const nameMap = nameListEntries.reduce((acc, entry) => {
+            acc[entry.username] = `${entry.firstName} ${entry.lastName}`;
+            return acc;
+        }, {});
+
+        // 5. Sanitize events with organizer names
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
             title: event.title,
-            author: event.author?.toString() || "", // Ensure author is a string
+            author: event.author?.toString() || "",
             rsvpCount: event.rsvpCount || 0,
             description: event.description || "",
             location: event.location,
@@ -99,14 +116,14 @@ router.get('/events', async (req, res) => {
             promoted: Boolean(event.promoted),
             date: Number(event.date),
             imageUrl: event.imageUrl || "",
-            authorUsername: event.authorUsername || ""
+            authorUsername: event.authorUsername || "",
+            organizerName: nameMap[event.authorUsername] || event.authorUsername // NEW FIELD
         }));
 
-        res.status(200).json(sanitizedEvents); // Return as a pure array
+        res.status(200).json(sanitizedEvents);
 
     } catch (err) {
         console.error("❌ Error fetching events:", err.message);
-        console.error(" Stack trace:", err.stack);
         res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
@@ -127,7 +144,6 @@ router.post('/rsvp', async (req, res) => {
         }
 
         user.rsvpEvents = user.rsvpEvents || [];
-
         const alreadyRSVPed = user.rsvpEvents.includes(eventId);
         const isAtCapacity = (event.rsvpCount || 0) >= event.capacity;
 
@@ -150,33 +166,18 @@ router.post('/rsvp', async (req, res) => {
         await user.save({ validateBeforeSave: false });
         await event.save({ validateBeforeSave: false });
 
-        // ✅ If rsvpCount == capacity, email the creator
+        // Instead of sending an email, prepare a notification message when the event becomes full.
+        let notificationMessage = null;
         if (event.rsvpCount === event.capacity) {
-            const author = await User.findById(event.author);
-            if (author?.email) {
-                const mailOptions = {
-                    from: 'theboilerbuzz@gmail.com',
-                    to: author.email,
-                    subject: `🎉 Your event "${event.title}" is now full!`,
-                    text: `Hi ${author.username},\n\nYour event "${event.title}" has now reached full capacity (${event.capacity} RSVPs).\n\nYou may want to prepare accordingly or stop accepting RSVPs.\n\nCheers,\nBoilerBuzz`
-                };
-
-                transporter.sendMail(mailOptions, (error, info) => {
-                    if (error) {
-                        console.error("❌ Failed to email event creator:", error);
-                    } else {
-                        console.log("✅ Email sent to creator:", info.response);
-                    }
-                });
-            }
+            notificationMessage = `Your event "${event.title}" has now reached full capacity (${event.capacity} RSVPs).`;
         }
 
         return res.status(200).json({
             success: true,
             rsvpEvents: user.rsvpEvents,
-            rsvpCount: event.rsvpCount
+            rsvpCount: event.rsvpCount,
+            notificationMessage
         });
-
     } catch (error) {
         console.error("❌ RSVP error:", error);
         res.status(500).json({ error: "Internal server error" });

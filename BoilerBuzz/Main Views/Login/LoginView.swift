@@ -54,6 +54,7 @@ struct LoginView: View {
 
                         print("UserID stored: \(loginResponse.userId)")
                         print("isAdmin stored: \(loginResponse.isAdmin)")
+                        print("isPromoted stored: \(loginResponse.isPromoted)")
                         print("rsvpEvents stored: \(String(describing: loginResponse.rsvpEvents))")
                         print("Login successful: \(loginResponse.message)")
                         isLoggedIn = true

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Tab: Hashable {
-    case map, calendar, home, drinks, account
+    case map, calendar, home, drinks, account, game
 }
 
 struct ContentView: View {
@@ -57,6 +57,11 @@ struct ContentView: View {
                     Label("Drinks", systemImage: "wineglass")
                 }
                 .tag(Tab.drinks)
+            GamesView()
+                .tabItem {
+                    Label("Games", systemImage: "gamecontroller")
+                }
+
             
             // Pass the accountToView to AccountView. If accountToView is nil,
             // AccountView will fetch your own profile as before.
