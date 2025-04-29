@@ -23,9 +23,9 @@ const reportRoutes = require('./Routes/report');
 const blockedRoutes = require('./Routes/blocked');
 const calendarRoutes = require('./Routes/calendar');
 const eventRoutes = require('./Routes/eventRoutes');
+const messagesRoutes = require('./Routes/messages')
 const drinkSpecialsRoutes = require('./Routes/drinkSpecials');
 const campusStatusRoutes = require('./Routes/campusStatus');
-
 
 const cron = require('node-cron');
 const User = require('./Models/User');
@@ -171,8 +171,8 @@ app.use('/api/report', reportRoutes);
 app.use('/api/blocked', blockedRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/pin', eventRoutes);
+app.use('/api/messages', messagesRoutes);
 app.use('/api/users', campusStatusRoutes);
-
 
 // Start the server
 const http = require('http');
