@@ -37,9 +37,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         print("📍 Live location updated: \(newLocation.coordinate.latitude), \(newLocation.coordinate.longitude)")
     }
 
-    // 🕒 Timer to send location updates to the database every 5 minutes
+    // 🕒 Timer to send location updates to the database every 15 sec
     private func startTimer() {
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        updateTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
             self?.sendLocationUpdate()
         }
     }
