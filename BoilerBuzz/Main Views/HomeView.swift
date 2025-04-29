@@ -44,10 +44,11 @@ struct Event: Identifiable, Codable {
     let promoted: Bool
     let date: Date
     let imageUrl: String?
+    let organizerName: String?
     let authorUsername: String
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case title, author, rsvpCount, description, location, capacity, is21Plus, promoted, date, imageUrl, authorUsername
+        case title, author, rsvpCount, description, location, capacity, is21Plus, promoted, date, imageUrl, authorUsername, organizerName
     }
 
     // Convert Base64 string to UIImage
@@ -274,6 +275,7 @@ struct EventListView: View {
 }
 
 // Event Card View
+// Event Card View
 struct EventCardView: View {
     let event: Event
     @Environment(\.colorScheme) var colorScheme
@@ -327,7 +329,6 @@ struct EventCardView: View {
         .shadow(radius: 3)
     }
 }
-
 func isRSVPed(event: Event) -> Bool {
     let arr: [String] = UserDefaults.standard.array(forKey: "rsvpEvents") as? [String] ?? []
         if arr.contains(event.id) {
@@ -590,7 +591,7 @@ struct CreateEventView: View {
             completion(false)
             return
         }
-
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data,
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -601,8 +602,8 @@ struct CreateEventView: View {
             }
         }.resume()
     }
-
-
+    
+    
     var body: some View {
         NavigationView {
             Form {
@@ -640,7 +641,7 @@ struct CreateEventView: View {
                                 .foregroundColor(description.count > maxDescriptionLength ? .red : .gray)
                         }
                     }
-
+                    
                     Button("Select Image") {
                         showImagePicker.toggle()
                     }
@@ -650,7 +651,7 @@ struct CreateEventView: View {
                             set: { selectedImage = $0 }
                         ))
                     }
-
+                    
                     if let image = selectedImage {
                         Image(uiImage: image)
                             .resizable()
@@ -688,19 +689,19 @@ struct CreateEventView: View {
             errorMessage = "Please fill in all required fields with valid values."
             return
         }
-
+        
         if description.count > maxDescriptionLength {
             showError = true
             errorMessage = "Description is too long!"
             return
         }
-
+        
         if date < Date() {
             showError = true
             errorMessage = "Please select a future date."
             return
         }
-
+        
         // ✅ Check identity before continuing
         checkIfUserIsIdentified { isIdentified in
             if isIdentified {
@@ -722,7 +723,7 @@ struct CreateEventView: View {
             }
         }
     }
-
+    
     
     private func validateLocation(completion: @escaping (Bool) -> Void) {
         let geocoder = CLGeocoder()
@@ -732,7 +733,7 @@ struct CreateEventView: View {
                     completion(false)
                     return
                 }
-
+                
                 // Require full address details to consider it valid
                 if let street = placemark.thoroughfare,
                    let streetNumber = placemark.subThoroughfare,
@@ -747,16 +748,16 @@ struct CreateEventView: View {
         }
     }
     
-
-
+    
+    
     private func createEvent(capacityInt: Int) {
         print("🔍 Creating event")
-
+        
         var encodedImage: String? = nil
         if let selectedImage = selectedImage {
             encodedImage = selectedImage.base64 //  Convert image to Base64
         }
-
+        
         let newEvent = Event(
             id: UUID().uuidString,
             //Done: include author and promotion status
@@ -770,22 +771,23 @@ struct CreateEventView: View {
             promoted: promoted,
             date: date,
             imageUrl: encodedImage, // Save Base64 string instead of URL
+            organizerName: nil,
             authorUsername: authorUsername
         )
-
+        
         guard let url = URL(string: "http://localhost:3000/api/home/events") else {
             print("Invalid URL")
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
         if let token = UserDefaults.standard.string(forKey: "authToken") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-
+        
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .millisecondsSince1970 //  Use milliseconds for date
@@ -795,7 +797,7 @@ struct CreateEventView: View {
             print(" Error encoding event:", error)
             return
         }
-
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 print("Error posting event:", error)
@@ -809,26 +811,23 @@ struct CreateEventView: View {
         }.resume()
     }
 }
-// Event Detail View
+
 struct EventDetailView: View {
-    var event: Event
+    let event: Event
     @State private var rsvpCountDisplay: Int
     @State private var hasRSVPed: Bool
     @State private var showEditSheet = false
     @Environment(\.dismiss) var dismiss
     @State private var showDeleteAlert = false
     @State private var showReportSheet = false
-    
     @State private var isShareSheetPresented = false
     @StateObject private var creatorProfile = ProfileViewModel()
-    
 
     var shareMessage: String {
         let shareURL = URL(string: "boilerbuzz://event?id=\(event.id)")!
         return "Check out this event: \(shareURL.absoluteString)"
     }
 
-    
     init(event: Event) {
         self.event = event
         _rsvpCountDisplay = State(initialValue: event.rsvpCount)
@@ -836,159 +835,174 @@ struct EventDetailView: View {
     }
 
     var body: some View {
-            VStack(spacing: 20) {
-                if let image = event.eventImage {
-                    Image(uiImage: image)
+        VStack(spacing: 20) {
+            if let image = event.eventImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 250)
+                    .clipped()
+            }
+
+            // Title and Profile section
+            HStack(alignment: .top) {
+                Text(event.title)
+                    .font(.title)
+                    .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                // Profile section in top right
+                VStack(spacing: 4) {
+                    Image(systemName: "person.circle.fill")
                         .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .clipped()
+                        .frame(width: 60, height: 60)
+                        .foregroundColor(.secondary)
+                    Text(event.authorUsername)
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    if let name = event.organizerName, !name.isEmpty {
+                        Text(name)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .frame(width: 100)
+                .padding(.top, 8)
+            }
+            .padding(.horizontal)
+
+            VStack(alignment: .leading, spacing: 10) {
+                // Description
+                if let desc = event.description, !desc.isEmpty {
+                    Text(desc)
+                        .font(.body)
                 }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    // HStack for the title and ProfileNavigation
-                    HStack {
-                        Text(event.title)
-                            .font(.title)
-                            .bold()
-                        
-                        Spacer() // Push the button to the right
-                        
-                        // TODO still have to fetch user details from event
-                        ProfileNavigationButton(
-                            userId: event.author, // TODO
-                            username: creatorProfile.username, // TODO
-                            profilePicture: creatorProfile.profilePicture
-                        )
+                // Location and Date
+                HStack {
+                    Button(action: {
+                        openInGoogleMaps(address: event.location)
+                    }) {
+                        Label(event.location, systemImage: "mappin.and.ellipse")
+                            .foregroundColor(.blue)
+                            .underline()
                     }
-                    Text(event.description ?? "")
-                        .font(.body)
+                    .buttonStyle(PlainButtonStyle())
+                    Spacer()
+                    Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
+                }
+                .font(.subheadline)
 
-                    HStack {
-                        Button(action: {
-                            openInGoogleMaps(address: event.location)
-                        }) {
-                            Label(event.location, systemImage: "mappin.and.ellipse")
-                                .foregroundColor(.blue)
-                                .underline()
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        Spacer()
-                        Label(event.date.formatted(date: .abbreviated, time: .shortened), systemImage: "calendar")
+                // Capacity and 21+
+                HStack {
+                    Label("Capacity: \(event.capacity)", systemImage: "person.3")
+                    if event.is21Plus {
+                        Text("21+")
+                            .font(.caption)
+                            .padding(5)
+                            .background(Color.red.opacity(0.2))
+                            .cornerRadius(5)
                     }
-                    .font(.subheadline)
+                }
 
-                    HStack {
-                        Label("Capacity: \(event.capacity)", systemImage: "person.3")
-                        if event.is21Plus {
-                            Text("21+")
-                                .font(.caption)
-                                .padding(5)
-                                .background(Color.red.opacity(0.2))
-                                .cornerRadius(5)
-                        }
-                    }
+                Divider()
 
-                    Divider()
+                // RSVPs
+                Text("👥 RSVPs: \(rsvpCountDisplay)")
+                    .font(.headline)
 
-                    Text("👥 RSVPs: \(rsvpCountDisplay)")
-                        .font(.headline)
-
-                    if event.rsvpCount >= event.capacity {
-                        Text("Event Full")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                        
-                    } else if event.author == UserDefaults.standard.string(forKey: "userId") {
-                        Button("Edit Post") {
-                            showEditSheet = true
-                        }
+                // RSVP/Edit Button
+                if event.rsvpCount >= event.capacity {
+                    Text("Event Full")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.orange)
+                        .background(Color.gray)
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                        .sheet(isPresented: $showEditSheet) {
-                            EditEventView(event: event) { updatedEvent in
-                                // Handle updated event if needed
-                                print("✅ Event updated:", updatedEvent)
-                            }
-                        }
-                        
-                    } else {
-                        Button(action: {
-                            toggleRSVP()
-                        }) {
-                            Text(hasRSVPed ? "You're Going \u{2705}" : "RSVP")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(hasRSVPed ? Color.green : Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
+                } else if event.author == UserDefaults.standard.string(forKey: "userId") {
+                    Button("Edit Post") {
+                        showEditSheet = true
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .sheet(isPresented: $showEditSheet) {
+                        EditEventView(event: event) { updatedEvent in
+                            print("✅ Event updated:", updatedEvent)
                         }
                     }
-
+                } else {
                     Button(action: {
-                        isShareSheetPresented = true
+                        toggleRSVP()
                     }) {
-                        Label("Share", systemImage: "square.and.arrow.up")
+                        Text(hasRSVPed ? "You're Going \u{2705}" : "RSVP")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.gray.opacity(0.2))
+                            .background(hasRSVPed ? Color.green : Color.blue)
+                            .foregroundColor(.white)
                             .cornerRadius(10)
                     }
-                    .sheet(isPresented: $isShareSheetPresented) {
-                        ShareSheet(activityItems: [shareMessage])
-                    }
                 }
-                .padding()
+
+                // Share Button
+                Button(action: {
+                    isShareSheetPresented = true
+                }) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
+                }
+                .sheet(isPresented: $isShareSheetPresented) {
+                    ShareSheet(activityItems: [shareMessage])
+                }
             }
-            .onAppear {
-                creatorProfile.fetchUserProfile(userId: event.author)
-            }
+            .padding()
+        }
+        .onAppear {
+            creatorProfile.fetchUserProfile(userId: event.author)
+        }
         .navigationTitle("Event Details")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-                if UserDefaults.standard.bool(forKey: "isAdmin") {
-                    ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        Button {
-                            showReportSheet = true
-                        } label: {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                        }
-                        Button {
-                            showDeleteAlert = true
-                        } label: {
-                            Image(systemName: "trash")
-                        }
+            if UserDefaults.standard.bool(forKey: "isAdmin") {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        showReportSheet = true
+                    } label: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                    }
+                    Button {
+                        showDeleteAlert = true
+                    } label: {
+                        Image(systemName: "trash")
                     }
                 }
-                else {
-                    ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        Button {
-                            showReportSheet = true
-                        } label: {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                        }
+            } else {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        showReportSheet = true
+                    } label: {
+                        Image(systemName: "exclamationmark.triangle.fill")
                     }
                 }
-
-            }
-            .alert("Delete Event", isPresented: $showDeleteAlert) {
-                Button("Delete", role: .destructive) {
-                    deleteEvent()
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: {
-                Text("Are you sure you want to delete this event?")
-            }
-            .sheet(isPresented: $showReportSheet) {
-                ReportEventView(event: event)
             }
         }
+        .alert("Delete Event", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                deleteEvent()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete this event?")
+        }
+        .sheet(isPresented: $showReportSheet) {
+            ReportEventView(event: event)
+        }
+    }
 
     func deleteEvent() {
         guard let url = URL(string: "http://localhost:3000/api/home/delEvents/\(event.id)") else {
@@ -1014,6 +1028,7 @@ struct EventDetailView: View {
             }
         }.resume()
     }
+
     private func toggleRSVP() {
         hasRSVPed.toggle()
         rsvpCountDisplay += hasRSVPed ? 1 : -1
@@ -1030,7 +1045,6 @@ struct EventDetailView: View {
             let remindersOn = prefs?["eventReminders"] as? Bool ?? false
             guard remindersOn else { return }
 
-            // Convert timestamp to Date and schedule
             let eventDate = event.date
             NotificationManager.shared.scheduleEventReminder(eventID: event.id, eventDate: eventDate)
         } else {
@@ -1041,7 +1055,6 @@ struct EventDetailView: View {
         }
     }
 }
-
 struct EditEventView: View {
     @Environment(\.presentationMode) var presentationMode
     var event: Event
@@ -1175,6 +1188,7 @@ struct EditEventView: View {
                     promoted: promoted,
                     date: date,
                     imageUrl: encodedImage ?? event.imageUrl,
+                    organizerName: nil,
                     authorUsername: event.authorUsername
                 )
                 onEventUpdated(updatedEvent)
