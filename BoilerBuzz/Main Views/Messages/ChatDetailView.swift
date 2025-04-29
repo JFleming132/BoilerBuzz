@@ -124,6 +124,7 @@ struct ChatDetailView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 8) {
+
                         ForEach(conversation.messages) { msg in
                             MessageBubble(
                                 text: msg.text,
@@ -150,25 +151,32 @@ struct ChatDetailView: View {
                 }
             }
 
-            // Input bar
-            HStack(spacing: 8) {
-                TextField("Message...", text: $newMessage)
-                    .padding(10)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .clipShape(Capsule())
+            if conversation.status == "accepted" {
+                // Input bar
+                HStack(spacing: 8) {
+                    TextField("Message...", text: $newMessage)
+                        .padding(10)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(Capsule())
 
-                Button(action: {
-                    sendMessageBackend(convoId: conversation.id, messageText: newMessage, sender: ownUserId, other: conversation.otherUser.id)
-                }) {
-                    Image(systemName: "paperplane.fill")
-                        .rotationEffect(.degrees(45))
-                        .font(.system(size: 20))
-                        .foregroundColor(newMessage.isEmpty ? Color.gray : Color.blue)
+                    Button(action: {
+                        sendMessageBackend(convoId: conversation.id, messageText: newMessage, sender: ownUserId, other: conversation.otherUser.id)
+                    }) {
+                        Image(systemName: "paperplane.fill")
+                            .rotationEffect(.degrees(45))
+                            .font(.system(size: 20))
+                            .foregroundColor(newMessage.isEmpty ? Color.gray : Color.blue)
+                    }
+                    .disabled(newMessage.isEmpty)
                 }
-                .disabled(newMessage.isEmpty)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+            } else if conversation.initiatorId == ownUserId {
+                Text("You can't send messages until \(conversation.otherUser.username) accepts your request.")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+                    .padding()
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .background(Color(UIColor.systemBackground))

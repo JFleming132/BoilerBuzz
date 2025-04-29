@@ -29,33 +29,32 @@ router.get('/getConversations', async (req, res) => {
     })
     .sort('-updatedAt');
 
-    // inside your GET /getConversations handler:
     const result = convos.map(c => {
       const other = c.initiator._id.toString() === userId
         ? c.recipient
         : c.initiator;
 
-      // Build simple messages array, now with id:
       const simpleMessages = c.messages.map(msg => ({
-        id:      msg._id.toString(),    // ← include the message id
-        text:    msg.text,
-        sender:  msg.sender.toString()
+        id: msg._id.toString(),
+        text: msg.text,
+        sender: msg.sender.toString()
       }));
 
-      // Grab just the text of the last message
       const lastText = simpleMessages.length
         ? simpleMessages[simpleMessages.length - 1].text
         : null;
 
       return {
-        id:         c._id.toString(),
-        otherUser:  {
-          id:               other._id.toString(),
-          username:         other.username,
-          profilePicture:   other.profilePicture
+        id: c._id.toString(),
+        initiatorId: c.initiator._id.toString(),   // ← ADDED initiator ID
+        otherUser: {
+          id: other._id.toString(),
+          username: other.username,
+          profilePicture: other.profilePicture
         },
-        messages:    simpleMessages,
-        lastMessage: lastText
+        messages: simpleMessages,
+        lastMessage: lastText,
+        status: c.status
       };
     });
 
@@ -334,7 +333,7 @@ router.post('/startConversation', async (req, res) => {
     }
 
     // Create the new conversation
-    convo = new Conversation({ initiator, recipient, status: 'accepted', acceptedAt: Date.now() });
+    convo = new Conversation({ initiator, recipient, status: 'pending', acceptedAt: Date.now() });
     await convo.save();
 
     // Create the first message
@@ -376,13 +375,15 @@ router.post('/startConversation', async (req, res) => {
 
     const formattedConversation = {
       id: convo._id.toString(),
+      initiatorId: initiator,
       otherUser: {
         id: other._id.toString(),
         username: other.username,
         profilePicture: other.profilePicture || null
       },
       messages: simpleMessages,
-      lastMessage: lastText
+      lastMessage: lastText,
+      status: 'pending'
     };
 
     console.log(formattedConversation)
@@ -394,6 +395,47 @@ router.post('/startConversation', async (req, res) => {
     res.status(500).json({ error: 'Server error starting conversation' });
   }
 });
+
+// PATCH /api/messages/conversations/:id/status
+// Body: { status: 'accepted' | 'declined', userId }
+router.patch('/conversations/:id/status', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    const { status, userId } = req.body;
+
+    if (!['accepted', 'declined'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be accepted or declined.' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required.' });
+    }
+
+    const convo = await Conversation.findById(convId);
+    if (!convo) {
+      return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    if (convo.recipient.toString() !== userId) {
+      return res.status(403).json({ error: 'Only the recipient can update the conversation status.' });
+    }
+
+    convo.status = status;
+    convo.acceptedAt = status === 'accepted' ? new Date() : null;
+    convo.updatedAt = new Date();
+    await convo.save();
+
+    res.status(200).json({
+      message: `Conversation marked as ${status}`,
+      conversationId: convo._id.toString(),
+      newStatus: convo.status
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error updating conversation status' });
+  }
+});
+
 
 
 module.exports = router;

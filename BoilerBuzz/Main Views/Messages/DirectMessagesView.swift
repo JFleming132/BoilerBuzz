@@ -36,9 +36,11 @@ private struct APIUser: Decodable {
 /// Decodable version of a conversation from API
 private struct APIConversation: Decodable {
     let id: String
+    let initiatorId: String
     let otherUser: APIUser
     let lastMessage: String
     let messages: [APIMessage]
+    var status: String
 }
 
 // MARK: - App Conversation Model
@@ -46,9 +48,11 @@ private struct APIConversation: Decodable {
 /// Conversation model used in UI
 struct Conversation: Identifiable {
     let id: String
+    let initiatorId: String
     let otherUser: UserModel
     var lastMessage: String
     var messages: [MessageModel] = []
+    var status: String
 }
 
 // MARK: - ViewModel
@@ -88,13 +92,15 @@ final class DirectMessagesViewModel: ObservableObject {
                         }
                         return Conversation(
                             id: api.id,
+                            initiatorId: api.initiatorId,
                             otherUser: UserModel(
                                 id: api.otherUser.id,
                                 username: api.otherUser.username,
                                 profileImageURL: api.otherUser.profilePicture
                             ),
                             lastMessage: api.lastMessage,
-                            messages: mappedMessages
+                            messages: mappedMessages,
+                            status: api.status
                         )
                     }
                 } catch {
@@ -200,6 +206,13 @@ struct DirectMessagesView: View {
     var navigateToUserId: String? = nil
     
     @StateObject private var viewModel = DirectMessagesViewModel()
+    @State private var selectedTab: Tab = .messages
+    
+    enum Tab: String, CaseIterable {
+        case messages = "Messages"
+        case requests = "Requests"
+    }
+
     @State private var searchQuery: String = ""
     @State private var showNewConversationSheet = false
     @State private var selectedUser: UserModel? = nil
@@ -216,102 +229,55 @@ struct DirectMessagesView: View {
         }
     }
 
-    private var matchingUsers: [UserModel] {
-        guard !newUserSearchQuery.isEmpty else { return [] }
-        return viewModel.availableUsers.filter { user in
-            user.username.localizedCaseInsensitiveContains(newUserSearchQuery)
+    private var pendingRequests: [Conversation] {
+        viewModel.conversations.filter { convo in
+            convo.status == "pending" && convo.initiatorId != userId
         }
     }
 
     var body: some View {
         NavigationView {
-            Group {
-                if viewModel.isLoadingConversations || viewModel.isLoadingUsers {
-                    ProgressView("Loading…")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                } else {
-                    List(filteredConversations) { convo in
-                        if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
-                            NavigationLink(
-                                destination: ChatDetailView(conversation: $viewModel.conversations[index], ownUserId: userId)
-                            ) {
-                                ConversationRow(convo: convo)
+            VStack {
+                Picker("Select", selection: $selectedTab) {
+                    ForEach(Tab.allCases, id: \ .self) { tab in
+                        Text(tab.rawValue)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                
+                Group {
+                    if viewModel.isLoadingConversations || viewModel.isLoadingUsers {
+                        ProgressView("Loading…")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if let error = viewModel.errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                    } else {
+                        if selectedTab == .messages {
+                            messagesListView
+                        } else {
+                            requestsListView
+                        }
+                    }
+                }
+                .navigationTitle(selectedTab.rawValue)
+                .toolbar {
+                    if selectedTab == .messages {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                showNewConversationSheet = true
+                            }) {
+                                Image(systemName: "plus.message.fill")
+                                    .font(.title2)
                             }
                         }
                     }
-                    .listStyle(PlainListStyle())
-                    .searchable(text: $messageSearchQuery, prompt: "Search…")
                 }
-            }
-            .navigationTitle("Messages")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showNewConversationSheet = true
-                    }) {
-                        Image(systemName: "plus.message.fill")
-                            .font(.title2)
-                    }
-                }
-            }
-            .sheet(isPresented: $showNewConversationSheet) {
-                NavigationStack {
-                    VStack(spacing: 20) {
-                        Text("Start New Conversation")
-                            .font(.title2.bold())
-                            .padding(.top)
-
-                        TextField("Enter username", text: $newUserSearchQuery)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
-
-                        if !matchingUsers.isEmpty {
-                            List(matchingUsers) { user in
-                                Button {
-                                    selectedUser = user
-                                    searchQuery = user.username
-                                } label: {
-                                    HStack {
-                                        ProfileImageView(urlString: user.profileImageURL)
-                                        Text(user.username)
-                                        Spacer()
-                                        if selectedUser?.id == user.id {
-                                            Image(systemName: "checkmark")
-                                                .foregroundColor(.blue)
-                                        }
-                                    }
-                                }
-                            }
-                            .frame(height: 200)
-                        }
-
-                        TextField("Initial message...", text: $initialMessage, axis: .vertical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
-
-                        if let errorText = errorText {
-                            Text(errorText)
-                                .foregroundColor(.red)
-                                .font(.caption)
-                        }
-
-                        Button("Start Chat") {
-                            createNewConversation()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(selectedUser == nil || initialMessage.isEmpty)
-
-                        Button("Cancel", role: .cancel) {
-                            resetSheet()
-                        }
-                        .padding(.top, 8)
-                    }
-                    .navigationBarHidden(true)
+                .sheet(isPresented: $showNewConversationSheet) {
+                    newConversationSheet
                 }
             }
             .task {
@@ -323,6 +289,150 @@ struct DirectMessagesView: View {
                 }
             }
         }
+    }
+
+    private var messagesListView: some View {
+        List(filteredConversations) { convo in
+            if convo.status == "accepted" || (convo.status == "pending" && convo.initiatorId == userId) {
+                if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
+                    NavigationLink(destination: ChatDetailView(conversation: $viewModel.conversations[index], ownUserId: userId)) {
+                        ConversationRow(convo: convo)
+                    }
+                }
+            }
+        }
+        .listStyle(PlainListStyle())
+        .searchable(text: $messageSearchQuery, prompt: "Search…")
+    }
+
+    private var requestsListView: some View {
+        List(pendingRequests) { convo in
+            HStack {
+                ProfileImageView(urlString: convo.otherUser.profileImageURL)
+                VStack(alignment: .leading) {
+                    Text(convo.otherUser.username)
+                        .font(.headline)
+                }
+                Spacer()
+                HStack(spacing: 8) {
+                    Button("Accept") {
+                        acceptRequest(convo)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button("Decline") {
+                        declineRequest(convo)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            .padding(.vertical, 6)
+        }
+        .listStyle(PlainListStyle())
+    }
+
+    private var newConversationSheet: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("Start New Conversation")
+                    .font(.title2.bold())
+                    .padding(.top)
+
+                TextField("Enter username", text: $newUserSearchQuery)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+
+                if !viewModel.availableUsers.isEmpty {
+                    List(viewModel.availableUsers.filter { $0.username.localizedCaseInsensitiveContains(newUserSearchQuery) }) { user in
+                        Button {
+                            selectedUser = user
+                            newUserSearchQuery = user.username
+                        } label: {
+                            HStack {
+                                ProfileImageView(urlString: user.profileImageURL)
+                                Text(user.username)
+                                Spacer()
+                                if selectedUser?.id == user.id {
+                                    Image(systemName: "checkmark").foregroundColor(.blue)
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 200)
+                }
+
+                TextField("Initial message...", text: $initialMessage, axis: .vertical)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding(.horizontal)
+
+                if let errorText = errorText {
+                    Text(errorText)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
+
+                Button("Start Chat") {
+                    createNewConversation()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(selectedUser == nil || initialMessage.isEmpty)
+
+                Button("Cancel", role: .cancel) {
+                    resetSheet()
+                }
+                .padding(.top, 8)
+            }
+            .navigationBarHidden(true)
+        }
+    }
+
+    private func acceptRequest(_ convo: Conversation) {
+        updateConversationStatus(convo: convo, newStatus: "accepted")
+    }
+
+    private func declineRequest(_ convo: Conversation) {
+        updateConversationStatus(convo: convo, newStatus: "declined")
+    }
+
+    private func updateConversationStatus(convo: Conversation, newStatus: String) {
+        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convo.id)/status") else {
+            viewModel.errorMessage = "Invalid server URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "status": newStatus,
+            "userId": userId
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            viewModel.errorMessage = "Failed to encode request"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    viewModel.errorMessage = "Request failed: \(error.localizedDescription)"
+                    return
+                }
+                guard let data = data else {
+                    viewModel.errorMessage = "No response from server"
+                    return
+                }
+
+                // Update conversation's status in view model
+                if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
+                    viewModel.conversations[index].status = newStatus
+                }
+            }
+        }.resume()
     }
 
     private func createNewConversation() {
@@ -375,13 +485,15 @@ struct DirectMessagesView: View {
                     }
                     let newConversation = Conversation(
                         id: apiConvo.id,
+                        initiatorId: apiConvo.initiatorId,
                         otherUser: UserModel(
                             id: apiConvo.otherUser.id,
                             username: apiConvo.otherUser.username,
                             profileImageURL: apiConvo.otherUser.profilePicture
                         ),
                         lastMessage: apiConvo.lastMessage,
-                        messages: mappedMessages
+                        messages: mappedMessages,
+                        status: apiConvo.status
                     )
                     self.viewModel.conversations.append(newConversation)
                     self.viewModel.availableUsers.removeAll { $0.id == validUser.id }
@@ -396,7 +508,7 @@ struct DirectMessagesView: View {
     private func resetSheet() {
         showNewConversationSheet = false
         selectedUser = nil
-        searchQuery = ""
+        newUserSearchQuery = ""
         initialMessage = ""
         errorText = nil
     }
