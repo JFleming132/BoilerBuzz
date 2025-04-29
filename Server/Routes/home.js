@@ -42,36 +42,44 @@ router.get('/harrys/line', async (req, res) => {
 
 router.post('/events', async (req, res) => {
     try {
-        const { title, author, authorUsername, /* other fields */ } = req.body;
+        const { title, author, rsvpCount, promoted, description, location, capacity, is21Plus, date, imageUrl, authorUsername } = req.body;
 
-        // 1. Look up organizer's name
-        const nameEntry = await NameList.findOne({ 
-            username: authorUsername 
-        }).lean();
+        if (!title || !location || !capacity || !date) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
 
-        const organizerName = nameEntry 
-            ? `${nameEntry.firstName} ${nameEntry.lastName}`
-            : authorUsername; // Fallback to username
+        const formattedDate = new Date(date).getTime();
+        if (isNaN(formattedDate)) {
+            return res.status(400).json({ message: 'Invalid date format' });
+        }
 
-        // 2. Create event with organizerName
         const newEvent = new Event({
             title,
             author,
-            authorUsername,
-            organizerName, // <-- Add this line
-            // ... other fields
+            rsvpCount,  // Should be 0 on creation
+            promoted,
+            description,
+            location,
+            capacity,
+            is21Plus,
+            date: formattedDate,
+            imageUrl: imageUrl || "",
+            authorUsername
         });
 
         await newEvent.save();
-
-        // 3. Return event with verified name
+	
+	// Add event ID to user's pastEvents
+        await User.findByIdAndUpdate(author, {
+            $push: { pastEvents: newEvent._id }
+        });
+        console.log("✅ Event created successfully:", newEvent);
         res.status(201).json(newEvent);
     } catch (err) {
         console.error("❌ Error creating event:", err);
         res.status(500).json({ message: 'Error saving event', error: err });
     }
 });
-
 
 router.get('/events', async (req, res) => {
     try {
