@@ -24,7 +24,7 @@ router.get('/getConversations', async (req, res) => {
     .populate('recipient', 'username profilePicture')
     .populate({
       path: 'messages',
-      select: 'text sender sentAt',
+      select: 'text sender sentAt read',
       options: { sort: { sentAt: 1 } }
     })
     .sort('-updatedAt');
@@ -37,8 +37,11 @@ router.get('/getConversations', async (req, res) => {
       const simpleMessages = c.messages.map(msg => ({
         id: msg._id.toString(),
         text: msg.text,
-        sender: msg.sender.toString()
+        sender: msg.sender.toString(),
+        read: msg.read
       }));
+
+      console.log(simpleMessages)
 
       const lastText = simpleMessages.length
         ? simpleMessages[simpleMessages.length - 1].text
@@ -46,7 +49,7 @@ router.get('/getConversations', async (req, res) => {
 
       return {
         id: c._id.toString(),
-        initiatorId: c.initiator._id.toString(),   // ← ADDED initiator ID
+        initiatorId: c.initiator._id.toString(),
         otherUser: {
           id: other._id.toString(),
           username: other.username,
@@ -57,6 +60,8 @@ router.get('/getConversations', async (req, res) => {
         status: c.status
       };
     });
+
+    console.log(result)
 
     res.json(result);
   } catch (err) {
@@ -137,30 +142,6 @@ router.get('/conversations/:id/messages', async (req, res) => {
   }
 });
 
-// Send a new message in a conversation
-// POST /api/conversations/:id/messages
-// Body: { sender, text }
-router.post('/conversations/:id/messages', async (req, res) => {
-  try {
-    const convId = req.params.id;
-    const { sender, text } = req.body;
-    if (!sender || !text) {
-      return res.status(400).json({ error: 'sender and text required' });
-    }
-    const convo = await Conversation.findById(convId);
-    if (!convo || convo.status !== 'accepted') {
-      return res.status(400).json({ error: 'Conversation not available for messaging' });
-    }
-    const message = await Message.create({ conversation: convId, sender, text });
-    convo.messages.push(message._id);
-    convo.updatedAt = Date.now();
-    await convo.save();
-    res.status(201).json(message);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error sending message' });
-  }
-});
 
 // Mark message as read
 // PATCH /api/conversations/:convId/messages/:msgId/read
@@ -220,7 +201,7 @@ router.get('/conversations/:id/messages', async (req, res) => {
 router.post("/conversations/:id/sendMessage", async(req, res) => {
   try {
     const convoId = req.params.id;
-    const { messageText, sender, other } = req.body;
+    const { messageText, sender, other} = req.body;
 
     if (!messageText || !sender || !other) {
       res.status(400).json({ error: 'Message text or one of the user ids were empty'});
@@ -267,7 +248,8 @@ router.post("/conversations/:id/sendMessage", async(req, res) => {
       messageData: {
         id: message._id.toString(),
         text: message.text,
-        sender: message.sender.toString()
+        sender: message.sender.toString(),
+        read: false
       }
     })
 
@@ -355,7 +337,7 @@ router.post('/startConversation', async (req, res) => {
     await convo.populate('recipient', 'username profilePicture');
     await convo.populate({
       path: 'messages',
-      select: 'text sender sentAt',
+      select: 'text sender sentAt read',
       options: { sort: { sentAt: 1 } }
     });
 
@@ -366,7 +348,8 @@ router.post('/startConversation', async (req, res) => {
     const simpleMessages = convo.messages.map(msg => ({
       id: msg._id.toString(),
       text: msg.text,
-      sender: msg.sender.toString()
+      sender: msg.sender.toString(),
+      read: msg.read
     }));
 
     const lastText = simpleMessages.length
@@ -435,6 +418,47 @@ router.patch('/conversations/:id/status', async (req, res) => {
     res.status(500).json({ error: 'Server error updating conversation status' });
   }
 });
+
+// PATCH /api/messages/conversations/:id/markRead
+// Body: { userId }
+router.patch('/conversations/:id/markRead', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    const { userId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      return res.status(400).json({ error: 'Invalid conversation id' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required.' });
+    }
+
+    const conversation = await Conversation.findById(convId).populate('messages');
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    const updates = [];
+
+    for (const message of conversation.messages) {
+      if (message.sender.toString() !== userId && !message.read) {
+        message.read = true;
+        updates.push(message.save());
+      }
+    }
+
+    await Promise.all(updates);
+
+    res.status(200).json({
+      message: 'All messages from other user marked as read.'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error marking messages as read' });
+  }
+});
+
 
 
 

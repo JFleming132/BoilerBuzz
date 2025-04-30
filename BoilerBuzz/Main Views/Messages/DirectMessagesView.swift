@@ -8,6 +8,7 @@ struct MessageModel: Identifiable, Decodable {
     let id: String
     let text: String
     let sender: String
+    var read: Bool
 }
 
 /// User model
@@ -24,6 +25,7 @@ private struct APIMessage: Decodable {
     let id: String
     let text: String
     let sender: String
+    var read: Bool
 }
 
 /// Decodable version of a user from API
@@ -88,7 +90,7 @@ final class DirectMessagesViewModel: ObservableObject {
                     let apiConvos = try decoder.decode([APIConversation].self, from: data)
                     self.conversations = apiConvos.map { api in
                         let mappedMessages = api.messages.map { msg in
-                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender)
+                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read:msg.read)
                         }
                         return Conversation(
                             id: api.id,
@@ -181,10 +183,26 @@ struct ProfileImageView: View {
 
 struct ConversationRow: View {
     let convo: Conversation
+    let currentUserId: String
+
+    var hasUnreadMessageFromOther: Bool {
+        convo.messages.contains { !$0.read && $0.sender != currentUserId }
+    }
 
     var body: some View {
         HStack(spacing: 15) {
-            ProfileImageView(urlString: convo.otherUser.profileImageURL)
+            ZStack(alignment: .bottomTrailing) {
+                ProfileImageView(urlString: convo.otherUser.profileImageURL)
+                    .frame(width: 50, height: 50)
+
+                if hasUnreadMessageFromOther {
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 10, height: 10)
+                        .offset(x: 4, y: 4)
+                }
+            }
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(convo.otherUser.username)
                     .font(.headline)
@@ -198,6 +216,7 @@ struct ConversationRow: View {
         .padding(.vertical, 6)
     }
 }
+
 
 // MARK: - DirectMessagesView
 
@@ -296,7 +315,7 @@ struct DirectMessagesView: View {
             if convo.status == "accepted" || (convo.status == "pending" && convo.initiatorId == userId) {
                 if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
                     NavigationLink(destination: ChatDetailView(conversation: $viewModel.conversations[index], ownUserId: userId)) {
-                        ConversationRow(convo: convo)
+                        ConversationRow(convo: convo, currentUserId: userId)
                     }
                 }
             }
@@ -481,7 +500,7 @@ struct DirectMessagesView: View {
                 do {
                     let apiConvo = try JSONDecoder().decode(APIConversation.self, from: data)
                     let mappedMessages = apiConvo.messages.map { msg in
-                        MessageModel(id: msg.id, text: msg.text, sender: msg.sender)
+                        MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read:msg.read)
                     }
                     let newConversation = Conversation(
                         id: apiConvo.id,
