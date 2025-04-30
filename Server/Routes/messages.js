@@ -17,17 +17,21 @@ router.get('/getConversations', async (req, res) => {
     const userId = req.query.userId;
     if (!userId) return res.status(400).json({ error: 'userId query required' });
 
+    // Fetch user's messaging preferences
+    const user = await User.findById(userId).select('requireMessageRequests');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
     const convos = await Conversation.find({
       $or: [{ initiator: userId }, { recipient: userId }]
     })
-    .populate('initiator', 'username profilePicture')
-    .populate('recipient', 'username profilePicture')
-    .populate({
-      path: 'messages',
-      select: 'text sender sentAt read',
-      options: { sort: { sentAt: 1 } }
-    })
-    .sort('-updatedAt');
+      .populate('initiator', 'username profilePicture')
+      .populate('recipient', 'username profilePicture')
+      .populate({
+        path: 'messages',
+        select: 'text sender sentAt read',
+        options: { sort: { sentAt: 1 } }
+      })
+      .sort('-updatedAt');
 
     const result = convos.map(c => {
       const other = c.initiator._id.toString() === userId
@@ -56,18 +60,23 @@ router.get('/getConversations', async (req, res) => {
         messages: simpleMessages,
         lastMessage: lastText,
         status: c.status,
-        pinned: c.pinned || false  // ← INCLUDE PINNED
+        pinned: c.pinned || false
       };
     });
 
-    res.json(result);
+    console.log("require message requests")
+    console.log(user.requireMessageRequests)
+
+    // Send conversations and requireMessageRequests toggle
+    res.json({
+      conversations: result,
+      requireMessageRequests: user.requireMessageRequests
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error fetching conversations' });
   }
 });
-
-
 
 
 // Create a new conversation (initial message request)
@@ -312,8 +321,17 @@ router.post('/startConversation', async (req, res) => {
       return res.status(400).json({ error: 'Conversation already exists.' });
     }
 
+    // ✅ Check if the recipient requires message requests
+    const recipientUser = await User.findById(recipient).select('requireMessageRequests');
+    if (!recipientUser) {
+      return res.status(404).json({ error: 'Recipient user not found.' });
+    }
+
+    const requiresRequest = recipientUser.requireMessageRequests;
+    const status = requiresRequest ? 'pending' : 'accepted';
+
     // Create the new conversation
-    convo = new Conversation({ initiator, recipient, status: 'pending', pinned: false, acceptedAt: Date.now() });
+    convo = new Conversation({ initiator, recipient, status, pinned: false, acceptedAt: status === 'accepted' ? Date.now() : undefined });
     await convo.save();
 
     // Create the first message
@@ -364,11 +382,9 @@ router.post('/startConversation', async (req, res) => {
       },
       messages: simpleMessages,
       lastMessage: lastText,
-      status: 'pending',
+      status,
       pinned: false
     };
-
-    console.log(formattedConversation)
 
     res.status(201).json(formattedConversation);
 
@@ -377,6 +393,7 @@ router.post('/startConversation', async (req, res) => {
     res.status(500).json({ error: 'Server error starting conversation' });
   }
 });
+
 
 // PATCH /api/messages/conversations/:id/status
 // Body: { status: 'accepted' | 'declined', userId }
@@ -493,7 +510,37 @@ router.patch('/conversations/:id/pin', async (req, res) => {
   }
 });
 
+// PATCH /api/messages/:id/requireMessageRequests
+// Body: { requireMessageRequests: true | false }
+router.patch('/:id/requireMessageRequests', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { requireMessageRequests } = req.body;
 
+    console.log("CHANGING REQUESTS SETTINGGGG")
+
+    if (typeof requireMessageRequests !== 'boolean') {
+      return res.status(400).json({ error: 'requireMessageRequests must be a boolean.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    user.requireMessageRequests = requireMessageRequests;
+    await user.save();
+
+    res.status(200).json({
+      message: `requireMessageRequests set to ${requireMessageRequests}`,
+      userId: user._id.toString(),
+      requireMessageRequests: user.requireMessageRequests
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error updating message request setting' });
+  }
+});
 
 
 

@@ -59,6 +59,12 @@ struct Conversation: Identifiable {
     var pinned: Bool
 }
 
+private struct ConversationResponse: Decodable {
+    let conversations: [APIConversation]
+    let requireMessageRequests: Bool
+}
+
+
 // MARK: - ViewModel
 
 final class DirectMessagesViewModel: ObservableObject {
@@ -67,6 +73,7 @@ final class DirectMessagesViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isLoadingConversations: Bool = false
     @Published var isLoadingUsers: Bool = false
+    @Published var requireMessageRequests: Bool = false
 
 
     /// Fetch conversations including message lists
@@ -89,10 +96,11 @@ final class DirectMessagesViewModel: ObservableObject {
                     return
                 }
                 do {
-                    let apiConvos = try decoder.decode([APIConversation].self, from: data)
-                    self.conversations = apiConvos.map { api in
+                    let decoded = try decoder.decode(ConversationResponse.self, from: data)
+
+                    self.conversations = decoded.conversations.map { api in
                         let mappedMessages = api.messages.map { msg in
-                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read:msg.read)
+                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read: msg.read)
                         }
                         return Conversation(
                             id: api.id,
@@ -108,12 +116,17 @@ final class DirectMessagesViewModel: ObservableObject {
                             pinned: api.pinned
                         )
                     }
+
+                    // ✅ Set the toggle state
+                    self.requireMessageRequests = decoded.requireMessageRequests
+
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
             }
         }.resume()
     }
+
     
     func fetchAvailableUsers(userId: String) {
         guard let url = URL(string: "http://localhost:3000/api/messages/getAvailableUsers?userId=\(userId)") else {
@@ -266,6 +279,35 @@ struct DirectMessagesView: View {
         }
     }
     
+    private func updateRequireRequestsSetting(_ enabled: Bool) {
+        guard let url = URL(string: "http://localhost:3000/api/messages/\(userId)/requireMessageRequests") else {
+            viewModel.errorMessage = "Invalid server URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["requireMessageRequests": enabled]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            viewModel.errorMessage = "Failed to encode request"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    viewModel.errorMessage = "Update failed: \(error.localizedDescription)"
+                }
+            }
+        }.resume()
+    }
+
+    
     private func togglePin(for convo: Conversation) {
         guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convo.id)/pin") else {
             viewModel.errorMessage = "Invalid server URL"
@@ -334,13 +376,22 @@ struct DirectMessagesView: View {
                 }
                 .navigationTitle(selectedTab.rawValue)
                 .toolbar {
-                    if selectedTab == .messages {
-                        ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        if selectedTab == .messages {
                             Button(action: {
                                 showNewConversationSheet = true
                             }) {
                                 Image(systemName: "plus.message.fill")
                                     .font(.title2)
+                            }
+                        } else if selectedTab == .requests {
+                            Toggle(isOn: $viewModel.requireMessageRequests) {
+                                Image(systemName: "lock.shield")
+                                    .foregroundColor(viewModel.requireMessageRequests ? Color.blue : Color.gray)
+                            }
+                            .font(.title2)
+                            .onChange(of: viewModel.requireMessageRequests) { newValue in
+                                updateRequireRequestsSetting(newValue)
                             }
                         }
                     }

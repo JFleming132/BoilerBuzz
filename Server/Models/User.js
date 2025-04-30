@@ -92,6 +92,10 @@ const userSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
+    requireMessageRequests: {
+      type: Boolean,
+      default: false
+    },
     spendLimit: {
         type: Number,
         default: 200.0
