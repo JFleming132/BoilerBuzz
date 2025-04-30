@@ -45,7 +45,7 @@ class ProfileViewModel: ObservableObject {
         
         self.userId = idToFetch
         
-        guard let url = URL(string: backendURL + "api/profile/\(idToFetch)") else {
+        guard let url = URL(string: "\(backendURL)api/profile/\(idToFetch)") else {
             print("Invalid URL")
             return
         }
@@ -94,7 +94,7 @@ class ProfileViewModel: ObservableObject {
             idToFetch = self.userId
         }
 
-        let urlString = backendURL + "api/home/events/byUser/\(idToFetch)"
+        let urlString = "\(backendURL)api/home/events/byUser/\(idToFetch)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
@@ -133,7 +133,7 @@ class ProfileViewModel: ObservableObject {
         // Use the current profile's userId if available, else fallback to logged-in user's id.
         let idToFetch: String = self.userId.isEmpty ? (UserDefaults.standard.string(forKey: "userId") ?? "") : self.userId
         
-        let urlString = backendURL + "api/photo/byUser/\(idToFetch)"
+        let urlString = "\(backendURL)api/photo/byUser/\(idToFetch)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return

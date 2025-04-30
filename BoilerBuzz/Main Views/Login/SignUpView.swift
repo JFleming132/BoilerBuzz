@@ -115,7 +115,7 @@ struct SignUpView: View {
 
     // Function to handle sign-up request
     func signupRequest(email: String, username: String, password: String) {
-        guard let url = URL(string: backendURL + "api/auth/signup") else { return }
+        guard let url = URL(string: "\(backendURL)api/auth/signup") else { return }
 
         let body: [String: Any] = [
             "email": email,
@@ -225,7 +225,7 @@ struct OnboardingView: View {
     }
 
     func fetchUserData() {
-        guard let url = URL(string: backendURL + "api/user/\(userId)") else { return }
+        guard let url = URL(string: "\(backendURL)api/user/\(userId)") else { return }
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {

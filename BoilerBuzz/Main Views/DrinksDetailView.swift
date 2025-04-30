@@ -8,6 +8,11 @@
 import SwiftUI
 import ConfettiSwiftUI
 
+//Small struct to decode an optomized backend call
+struct DrinkIsTriedResponse: Codable {
+    let isTried: Int //This is an int as a result of the MongoDB Aggregate. See: Server/Routes/drinks.js
+}
+
 struct Drink: Identifiable, Codable {
     let id = UUID()
     let objectID: String
@@ -731,7 +736,7 @@ struct DrinksDetailView: View {
             return
         }
 
-        guard let url = URL(string: backendURL + "api/drinks/triedDrinks/\(userId)") else {
+        guard let url = URL(string: "\(backendURL)api/drinks/triedDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -771,7 +776,7 @@ struct DrinksDetailView: View {
     }
     
     func fetchDrinks() {
-        guard let url = URL(string: backendURL + "api/auth/drinks") else {
+        guard let url = URL(string: "\(backendURL)api/auth/drinks") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -956,7 +961,7 @@ struct DrinkDetailsPopup: View {
             return
         }
         
-        guard let url = URL(string: backendURL + "api/drinks/favoriteDrinks/\(userId)") else {
+        guard let url = URL(string: "\(backendURL)api/drinks/favoriteDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -973,10 +978,15 @@ struct DrinkDetailsPopup: View {
             }
             
             do {
-                let favoriteDrinks = try JSONDecoder().decode([Drink].self, from: data)
+                let drinkResponse = try JSONDecoder().decode(DrinkIsTriedResponse.self, from: data)
                 DispatchQueue.main.async {
                     // Check if the current drink's drinkID is in the fetched favorites
-                    self.isFavorited = favoriteDrinks.contains(where: { $0.drinkID == drink.drinkID })
+                    if (drinkResponse.isTried >= 1) {
+                        self.isFavorited = true
+                    }
+                    else {
+                        self.isFavorited = false
+                    }
                 }
             } catch {
                 print("Error decoding favorite drinks: \(error.localizedDescription)")
@@ -991,7 +1001,7 @@ struct DrinkDetailsPopup: View {
             return
         }
         
-        guard let url = URL(string: backendURL + "api/drinks/toggleFavoriteDrink") else {
+        guard let url = URL(string: "\(backendURL)api/drinks/toggleFavoriteDrink") else {
             print("Invalid URL")
             return
         }
@@ -1051,3 +1061,4 @@ struct DrinkDetailsPopup: View {
         }
     }
 }
+

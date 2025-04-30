@@ -116,7 +116,7 @@ struct SpendingView: View {
             return
         }
 
-        let url = URL(string: backendURL + "api/spending/getUserDetails/\(userId)")!
+        let url = URL(string: "\(backendURL)api/spending/getUserDetails/\(userId)")!
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
@@ -244,7 +244,7 @@ struct AddExpenseView: View {
             return
         }
 
-        let url = URL(string: backendURL + "api/spending/addExpense/\(userId)")!
+        let url = URL(string: "\(backendURL)api/spending/addExpense/\(userId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -360,7 +360,7 @@ struct ChangeLimitView: View {
             return
         }
 
-        let url = URL(string: backendURL + "api/spending/editLimit/\(userId)")!
+        let url = URL(string: "\(backendURL)api/spending/editLimit/\(userId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -24,11 +24,13 @@ struct CalendarViewPage: View {
             CalendarView(selection: $selectedDates) //TODO: Make these decorations nicer and more noticable
                 .decorating(
                     parseEvents(events: rsvpEvents),
-                    systemImage: "star"
+                    systemImage: "star",
+                    size: UICalendarView.DecorationSize.large
                 )
                 .decorating(
                     parseEvents(events: promotedEvents),
-                    systemImage: "star.fill"
+                    systemImage: "star.fill",
+                    size: UICalendarView.DecorationSize.large
                 )
                 .onAppear(perform: fetchEvents)
                 .onChange(of: selectedDates, { oldValue, newValue in
@@ -88,7 +90,7 @@ struct CalendarViewPage: View {
             return
         }
         
-        guard let url = URL(string: backendURL + "api/calendar/events?currentUserID=\(myUserId)") else {
+        guard let url = URL(string: "\(backendURL)api/calendar/events?currentUserID=\(myUserId)") else {
             errorMessage = "Invalid API URL"
             return
         }

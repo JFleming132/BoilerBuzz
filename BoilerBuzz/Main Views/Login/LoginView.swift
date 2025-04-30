@@ -11,7 +11,7 @@ struct LoginView: View {
     // MARK: - Login Request
     func loginRequest() {
         print("Attempting login request...")
-        guard let url = URL(string: backendURL + "api/auth/login") else {
+        guard let url = URL(string: "\(backendURL)api/auth/login") else {
             print("Invalid URL")
             return
         }
@@ -101,7 +101,7 @@ struct LoginView: View {
     }
 
     func checkServerAvailability(completion: @escaping (Bool) -> Void) {
-        guard let url = URL(string: backendURL + "api/auth/health") else {
+        guard let url = URL(string: "\(backendURL)api/auth/health") else {
             completion(false)
             return
         }
@@ -112,6 +112,7 @@ struct LoginView: View {
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                 completion(true)
             } else {
+                print("\(backendURL)api/auth/health is not a valid URL.")
                 completion(false)
             }
         }.resume()

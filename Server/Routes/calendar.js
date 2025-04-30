@@ -23,7 +23,8 @@ router.get('/events', async (req, res) => {
         const currentDate = new Date().getTime();
         currentUserObjectID = new ObjectId(currentUserID);
         if (!mongoose.Types.ObjectId.isValid(currentUserID)) {
-          return res.status(400).json({ error: 'Invalid user Id(s)' });
+            console.log(currentUserID + " is not valid")
+            return res.status(400).json({ error: 'Invalid user Id(s)' });
         }
         const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
@@ -116,13 +117,13 @@ router.get('/events', async (req, res) => {
               }
             ]
         ]);
-        console.log("got events:", events);
+        //console.log("got events:", events);
         const sanitizedEvents = events.map(event => ({
             ...event,
             imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string
         }));
 
-        console.log("Fetching events from DB:", sanitizedEvents);
+        //console.log("Fetching events from DB:", sanitizedEvents);
         res.json(sanitizedEvents);
     } catch (err) {
         console.error("Error fetching events:", err);

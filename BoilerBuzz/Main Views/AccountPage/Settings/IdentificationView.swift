@@ -121,7 +121,7 @@ struct IdentificationView: View {
     // MARK: - Check if User is Already Identified
     func checkIdentificationStatus() {
         guard let userId = getUserId(),
-              let url = URL(string: backendURL + "api/profile/isIdentified/\(userId)") else {
+              let url = URL(string: "\(backendURL)api/profile/isIdentified/\(userId)") else {
             return
         }
 
@@ -172,7 +172,7 @@ struct IdentificationView: View {
 
         let fullNameRaw = "\(firstName) \(lastName)"
         guard let encodedName = fullNameRaw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: backendURL + "/api/profile/aliasLookup/\(encodedName)?userId=\(userId)") else {
+              let url = URL(string: "\(backendURL)/api/profile/aliasLookup/\(encodedName)?userId=\(userId)") else {
             verificationResult = "❌ Invalid URL."
             isVerifying = false
             timer?.invalidate()

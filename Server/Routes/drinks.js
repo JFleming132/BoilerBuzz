@@ -130,7 +130,7 @@ router.get('/triedDrinks/:userId', async (req, res) => {
   }
 });
 
-router.get('/isDrinkTried/:userId/:drinkId'), asynch (req, res) => {
+router.get('/isDrinkTried/:userId/:drinkId'), async (req, res) => {
     const userId = req.params.userId
     const drinkId = req.params.drinkId
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -141,6 +141,29 @@ router.get('/isDrinkTried/:userId/:drinkId'), asynch (req, res) => {
     }
     try {
         //TODO: Write an aggregate that returns null if drink is not tried, and nonnull otherwise
+        const triedMatches = await User.aggregate(
+          [
+            {
+              $match: {
+                _id: ObjectId(userId)
+              }
+            },
+            { $unwind: { path: '$triedDrinks' } },
+            {
+              $match: {
+                'triedDrinks.objectId':
+                  ObjectId(drinkId)
+              }
+            },
+            {
+                $count: "isTried"
+            }
+          ],
+          { maxTimeMS: 60000, allowDiskUse: true }
+        );
+        console.log(userId + " with drink " + drinkId + " returns:")
+        console.log(triedMatches)
+        res.json(triedMatches)
     } catch (error) {
         console.error('Error fetching drink\'s tried status by user:', error);
         return res.status(500).json({ error: 'Internal server error' })

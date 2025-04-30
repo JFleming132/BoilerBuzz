@@ -55,7 +55,7 @@ struct VerificationView: View {
     
     func verifyCode() {
         print("verify it")
-        guard let url = URL(string: backendURL + "api/auth/verify") else {
+        guard let url = URL(string: "\(backendURL)api/auth/verify") else {
             errorMessage = "Invalid URL"
             return
         }
