@@ -19,24 +19,13 @@ app.use('/api/drinks', drinksRouter);
 
 describe('Drinks Endpoints', function () {
     let testUserId;
-    const testDrinkId = 'test-drink-1';
-
+    const testDrinkId = new mongoose.Types.ObjectId();
+    const testTriedDrinkId = new mongoose.Types.ObjectId();
+    
     before(async function () {
         await mongoose.connect('mongodb+srv://skonger6:Meiners1@cluster0.ytchv.mongodb.net/Boiler_Buzz?retryWrites=true&w=majority&appName=Cluster0');
-        const testUser = new User({
-            email: "drinktest@example.com",
-            username: "drinktestuser",
-            password: "password",
-            spendLimit: 200.0,
-            currentSpent: 0.0,
-            expenses: [],
-            favoriteDrinks: [],
-            triedDrinks: []
-        });
-        await testUser.save();
-        testUserId = testUser._id.toString();
 
-        // Create a test drink.
+        // Create an untried test drink.
         const testDrink = new Drink({
             _id: testDrinkId,
             drinkID: 101,
@@ -51,12 +40,44 @@ describe('Drinks Endpoints', function () {
             calories: 100
         });
         await testDrink.save();
+        
+        // Create a tried test drink
+        const testTriedDrink = new Drink({
+            _id: testTriedDrinkId,
+            drinkID: 101,
+            name: "Tried Drink",
+            description: "A test drink that the user has tried.",
+            ingredients: ["Ingredient1", "Ingredient2"],
+            averageRating: 0,
+            ratingCount: 0,
+            ratings: [],
+            barServed: "Test Bar",
+            category: ["Test Category"],
+            calories: 100
+        });
+        await testTriedDrink.save()
+        
+        
+        // Create a test user with one tried drink
+        const testUser = new User({
+            email: "drinktest@example.com",
+            username: "drinktestuser",
+            password: "password",
+            spendLimit: 200.0,
+            currentSpent: 0.0,
+            expenses: [],
+            favoriteDrinks: [],
+            triedDrinks: [{objectId: testTriedDrink._id.toString(), rating: 0}]
+        });
+        await testUser.save();
+        testUserId = testUser._id.toString();
     });
 
     after(async function () {
     // Clean up: delete only the test user and test drink.
         await User.deleteOne({ _id: testUserId });
         await Drink.deleteOne({ _id: testDrinkId });
+        await Drink.deleteOne({ _id: testTriedDrinkId })
         await mongoose.connection.close();
     });
 
@@ -80,8 +101,9 @@ describe('Drinks Endpoints', function () {
         // Verify that the test user now has this drink in triedDrinks.
         const user = await User.findById(testUserId);
         expect(user.triedDrinks).to.be.an('array');
-        expect(user.triedDrinks.length).to.equal(1);
-        expect(user.triedDrinks[0]).to.have.property('objectId', testDrinkId);
+        expect(user.triedDrinks.length).to.equal(2);
+        const mappedDrinkIDs = user.triedDrinks.map((drink) => drink.objectId)
+        expect(mappedDrinkIDs).to.include(testDrinkId.toString())
 
         // Verify that the test drink document has the rating.
         const drink = await Drink.findById(testDrinkId);
@@ -106,9 +128,9 @@ describe('Drinks Endpoints', function () {
         // With no ratings, averageRating should be 0.
         expect(res.body.averageRating).to.equal(0);
 
-        // Verify that the user's triedDrinks array is now empty.
+        // Verify that the user's triedDrinks array is now empty (except the tried test drink).
         const user = await User.findById(testUserId);
-        expect(user.triedDrinks).to.have.lengthOf(0);
+        expect(user.triedDrinks).to.have.lengthOf(1);
 
         // Verify that the test drink's ratings array is empty.
         const drink = await Drink.findById(testDrinkId);
@@ -116,12 +138,19 @@ describe('Drinks Endpoints', function () {
         expect(drink.averageRating).to.equal(0);
     });
     
-    //TODO: This
     it("should check if a tried drink has been tried", async function () {
-
+        const res = await request(app)
+            .get('/api/drinks/isDrinkTried')
+            .query({userId: testUserId, drinkId: testTriedDrinkId.toString()})
+        expect(res.status).to.equal(200);
+        expect(res.body.isDrinkTried).to.equal(true);
     });
     
     it("should check if an untried drink has not been tried", async function () {
-        
+        const res = await request(app)
+            .get('/api/drinks/isDrinkTried')
+            .query({userId: testUserId, drinkId: testDrinkId.toString()})
+        expect(res.status).to.equal(200);
+        expect(res.body.isDrinkTried).to.equal(false)
     })
 });

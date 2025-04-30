@@ -10,7 +10,7 @@ import ConfettiSwiftUI
 
 //Small struct to decode an optomized backend call
 struct DrinkIsTriedResponse: Codable {
-    let isTried: Int //This is an int as a result of the MongoDB Aggregate. See: Server/Routes/drinks.js
+    let isDrinkTried: Bool //See: Server/Routes/drinks.js
 }
 
 struct Drink: Identifiable, Codable {
@@ -980,13 +980,7 @@ struct DrinkDetailsPopup: View {
             do {
                 let drinkResponse = try JSONDecoder().decode(DrinkIsTriedResponse.self, from: data)
                 DispatchQueue.main.async {
-                    // Check if the current drink's drinkID is in the fetched favorites
-                    if (drinkResponse.isTried >= 1) {
-                        self.isFavorited = true
-                    }
-                    else {
-                        self.isFavorited = false
-                    }
+                    self.isFavorited = drinkResponse.isDrinkTried
                 }
             } catch {
                 print("Error decoding favorite drinks: \(error.localizedDescription)")
