@@ -44,7 +44,7 @@ describe('Drinks Endpoints', function () {
         // Create a tried test drink
         const testTriedDrink = new Drink({
             _id: testTriedDrinkId,
-            drinkID: 101,
+            drinkID: 102,
             name: "Tried Drink",
             description: "A test drink that the user has tried.",
             ingredients: ["Ingredient1", "Ingredient2"],
@@ -66,7 +66,7 @@ describe('Drinks Endpoints', function () {
             spendLimit: 200.0,
             currentSpent: 0.0,
             expenses: [],
-            favoriteDrinks: [],
+            favoriteDrinks: ["102"],
             triedDrinks: [{objectId: testTriedDrink._id.toString(), rating: 0}]
         });
         await testUser.save();
@@ -138,18 +138,18 @@ describe('Drinks Endpoints', function () {
         expect(drink.averageRating).to.equal(0);
     });
     
-    it("should check if a tried drink has been tried", async function () {
+    it("should check if a favorite drink is favorited", async function () {
         const res = await request(app)
-            .get('/api/drinks/isDrinkTried')
-            .query({userId: testUserId, drinkId: testTriedDrinkId.toString()})
+            .get('/api/drinks/isDrinkFavorite')
+            .query({userId: testUserId, drinkId: "102"})
         expect(res.status).to.equal(200);
         expect(res.body.isDrinkTried).to.equal(true);
     });
     
-    it("should check if an untried drink has not been tried", async function () {
+    it("should check if a normal drink is not favorited", async function () {
         const res = await request(app)
-            .get('/api/drinks/isDrinkTried')
-            .query({userId: testUserId, drinkId: testDrinkId.toString()})
+            .get('/api/drinks/isDrinkFavorite')
+            .query({userId: testUserId, drinkId: "101"})
         expect(res.status).to.equal(200);
         expect(res.body.isDrinkTried).to.equal(false)
     })

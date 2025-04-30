@@ -130,44 +130,34 @@ router.get('/triedDrinks/:userId', async (req, res) => {
   }
 });
 
-router.get('/isDrinkTried', async (req, res) => {
+router.get('/isDrinkFavorite', async (req, res) => {
+    console.log("Incoming Request to /isDrinkTried")
     const userId = req.query.userId
     const drinkId = req.query.drinkId
-    const drinkObjId = new ObjectId(drinkId)
     const userObjId = new ObjectId(userId)
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         console.log("Invalid User Id: " + userId)
         return res.status(400).json({ error: 'Invalid user Id' })
     }
-    else if (!mongoose.Types.ObjectId.isValid(drinkId)) {
-        console.log("Invalid Drink Id: " + drinkId)
-        console.log(req.query)
-        return res.status(400).json({ error: 'Invalid drink Id' })
-    }
     try {
         const triedMatches = await User.aggregate(
-          [
-            {
-              $match: {
-                _id: userObjId
-              }
-            },
-            { $unwind: { path: '$triedDrinks' } },
-            {
-              $match: {
-                'triedDrinks.objectId':
-                  drinkId
-              }
-            },
-            {
-                $count: "isTried"
-            }
-          ],
+                                                  [
+                                                   [
+                                                       {
+                                                         $match: {
+                                                           _id: userObjId
+                                                         }
+                                                       },
+                                                       { $project: { favoriteDrinks: 1 } },
+                                                       { $unwind: { path: '$favoriteDrinks' } },
+                                                       { $match: { favoriteDrinks: drinkId } },
+                                                     ],
+                                                    ],
           { maxTimeMS: 60000, allowDiskUse: true }
         );
         //console.log(userId + " with drink " + drinkId + " returns:")
         //console.log(triedMatches)
-        let calculatedResponse
+        let calculatedResponse;
         if (triedMatches.length > 0) {
             calculatedResponse = {isDrinkTried: true}
         } else {

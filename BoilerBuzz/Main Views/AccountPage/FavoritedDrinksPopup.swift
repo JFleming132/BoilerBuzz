@@ -77,7 +77,9 @@ struct FavoritedDrinksPopup: View {
         }
     }
     
-    func fetchFavoriteDrinks() {
+    func fetchFavoriteDrinks() { //TODO: This function fails if the retrieved JSON does not STRICTLY adhere to the type Drink,
+        //Even if it only needs to display the name and icon.
+        //Either fix it, or ensure all drinks in the database can be decoded
         guard let url = URL(string: "\(backendURL)api/drinks/favoriteDrinks/\(userId)") else {
             errorMessage = "Invalid URL"
             return
@@ -113,7 +115,7 @@ struct FavoritedDrinksPopup: View {
             }
             } catch {
                 DispatchQueue.main.async {
-                    errorMessage = "Failed to decode drinks: \(error.localizedDescription)"
+                    errorMessage = "Failed to decode drinks: \(error)"
                 }
             }
         }.resume()

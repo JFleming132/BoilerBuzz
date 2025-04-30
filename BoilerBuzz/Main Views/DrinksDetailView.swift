@@ -960,15 +960,15 @@ struct DrinkDetailsPopup: View {
             print("User ID not found")
             return
         }
-        
-        guard let url = URL(string: "\(backendURL)api/drinks/favoriteDrinks/\(userId)") else {
+        let drinkID = drink.drinkID
+        guard let url = URL(string: "\(backendURL)api/drinks/isDrinkFavorite?drinkId=\(drinkID)&userId=\(userId)") else {
             print("Invalid URL")
             return
         }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
-                print("Error fetching favorite drinks: \(error.localizedDescription)")
+                print("Error fetching favorite drink status: \(error.localizedDescription)")
                 return
             }
             
@@ -983,7 +983,7 @@ struct DrinkDetailsPopup: View {
                     self.isFavorited = drinkResponse.isDrinkTried
                 }
             } catch {
-                print("Error decoding favorite drinks: \(error.localizedDescription)")
+                print("Error decoding favorite drink status: \(error.localizedDescription)")
             }
         }.resume()
     }
