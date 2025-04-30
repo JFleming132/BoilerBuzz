@@ -7,7 +7,8 @@ const conversationSchema = new mongoose.Schema({
   status:      { type: String, enum: ['pending','accepted','declined'], default: 'pending' },
   messages:    [{ type: mongoose.Schema.Types.ObjectId, ref: 'Messages' }],
   updatedAt:   { type: Date, default: Date.now },
-  acceptedAt:  { type: Date }
+  acceptedAt:  { type: Date },
+  pinned:      { type: Boolean, default: false }
 });
 
 const Conversation = mongoose.model('Conversation', conversationSchema);

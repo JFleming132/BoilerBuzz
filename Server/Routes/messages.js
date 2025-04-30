@@ -41,8 +41,6 @@ router.get('/getConversations', async (req, res) => {
         read: msg.read
       }));
 
-      console.log(simpleMessages)
-
       const lastText = simpleMessages.length
         ? simpleMessages[simpleMessages.length - 1].text
         : null;
@@ -57,11 +55,10 @@ router.get('/getConversations', async (req, res) => {
         },
         messages: simpleMessages,
         lastMessage: lastText,
-        status: c.status
+        status: c.status,
+        pinned: c.pinned || false  // ← INCLUDE PINNED
       };
     });
-
-    console.log(result)
 
     res.json(result);
   } catch (err) {
@@ -69,6 +66,7 @@ router.get('/getConversations', async (req, res) => {
     res.status(500).json({ error: 'Server error fetching conversations' });
   }
 });
+
 
 
 
@@ -315,7 +313,7 @@ router.post('/startConversation', async (req, res) => {
     }
 
     // Create the new conversation
-    convo = new Conversation({ initiator, recipient, status: 'pending', acceptedAt: Date.now() });
+    convo = new Conversation({ initiator, recipient, status: 'pending', pinned: false, acceptedAt: Date.now() });
     await convo.save();
 
     // Create the first message
@@ -366,7 +364,8 @@ router.post('/startConversation', async (req, res) => {
       },
       messages: simpleMessages,
       lastMessage: lastText,
-      status: 'pending'
+      status: 'pending',
+      pinned: false
     };
 
     console.log(formattedConversation)
@@ -458,6 +457,42 @@ router.patch('/conversations/:id/markRead', async (req, res) => {
     res.status(500).json({ error: 'Server error marking messages as read' });
   }
 });
+
+// PATCH /api/messages/conversations/:id/pin
+// Body: { pinned: true | false }
+router.patch('/conversations/:id/pin', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    const { pinned } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      return res.status(400).json({ error: 'Invalid conversation ID' });
+    }
+
+    if (typeof pinned !== 'boolean') {
+      return res.status(400).json({ error: 'Pinned status must be a boolean.' });
+    }
+
+    const convo = await Conversation.findById(convId);
+    if (!convo) {
+      return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    convo.pinned = pinned;
+    convo.updatedAt = new Date();
+    await convo.save();
+
+    res.status(200).json({
+      message: `Conversation pinned status updated to ${pinned}`,
+      conversationId: convo._id.toString(),
+      pinned: convo.pinned
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error updating pinned status' });
+  }
+});
+
 
 
 
