@@ -19,17 +19,20 @@ struct CalendarViewPage: View {
     @State var errorMessage: String?
     @State var selectedDates: [DateComponents] = [] //should only ever contain one element but is an array anyway? just trust me
     @State private var showingEventSheet: Bool = false
+    
     var body: some View {
         VStack {
-            CalendarView(selection: $selectedDates) //TODO: Make these decorations nicer and more noticable
+            CalendarView(selection: $selectedDates)
                 .decorating(
                     parseEvents(events: rsvpEvents),
                     systemImage: "star",
+                    color: Color.blue,
                     size: UICalendarView.DecorationSize.large
                 )
                 .decorating(
                     parseEvents(events: promotedEvents),
                     systemImage: "star.fill",
+                    color: Color.green,
                     size: UICalendarView.DecorationSize.large
                 )
                 .onAppear(perform: fetchEvents)
@@ -45,17 +48,38 @@ struct CalendarViewPage: View {
                     }
                     NavigationStack() {
                         VStack() {
-                            //TODO: Add header to sheet that gives current selected date, which is selectedDates!
-                            ForEach(selectedEvents) { e in
-                                NavigationLink(destination: EventDetailView(event: e)) {
-                                    EventCardView(event: e)
+                            Spacer()
+                            List {
+                                Section {
+                                    if (selectedEvents.isEmpty) {
+                                        Text("No events today! Look for events on the Home page.")
+                                    } else {
+                                        ForEach(selectedEvents) { e in
+                                            NavigationLink(destination: EventDetailView(event: e)) {
+                                                EventCardView(event: e)
+                                            }
+                                            .buttonStyle(PlainButtonStyle())
+                                        }
+                                    }
+                                } header: {
+                                    if let date = Calendar.current.date(from: selectedDates.first!) {
+                                        Text("Events on " + formattedDate(date: date))
+                                    } else {
+                                        Text("Invalid Date")
+                                    }
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
+                            Spacer()
                         }
                     }
                 }
         }
+    }
+    
+    func formattedDate(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        return formatter.string(from: date)
     }
     
     func sameDay(dc: DateComponents, d: Date) -> Bool {

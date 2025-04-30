@@ -5,7 +5,7 @@ const Event = require('../Models/Event'); // Ensure correct path to Event model
 const User = require('../Models/User');   // Ensure correct path to User model
 const HarrysCount = require('../Models/harrys'); // Ensure correct import
 const nodemailer = require('nodemailer');
-
+const { ObjectId } = require('mongodb');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -80,13 +80,22 @@ router.post('/events', async (req, res) => {
     }
 });
 
+//TODO: Fix this endpoint to omit blocked users
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
         console.log("📆 Current timestamp:", currentDate);
         console.log("🧠 Attempting to fetch upcoming events from DB...");
 
-        const events = await Event.find({ date: { $gte: currentDate } });
+        const currentUserID = new ObjectId(req.query.currentUserID)
+        var blockedUsers = []
+        if (Object.keys(req.query).length === 0) {
+            blockedUsers = []
+        } else {
+            blockedUsers = await User.findById(currentUserID)
+            blockedUsers = blockedUsers.blockedUserIDs.map((bu) => new ObjectId(bu))
+        }
+        const events = await Event.find({ $and: [{date: { $gte: 0 }}, {author: {$nin: blockedUsers}}] });
         console.log(`✅ Found ${events.length} event(s)`);
 
         const sanitizedEvents = events.map(event => ({
@@ -217,7 +226,8 @@ router.post('/unrsvp', async (req, res) => {
     }
 });
 
-// Update event and notify RSVP'd users
+/* DEPRECATED */
+/*
 router.post('/update-event', async (req, res) => {
     try {
         const { eventId, title, description, location, date, capacity } = req.body;
@@ -262,7 +272,7 @@ router.post('/update-event', async (req, res) => {
         res.status(500).json({ error: 'Server error updating event' });
     }
 });
-
+*/
 
 router.put('/events/:id', async (req, res) => {
     const eventId = req.params.id;

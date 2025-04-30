@@ -115,4 +115,6 @@ describe('Drinks Endpoints', function () {
     expect(drink.ratings).to.have.lengthOf(0);
     expect(drink.averageRating).to.equal(0);
   });
+    
+    //TODO: test the other endpoints in drink.js
 });

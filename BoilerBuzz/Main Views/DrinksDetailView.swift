@@ -954,7 +954,7 @@ struct DrinkDetailsPopup: View {
     }
 
     //function to check if a drink is favorited
-    //TODO: This backend call is very inefficient. If all it does is check if a drink is favorited, it can be rewritten
+    //TODO: Test this new backend call
     func fetchFavoriteStatus() {
         guard let userId = getUserId() else {
             print("User ID not found")
