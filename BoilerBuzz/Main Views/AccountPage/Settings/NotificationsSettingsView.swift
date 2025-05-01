@@ -18,7 +18,7 @@ struct NotificationPreferences: Codable {
 }
 
 struct NotificationsSettingsView: View {
-    @State private var friendList: [Friend] = []
+    @State private var friendList: [FriendNotification] = []
     @State private var errorMessage: String? = nil
     // This dictionary tracks which friends have notifications enabled.
     @State private var friendNotificationPreferences: [String: Bool] = [:]
@@ -29,143 +29,184 @@ struct NotificationsSettingsView: View {
     @State private var eventRemindersEnabled: Bool = false
     @State private var announcementsEnabled: Bool = false
     @State private var locationBasedOffersEnabled: Bool = false
+    @State private var isLoadingPreferences: Bool = true
+
 
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Post Notifications")) {
-                    DisclosureGroup("Events") {
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .foregroundColor(.red)
-                        } else if friendList.isEmpty {
-                            Text("No friends found.")
-                                .foregroundColor(.gray)
-                        } else {
-                            ForEach(friendList) { friend in
-                                Toggle(friend.name, isOn: Binding(
-                                    get: { friendNotificationPreferences[friend.id] ?? false },
-                                    set: { newValue in
-                                        friendNotificationPreferences[friend.id] = newValue
-                                        updateNotificationPreferences()
-                                    }
-                                ))
+                if isLoadingPreferences {
+                    ProgressView("Loading Preferences...")
+                } else {
+                    Section(header: Text("Post Notifications")) {
+                        DisclosureGroup("Event Postings") {
+                            if let errorMessage = errorMessage {
+                                Text(errorMessage)
+                                    .foregroundColor(.red)
+                            } else if friendList.isEmpty {
+                                Text("No friends found.")
+                                    .foregroundColor(.gray)
+                            } else {
+                                ForEach(friendList) { friend in
+                                    Toggle(friend.name, isOn: Binding(
+                                        get: { friendNotificationPreferences[friend.id] ?? false },
+                                        set: { newValue in
+                                            friendNotificationPreferences[friend.id] = newValue
+                                            updateNotificationPreferences()
+                                        }
+                                    ))
+                                }
                             }
                         }
+
+                        // Other notification toggles
+                        Toggle("Drink Specials", isOn: $drinkSpecialsEnabled.onChange(updateNotificationPreferences))
+                        Toggle("Event Updates", isOn: $eventUpdatesEnabled.onChange(updateNotificationPreferences))
+                        Toggle("Event Reminders", isOn: $eventRemindersEnabled.onChange(updateNotificationPreferences))
+                        Toggle("Administrative Announcements", isOn: $announcementsEnabled.onChange(updateNotificationPreferences))
+                        Toggle("Location Based Offers", isOn: $locationBasedOffersEnabled.onChange(updateNotificationPreferences))
                     }
-                    
-                    Toggle("Drink Specials", isOn: $drinkSpecialsEnabled)
-                        .onChange(of: drinkSpecialsEnabled) { oldValue, newValue in
-                            updateNotificationPreferences()
-                        }
-                    Toggle("Event Updates", isOn: $eventUpdatesEnabled)
-                        .onChange(of: eventUpdatesEnabled) { oldValue, newValue in
-                            updateNotificationPreferences()
-                        }
-                    Toggle("Event Reminders", isOn: $eventRemindersEnabled)
-                        .onChange(of: eventRemindersEnabled) { oldValue, newValue in
-                            updateNotificationPreferences()
-                        }
-                    Toggle("Administrative Announcements", isOn: $announcementsEnabled)
-                        .onChange(of: announcementsEnabled) { oldValue, newValue in
-                            updateNotificationPreferences()
-                        }
-                    Toggle("Location Based Offers", isOn: $locationBasedOffersEnabled)
-                        .onChange(of: locationBasedOffersEnabled) { oldValue, newValue in
-                            updateNotificationPreferences()
-                        }
                 }
             }
             .navigationTitle("Notifications Settings")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: NotificationCenterView()) {
+                        Image(systemName: "bell.fill")
+                            .imageScale(.large)
+                            .padding(6)
+                    }
+                }
+            }
             .onAppear {
-                fetchFriendList()
-                fetchNotificationPreferences()
+                requestNotificationPermission()
+                loadData()
             }
         }
     }
+
+    func loadData() {
+        isLoadingPreferences = true
+        fetchFriendList {
+            fetchNotificationPreferences()
+        }
+    }
+
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Permission request failed: \(error.localizedDescription)")
+            } else {
+                print("Notification permission granted: \(granted)")
+            }
+        }
+    }
+
+    // func scheduleLocalNotification(for friendName: String) {
+    //     let content = UNMutableNotificationContent()
+    //     content.title = "New Event!"
+    //     content.body = "\(friendName) just posted a new event. Check it out!"
+    //     content.sound = .default
+
+    //     // Trigger notification after 5 seconds for testing purposes.
+    //     let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+
+    //     let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+    //     UNUserNotificationCenter.current().add(request) { error in
+    //         if let error = error {
+    //             print("Error scheduling notification: \(error.localizedDescription)")
+    //         } else {
+    //             print("Notification scheduled for friend: \(friendName)")
+    //         }
+    //     }
+    // }
+
+
     
     // Fetch friend list similar to the FriendsListPopup.
-    func fetchFriendList() {
-        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
-            self.errorMessage = "User ID not found."
-            return
-        }
-        guard let url = URL(string: "http://localhost:3000/api/friends/\(userId)") else {
-            self.errorMessage = "Invalid URL."
+    func fetchFriendList(completion: @escaping () -> Void) {
+        guard let userId = UserDefaults.standard.string(forKey: "userId"),
+            let url = URL(string: "http://localhost:3000/api/notification/friends/\(userId)") else {
+            self.errorMessage = "Invalid URL or User ID."
+            completion()
             return
         }
         
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
                     self.errorMessage = "Error fetching friends: \(error.localizedDescription)"
+                    completion()
+                    return
                 }
-                return
-            }
-            
-            guard let data = data else {
-                DispatchQueue.main.async {
+                
+                guard let data = data else {
                     self.errorMessage = "No data received from server."
+                    completion()
+                    return
                 }
-                return
-            }
-            
-            do {
-                let decodedFriends = try JSONDecoder().decode([Friend].self, from: data)
-                DispatchQueue.main.async {
+                
+                do {
+                    let decodedFriends = try JSONDecoder().decode([FriendNotification].self, from: data)
                     self.friendList = decodedFriends
-                    // Initialize toggle states for each friend if not already set.
+                    
+                    
+                    // Initialize toggles safely
                     for friend in decodedFriends {
                         if self.friendNotificationPreferences[friend.id] == nil {
                             self.friendNotificationPreferences[friend.id] = false
                         }
                     }
+                    
                     self.errorMessage = nil
-                }
-            } catch {
-                DispatchQueue.main.async {
+                } catch {
                     self.errorMessage = "Failed to decode friends: \(error.localizedDescription)"
+                    print("JSON response:", String(data: data, encoding: .utf8) ?? "No JSON")
                 }
+                
+                completion()
             }
         }.resume()
     }
     // Fetch the current notification preferences from the backend.
     func fetchNotificationPreferences() {
-        guard let userId = UserDefaults.standard.string(forKey: "userId") else {
-            self.errorMessage = "User ID not found."
-            return
-        }
-        guard let url = URL(string: "http://localhost:3000/api/notifications/\(userId)") else {
-            self.errorMessage = "Invalid URL."
+        guard let userId = UserDefaults.standard.string(forKey: "userId"),
+            let url = URL(string: "http://localhost:3000/api/notification/\(userId)") else {
+            self.errorMessage = "Invalid URL or User ID."
+            self.isLoadingPreferences = false
             return
         }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                defer { self.isLoadingPreferences = false }
+
+                if let error = error {
                     self.errorMessage = "Error fetching preferences: \(error.localizedDescription)"
+                    return
                 }
-                return
-            }
-            guard let data = data else {
-                DispatchQueue.main.async {
+                
+                guard let data = data else {
                     self.errorMessage = "No data received from server."
+                    return
                 }
-                return
-            }
-            do {
-                let prefs = try JSONDecoder().decode(NotificationPreferences.self, from: data)
-                DispatchQueue.main.async {
+                
+                do {
+                    let prefs = try JSONDecoder().decode(NotificationPreferences.self, from: data)
                     self.drinkSpecialsEnabled = prefs.drinkSpecials
                     self.eventUpdatesEnabled = prefs.eventUpdates
                     self.eventRemindersEnabled = prefs.eventReminders
                     self.announcementsEnabled = prefs.announcements
                     self.locationBasedOffersEnabled = prefs.locationBasedOffers
-                    self.friendNotificationPreferences = prefs.friendPosting
+                    
+                    // Important: Sync friend preferences safely
+                    for friend in self.friendList {
+                        self.friendNotificationPreferences[friend.id] = prefs.friendPosting[friend.id] ?? false
+                    }
+                    
                     self.errorMessage = nil
-                }
-            } catch {
-                DispatchQueue.main.async {
+                } catch {
                     self.errorMessage = "Failed to decode preferences: \(error.localizedDescription)"
                 }
             }
@@ -211,6 +252,8 @@ struct NotificationsSettingsView: View {
                 do {
                     let responseJSON = try JSONSerialization.jsonObject(with: data, options: [])
                     // print("Update response: \(responseJSON)")
+
+                    UserDefaults.standard.set(preferences, forKey: "notificationPreferences")
                 } catch {
                     print("Failed to parse update response: \(error.localizedDescription)")
                 }
@@ -226,3 +269,21 @@ struct NotificationsSettingsView_Previews: PreviewProvider {
         NotificationsSettingsView()
     }
 }
+
+extension Binding {
+    func onChange(_ handler: @escaping () -> Void) -> Binding<Value> {
+        Binding(
+            get: { self.wrappedValue },
+            set: {
+                self.wrappedValue = $0
+                handler()
+            }
+        )
+    }
+}
+
+struct FriendNotification: Codable, Identifiable {
+    let id: String
+    let name: String
+}
+

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Tab: Hashable {
-    case map, calendar, home, drinks, account
+    case map, calendar, home, drinks, account, game
 }
 
 struct ContentView: View {
@@ -14,8 +14,13 @@ struct ContentView: View {
         self._selectedTab = State(initialValue: initialTab)
         self._accountToView = State(initialValue: accountToView)
         self._eventToView = State(initialValue: eventToView)
-
-        UITabBar.appearance().backgroundColor = UIColor(primaryColor)
+        
+        let appearance = UITabBarAppearance()
+        appearance.backgroundColor = .black
+        appearance.shadowColor = .clear
+        
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
         UITabBar.appearance().unselectedItemTintColor = UIColor(secondaryColor)
     }
 
@@ -52,6 +57,11 @@ struct ContentView: View {
                     Label("Drinks", systemImage: "wineglass")
                 }
                 .tag(Tab.drinks)
+            GamesView()
+                .tabItem {
+                    Label("Games", systemImage: "gamecontroller")
+                }
+
             
             // Pass the accountToView to AccountView. If accountToView is nil,
             // AccountView will fetch your own profile as before.

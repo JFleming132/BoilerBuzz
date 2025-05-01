@@ -14,6 +14,7 @@
 		26C7BE032D83609100249B08 /* CalendarView in Frameworks */ = {isa = PBXBuildFile; productRef = 26C7BE022D83609100249B08 /* CalendarView */; };
 		85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 85C9F1E62D62774800A93BC2 /* ConfettiSwiftUI */; };
 		85D4954A2D71FB2B000BE249 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85D495482D71FA56000BE249 /* XCTest.framework */; platformFilter = ios; };
+		AF4D93912D9F262B00AF838F /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = AF4D93902D9F262B00AF838F /* SocketIO */; };
 		F02CA6D42D6D31DE0083E19C /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F02CA6D32D6D31DE0083E19C /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
@@ -1838,6 +1839,7 @@
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
 				GoogleMapViewRepresentableTests.swift,
+				postsTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 				ProfileSettingsTests.swift,
 			);
@@ -1849,10 +1851,19 @@
 				BoilerBuzzTests.swift,
 				DrinksDetailViewTests.swift,
 				GoogleMapViewRepresentableTests.swift,
+				postsTests.swift,
 				PrivacySecuritySettingsViewTests.swift,
 				ProfileSettingsTests.swift,
 			);
 			target = 8B0A402B2D5444C1001C0A7D /* BoilerBuzzTests */;
+		};
+		F002E5DD2DBA8E38008A38A3 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				info.plist,
+				"Preview Content/Preview Assets.xcassets",
+			);
+			target = 8B0A401B2D5444BF001C0A7D /* BoilerBuzz */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -1868,6 +1879,9 @@
 		};
 		8B0A401E2D5444BF001C0A7D /* BoilerBuzz */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F002E5DD2DBA8E38008A38A3 /* Exceptions for "BoilerBuzz" folder in "BoilerBuzz" target */,
+			);
 			path = BoilerBuzz;
 			sourceTree = "<group>";
 		};
@@ -1885,6 +1899,7 @@
 			files = (
 				F02CA6D42D6D31DE0083E19C /* CoreLocation.framework in Frameworks */,
 				26C7BE032D83609100249B08 /* CalendarView in Frameworks */,
+				AF4D93912D9F262B00AF838F /* SocketIO in Frameworks */,
 				172099A62D66C01C0050754E /* GooglePlaces in Frameworks */,
 				172099A32D66BFAA0050754E /* GoogleMaps in Frameworks */,
 				85C9F1E72D62774800A93BC2 /* ConfettiSwiftUI in Frameworks */,
@@ -6514,6 +6529,7 @@
 			buildPhases = (
 				8B0A40182D5444BF001C0A7D /* Sources */,
 				8B0A40192D5444BF001C0A7D /* Frameworks */,
+				F002E5DC2DBA8E38008A38A3 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -6530,6 +6546,7 @@
 				172099A52D66C01C0050754E /* GooglePlaces */,
 				172099A72D66C01C0050754E /* GooglePlacesSwift */,
 				26C7BE022D83609100249B08 /* CalendarView */,
+				AF4D93902D9F262B00AF838F /* SocketIO */,
 			);
 			productName = BoilerBuzz;
 			productReference = 8B0A401C2D5444BF001C0A7D /* BoilerBuzz.app */;
@@ -6615,6 +6632,7 @@
 				172099A12D66BFAA0050754E /* XCRemoteSwiftPackageReference "ios-maps-sdk" */,
 				172099A42D66C01C0050754E /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
 				263F40212D83602F00DE26E8 /* XCRemoteSwiftPackageReference "CalendarView" */,
+				AF4D938F2D9F262B00AF838F /* XCRemoteSwiftPackageReference "socket.io-client-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8B0A401D2D5444BF001C0A7D /* Products */;
@@ -6637,6 +6655,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8B0A40342D5444C1001C0A7D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F002E5DC2DBA8E38008A38A3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -6810,11 +6835,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BoilerBuzz/BoilerBuzz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
@@ -6841,11 +6867,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = BoilerBuzz/BoilerBuzz.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"BoilerBuzz/Preview Content\"";
-				DEVELOPMENT_TEAM = P7U37BCD8D;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_FILE[sdk=*]" = BoilerBuzz/Info.plist;
@@ -7009,6 +7036,14 @@
 				minimumVersion = 2.0.2;
 			};
 		};
+		AF4D938F2D9F262B00AF838F /* XCRemoteSwiftPackageReference "socket.io-client-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/socketio/socket.io-client-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 16.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -7036,6 +7071,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 85C9F1E42D62763200A93BC2 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
 			productName = ConfettiSwiftUI;
+		};
+		AF4D93902D9F262B00AF838F /* SocketIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF4D938F2D9F262B00AF838F /* XCRemoteSwiftPackageReference "socket.io-client-swift" */;
+			productName = SocketIO;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -5,7 +5,6 @@
 //  Created by Patrick Barry on 2/15/25.
 //
 
-
 import Foundation
 import Combine
 import SwiftUI
@@ -22,34 +21,33 @@ class ProfileViewModel: ObservableObject {
     @Published var ratingCount: Int = 0
     @Published var userEvents: [Event] = []
     @Published var userPhotos: [Photo] = []
-
-    // Function to fetch user data from the backend.
-
-
+    @Published var isOnCampus: Bool = false
+    @Published var campusStatusLastChecked: Date? = nil
     @Published var isBanned: Bool = false
 
-    
-    // Function to fetch user data from the backend.
+    // MARK: - Fetch Profile Data
+
     func fetchUserProfile(userId: String? = nil) {
-        var idToFetch: String
+        // Use provided userId, else self.userId, else fallback to logged-in user
+        let idToFetch: String
         if let provided = userId {
             idToFetch = provided
-        } else {
-            guard let storedUserId = UserDefaults.standard.string(forKey: "userId") else {
-                print("No userId stored, user may not be logged in")
-                return
-            }
+        } else if !self.userId.isEmpty {
+            idToFetch = self.userId
+        } else if let storedUserId = UserDefaults.standard.string(forKey: "userId") {
             idToFetch = storedUserId
-
+        } else {
+            print("No userId stored, user may not be logged in")
+            return
         }
-        
+
         self.userId = idToFetch
-        
+
         guard let url = URL(string: "http://localhost:3000/api/profile/\(idToFetch)") else {
             print("Invalid URL")
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Error fetching profile data: \(error)")
@@ -58,40 +56,36 @@ class ProfileViewModel: ObservableObject {
             guard let data = data else { return }
             do {
                 let decodedResponse = try JSONDecoder().decode(Profile.self, from: data)
-                print("got data \(data)")
                 DispatchQueue.main.async {
                     self.username = decodedResponse.username
                     self.bio = decodedResponse.bio
-
                     self.profilePicture = decodedResponse.profilePicture.imageFromBase64 ?? UIImage(systemName: "person.crop.circle.fill")!
-
                     self.isAdmin = decodedResponse.isAdmin ?? false
-
                     self.isBanned = decodedResponse.isBanned ?? false
-                    
                     self.isPromoted = decodedResponse.isPromoted ?? false
-
                     self.rating = decodedResponse.rating ?? 0.0
-
                     self.ratingCount = decodedResponse.ratingCount ?? 0
-
                 }
             } catch {
                 print("Error decoding profile data: \(error)")
             }
         }.resume()
     }
-    func fetchUserEvents() {
-        // Should be able to fetch events by any user id
+
+    // MARK: - Fetch User Events
+
+    func fetchUserEvents(userId: String? = nil) {
+        // Always use the correct userId (profile being viewed)
         let idToFetch: String
-        if self.userId.isEmpty {
-            guard let storedUserId = UserDefaults.standard.string(forKey: "userId") else {
-                print("User ID not found")
-                return
-            }
+        if let provided = userId {
+            idToFetch = provided
+        } else if !self.userId.isEmpty {
+            idToFetch = self.userId
+        } else if let storedUserId = UserDefaults.standard.string(forKey: "userId") {
             idToFetch = storedUserId
         } else {
-            idToFetch = self.userId
+            print("User ID not found")
+            return
         }
 
         let urlString = "http://localhost:3000/api/home/events/byUser/\(idToFetch)"
@@ -99,7 +93,7 @@ class ProfileViewModel: ObservableObject {
             print("Invalid URL: \(urlString)")
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Error fetching events: \(error.localizedDescription)")
@@ -109,17 +103,10 @@ class ProfileViewModel: ObservableObject {
                 print("No data received from events endpoint.")
                 return
             }
-            
-            // // Print the raw response string for debugging
-            // if let responseString = String(data: data, encoding: .utf8) {
-            //     print("Raw response from events endpoint: \(responseString)")
-            // }
-            
             do {
                 let decoder = JSONDecoder()
                 decoder.dateDecodingStrategy = .millisecondsSince1970
                 let events = try decoder.decode([Event].self, from: data)
-                print("Decoded events: \(events)")
                 DispatchQueue.main.async {
                     self.userEvents = events
                 }
@@ -129,16 +116,27 @@ class ProfileViewModel: ObservableObject {
         }.resume()
     }
 
-    func fetchUserPhotos() {
-        // Use the current profile's userId if available, else fallback to logged-in user's id.
-        let idToFetch: String = self.userId.isEmpty ? (UserDefaults.standard.string(forKey: "userId") ?? "") : self.userId
-        
+    // MARK: - Fetch User Photos
+
+    func fetchUserPhotos(userId: String? = nil) {
+        let idToFetch: String
+        if let provided = userId {
+            idToFetch = provided
+        } else if !self.userId.isEmpty {
+            idToFetch = self.userId
+        } else if let storedUserId = UserDefaults.standard.string(forKey: "userId") {
+            idToFetch = storedUserId
+        } else {
+            print("User ID not found")
+            return
+        }
+
         let urlString = "http://localhost:3000/api/photo/byUser/\(idToFetch)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Error fetching photos: \(error.localizedDescription)")
@@ -150,7 +148,6 @@ class ProfileViewModel: ObservableObject {
             }
             do {
                 let photos = try JSONDecoder().decode([Photo].self, from: data)
-                // print("Decoded photos: \(photos)")
                 DispatchQueue.main.async {
                     self.userPhotos = photos
                 }
@@ -160,10 +157,49 @@ class ProfileViewModel: ObservableObject {
         }.resume()
     }
 
+    // MARK: - Fetch Campus Status
 
+    func fetchCampusStatus(userId: String? = nil) {
+        let idToFetch: String
+        if let provided = userId {
+            idToFetch = provided
+        } else if !self.userId.isEmpty {
+            idToFetch = self.userId
+        } else if let storedUserId = UserDefaults.standard.string(forKey: "userId") {
+            idToFetch = storedUserId
+        } else {
+            print("User ID not found")
+            return
+        }
+
+        guard let url = URL(string: "http://localhost:3000/api/users/\(idToFetch)/campus-status") else { return }
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Failed to fetch campus status")
+                return
+            }
+            if let rawJSON = String(data: data, encoding: .utf8) {
+                print("Raw API Response:", rawJSON)
+            }
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let decoded = try decoder.decode(CampusStatusResponse.self, from: data)
+                DispatchQueue.main.async {
+                    self.isOnCampus = decoded.isOnCampus
+                    self.campusStatusLastChecked = decoded.lastChecked
+                }
+            } catch {
+                print("Decoding error:", error)
+            }
+        }
+        task.resume()
+    }
 }
 
-// Struct will need profilepic eventually
+// MARK: - Supporting Models
+
 struct Profile: Codable {
     let username: String
     let bio: String
@@ -192,3 +228,35 @@ struct Photo: Identifiable, Codable {
         case createdAt
     }
 }
+
+struct CampusStatusResponse: Codable {
+    let isOnCampus: Bool
+    let lastChecked: Date?
+    let lastLocation: LocationData?
+
+    enum CodingKeys: String, CodingKey {
+        case isOnCampus, lastChecked, lastLocation
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isOnCampus = try container.decode(Bool.self, forKey: .isOnCampus)
+
+        // Manually decode the date
+        let dateString = try container.decode(String.self, forKey: .lastChecked)
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        lastChecked = formatter.date(from: dateString)
+
+        lastLocation = try container.decodeIfPresent(LocationData.self, forKey: .lastLocation)
+    }
+}
+
+struct LocationData: Codable {
+    let latitude: Double
+    let longitude: Double
+}
+
+// MARK: - UIImage Extension for Base64 Decoding
+
+

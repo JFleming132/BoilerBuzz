@@ -1,19 +1,40 @@
 import SwiftUI
 import GoogleMaps
 import GooglePlaces
+
 let primaryColor = Color.black
 let secondaryColor = Color.gray
 let tertiaryColor = Color.yellow
 let bgColor = Color.black.opacity(0.7)
+
+import UserNotifications
+
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    let notificationDelegate = NotificationDelegate()
+
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = notificationDelegate
+        return true
+    }
+}
+
 @main
 struct BoilerBuzzApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
+    @StateObject private var locationManager = LocationManager()
     @State var isLoggedIn: Bool = false
     @AppStorage("isDarkMode") private var isDarkMode = false
     @State private var initialTab: Tab = .home
     @State private var deepLinkUserId: String? = nil
     @State private var deepLinkEventId: String? = nil
+
+    // @StateObject private var notificationManager = NotificationManager()
     
     init() {
+        SocketIOManager.shared.establishConnection()
         GMSServices.provideAPIKey(APIKeys.googleMapsAPIKey)
         GMSPlacesClient.provideAPIKey(APIKeys.googleMapsAPIKey)
 
@@ -51,6 +72,19 @@ struct BoilerBuzzApp: App {
                     LoginView(isLoggedIn: $isLoggedIn)
                 }
             }
+            .environmentObject(NotificationManager.shared)
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("NewNotification"))) { notification in
+                if let unNotification = notification.object as? UNNotification {
+                    let content = unNotification.request.content
+                    print("📥 Global listener received: \(content.title)")
+
+                    NotificationManager.shared.addNotification(
+                        title: content.title,
+                        message: content.body
+                    )
+                }
+            }
+            .environmentObject(locationManager)
             .onOpenURL { url in
                 print("Received deep link: \(url)")
                 isLoggedIn = false

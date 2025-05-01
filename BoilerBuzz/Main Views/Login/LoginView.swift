@@ -54,9 +54,17 @@ struct LoginView: View {
 
                         print("UserID stored: \(loginResponse.userId)")
                         print("isAdmin stored: \(loginResponse.isAdmin)")
+                        print("isPromoted stored: \(loginResponse.isPromoted)")
                         print("rsvpEvents stored: \(String(describing: loginResponse.rsvpEvents))")
                         print("Login successful: \(loginResponse.message)")
                         isLoggedIn = true
+                        if let prefs = loginResponse.notificationPreferences {
+                            // Convert the entire notificationPreferences to a dictionary
+                            if let encodedPrefs = try? JSONEncoder().encode(prefs),
+                            let prefsDict = try? JSONSerialization.jsonObject(with: encodedPrefs, options: []) as? [String: Any] {
+                                UserDefaults.standard.set(prefsDict, forKey: "notificationPreferences")
+                            }
+                        }
                     } else {
                         errorMessage = loginResponse.message
                         showFailedLogin = true
@@ -78,6 +86,7 @@ struct LoginView: View {
         let isPromoted: Bool
         let token: String?
         let rsvpEvents: [String]?
+        let notificationPreferences: NotificationPreferences?
     }
     
     // MARK: - Biometric Auth
