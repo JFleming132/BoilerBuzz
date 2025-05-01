@@ -17,17 +17,21 @@ router.get('/getConversations', async (req, res) => {
     const userId = req.query.userId;
     if (!userId) return res.status(400).json({ error: 'userId query required' });
 
+    // Fetch user's messaging preferences
+    const user = await User.findById(userId).select('requireMessageRequests');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
     const convos = await Conversation.find({
       $or: [{ initiator: userId }, { recipient: userId }]
     })
-    .populate('initiator', 'username profilePicture')
-    .populate('recipient', 'username profilePicture')
-    .populate({
-      path: 'messages',
-      select: 'text sender sentAt',
-      options: { sort: { sentAt: 1 } }
-    })
-    .sort('-updatedAt');
+      .populate('initiator', 'username profilePicture')
+      .populate('recipient', 'username profilePicture')
+      .populate({
+        path: 'messages',
+        select: 'text sender sentAt read',
+        options: { sort: { sentAt: 1 } }
+      })
+      .sort('-updatedAt');
 
     const result = convos.map(c => {
       const other = c.initiator._id.toString() === userId
@@ -37,7 +41,8 @@ router.get('/getConversations', async (req, res) => {
       const simpleMessages = c.messages.map(msg => ({
         id: msg._id.toString(),
         text: msg.text,
-        sender: msg.sender.toString()
+        sender: msg.sender.toString(),
+        read: msg.read
       }));
 
       const lastText = simpleMessages.length
@@ -46,7 +51,7 @@ router.get('/getConversations', async (req, res) => {
 
       return {
         id: c._id.toString(),
-        initiatorId: c.initiator._id.toString(),   // ← ADDED initiator ID
+        initiatorId: c.initiator._id.toString(),
         otherUser: {
           id: other._id.toString(),
           username: other.username,
@@ -54,17 +59,24 @@ router.get('/getConversations', async (req, res) => {
         },
         messages: simpleMessages,
         lastMessage: lastText,
-        status: c.status
+        status: c.status,
+        pinned: c.pinned || false
       };
     });
 
-    res.json(result);
+    console.log("require message requests")
+    console.log(user.requireMessageRequests)
+
+    // Send conversations and requireMessageRequests toggle
+    res.json({
+      conversations: result,
+      requireMessageRequests: user.requireMessageRequests
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error fetching conversations' });
   }
 });
-
 
 
 // Create a new conversation (initial message request)
@@ -137,30 +149,6 @@ router.get('/conversations/:id/messages', async (req, res) => {
   }
 });
 
-// Send a new message in a conversation
-// POST /api/conversations/:id/messages
-// Body: { sender, text }
-router.post('/conversations/:id/messages', async (req, res) => {
-  try {
-    const convId = req.params.id;
-    const { sender, text } = req.body;
-    if (!sender || !text) {
-      return res.status(400).json({ error: 'sender and text required' });
-    }
-    const convo = await Conversation.findById(convId);
-    if (!convo || convo.status !== 'accepted') {
-      return res.status(400).json({ error: 'Conversation not available for messaging' });
-    }
-    const message = await Message.create({ conversation: convId, sender, text });
-    convo.messages.push(message._id);
-    convo.updatedAt = Date.now();
-    await convo.save();
-    res.status(201).json(message);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error sending message' });
-  }
-});
 
 // Mark message as read
 // PATCH /api/conversations/:convId/messages/:msgId/read
@@ -220,7 +208,7 @@ router.get('/conversations/:id/messages', async (req, res) => {
 router.post("/conversations/:id/sendMessage", async(req, res) => {
   try {
     const convoId = req.params.id;
-    const { messageText, sender, other } = req.body;
+    const { messageText, sender, other} = req.body;
 
     if (!messageText || !sender || !other) {
       res.status(400).json({ error: 'Message text or one of the user ids were empty'});
@@ -267,7 +255,8 @@ router.post("/conversations/:id/sendMessage", async(req, res) => {
       messageData: {
         id: message._id.toString(),
         text: message.text,
-        sender: message.sender.toString()
+        sender: message.sender.toString(),
+        read: false
       }
     })
 
@@ -332,8 +321,17 @@ router.post('/startConversation', async (req, res) => {
       return res.status(400).json({ error: 'Conversation already exists.' });
     }
 
+    // ✅ Check if the recipient requires message requests
+    const recipientUser = await User.findById(recipient).select('requireMessageRequests');
+    if (!recipientUser) {
+      return res.status(404).json({ error: 'Recipient user not found.' });
+    }
+
+    const requiresRequest = recipientUser.requireMessageRequests;
+    const status = requiresRequest ? 'pending' : 'accepted';
+
     // Create the new conversation
-    convo = new Conversation({ initiator, recipient, status: 'pending', acceptedAt: Date.now() });
+    convo = new Conversation({ initiator, recipient, status, pinned: false, acceptedAt: status === 'accepted' ? Date.now() : undefined });
     await convo.save();
 
     // Create the first message
@@ -355,7 +353,7 @@ router.post('/startConversation', async (req, res) => {
     await convo.populate('recipient', 'username profilePicture');
     await convo.populate({
       path: 'messages',
-      select: 'text sender sentAt',
+      select: 'text sender sentAt read',
       options: { sort: { sentAt: 1 } }
     });
 
@@ -366,7 +364,8 @@ router.post('/startConversation', async (req, res) => {
     const simpleMessages = convo.messages.map(msg => ({
       id: msg._id.toString(),
       text: msg.text,
-      sender: msg.sender.toString()
+      sender: msg.sender.toString(),
+      read: msg.read
     }));
 
     const lastText = simpleMessages.length
@@ -383,10 +382,9 @@ router.post('/startConversation', async (req, res) => {
       },
       messages: simpleMessages,
       lastMessage: lastText,
-      status: 'pending'
+      status,
+      pinned: false
     };
-
-    console.log(formattedConversation)
 
     res.status(201).json(formattedConversation);
 
@@ -395,6 +393,7 @@ router.post('/startConversation', async (req, res) => {
     res.status(500).json({ error: 'Server error starting conversation' });
   }
 });
+
 
 // PATCH /api/messages/conversations/:id/status
 // Body: { status: 'accepted' | 'declined', userId }
@@ -433,6 +432,113 @@ router.patch('/conversations/:id/status', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error updating conversation status' });
+  }
+});
+
+// PATCH /api/messages/conversations/:id/markRead
+// Body: { userId }
+router.patch('/conversations/:id/markRead', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    const { userId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      return res.status(400).json({ error: 'Invalid conversation id' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required.' });
+    }
+
+    const conversation = await Conversation.findById(convId).populate('messages');
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    const updates = [];
+
+    for (const message of conversation.messages) {
+      if (message.sender.toString() !== userId && !message.read) {
+        message.read = true;
+        updates.push(message.save());
+      }
+    }
+
+    await Promise.all(updates);
+
+    res.status(200).json({
+      message: 'All messages from other user marked as read.'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error marking messages as read' });
+  }
+});
+
+// PATCH /api/messages/conversations/:id/pin
+// Body: { pinned: true | false }
+router.patch('/conversations/:id/pin', async (req, res) => {
+  try {
+    const convId = req.params.id;
+    const { pinned } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      return res.status(400).json({ error: 'Invalid conversation ID' });
+    }
+
+    if (typeof pinned !== 'boolean') {
+      return res.status(400).json({ error: 'Pinned status must be a boolean.' });
+    }
+
+    const convo = await Conversation.findById(convId);
+    if (!convo) {
+      return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    convo.pinned = pinned;
+    convo.updatedAt = new Date();
+    await convo.save();
+
+    res.status(200).json({
+      message: `Conversation pinned status updated to ${pinned}`,
+      conversationId: convo._id.toString(),
+      pinned: convo.pinned
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error updating pinned status' });
+  }
+});
+
+// PATCH /api/messages/:id/requireMessageRequests
+// Body: { requireMessageRequests: true | false }
+router.patch('/:id/requireMessageRequests', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { requireMessageRequests } = req.body;
+
+    console.log("CHANGING REQUESTS SETTINGGGG")
+
+    if (typeof requireMessageRequests !== 'boolean') {
+      return res.status(400).json({ error: 'requireMessageRequests must be a boolean.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    user.requireMessageRequests = requireMessageRequests;
+    await user.save();
+
+    res.status(200).json({
+      message: `requireMessageRequests set to ${requireMessageRequests}`,
+      userId: user._id.toString(),
+      requireMessageRequests: user.requireMessageRequests
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error updating message request setting' });
   }
 });
 

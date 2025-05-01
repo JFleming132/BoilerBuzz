@@ -15,6 +15,44 @@ struct ChatDetailView: View {
     let ownUserId: String
     @State private var newMessage: String = ""
     
+    func markMessagesAsRead(convoId: String, userId: String) {
+        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convoId)/markRead") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "userId": userId
+        ]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            print("Failed to encode body: \(error.localizedDescription)")
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                print("Failed to send mark-read request: \(error.localizedDescription)")
+                return
+            }
+
+            DispatchQueue.main.async {
+                for i in 0..<conversation.messages.count {
+                    if conversation.messages[i].sender != userId && !conversation.messages[i].read {
+                        conversation.messages[i].read = true
+                    }
+                }
+            }
+        }.resume()
+    }
+
+    
     func sendMessageBackend(convoId: String, messageText: String, sender: String, other: String) {
         guard let postUrl = URL(string: "http://localhost:3000/api/messages/conversations/\(convoId)/sendMessage") else {
             print("Invalid URL")
@@ -28,7 +66,8 @@ struct ChatDetailView: View {
         let body: [String: Any] = [
             "messageText": messageText,
             "sender": sender,
-            "other": other
+            "other": other,
+            "read": false
         ]
         
         do {
@@ -58,9 +97,11 @@ struct ChatDetailView: View {
                 
                 let decoded = try JSONDecoder().decode(MessageResponse.self, from: data)
                 let newMsg = decoded.messageData
-                conversation.messages.append(newMsg)
-                conversation.lastMessage = newMessage
-                newMessage = ""
+                DispatchQueue.main.async {
+                    conversation.messages.append(newMsg)
+                    conversation.lastMessage = newMessage
+                    newMessage = ""
+                }
                 
             } catch {
                 print("Failed to decode message response: \(error.localizedDescription)")
@@ -181,8 +222,13 @@ struct ChatDetailView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .background(Color(UIColor.systemBackground))
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            markMessagesAsRead(convoId: conversation.id, userId: ownUserId)
+        }
+
     }
 }
+
 
 // MARK: - MessageBubble
 
