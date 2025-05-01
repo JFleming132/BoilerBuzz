@@ -170,39 +170,62 @@ router.get('/isDrinkFavorite', async (req, res) => {
     }
 });
 
-// GET endpoint to retrieve favorite drinks for a given user
-router.get('/favoriteDrinks/:userId', async (req, res) => {
-    try {
-      // Use the same database as your /drinks endpoint
-      const db = mongoose.connection.client.db('Boiler_Buzz');
-      
-      // Retrieve the user document by the given userId
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-      
-      // Extract the favorite drink IDs from the user document
-      const favoriteDrinkIds = user.favoriteDrinks || [];
-      
-      // If no favorites, return an empty array
-      if (favoriteDrinkIds.length === 0) {
-        return res.status(200).json([]);
-      }
-
-
-      const convertedIDs = favoriteDrinkIds.map(item => parseInt(item, 10));
-      // Query the drinks collection for drinks whose drinkID (which is stored as an integer) is in the favoriteDrinkIds array
-      const drinks = await db.collection('drinks').find({ drinkID: { $in: convertedIDs } }).toArray();
-      
-      // Return the retrieved drinks as JSON
-      res.status(200).json(drinks);
-    } catch (error) {
-      console.error("Error fetching favorite drinks:", error.message);
-      res.status(500).json({ error: "Failed to fetch favorite drinks. Please try again later." });
+  router.get('/favoriteDrinks/:userId', async (req, res) => {
+  try {
+    // Use the same database as your /drinks endpoint
+    const db = mongoose.connection.client.db('Boiler_Buzz');
+    
+    // Retrieve the user document by the given userId
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
+    
+    // Extract the favorite drink IDs from the user document
+    const favoriteDrinkIds = user.favoriteDrinks || [];
+    
+    // If no favorites, return an empty array
+    if (favoriteDrinkIds.length === 0) {
+      return res.status(200).json([]);
+    }
+    
+    // Make sure we have numbers—if an item is already a number, keep it; if not, convert it.
+    const convertedIDs = favoriteDrinkIds.map(item =>
+      typeof item === 'number' ? item : parseInt(item, 10)
+    );
+    
+    // Query the drinks collection for drinks with matching drinkID.
+    let drinks = await db.collection('drinks').find(
+      { drinkID: { $in: convertedIDs } },
+      {
+        projection: {
+          _id: 1,
+          drinkID: 1,
+          name: 1,
+          description: 1,
+          ingredients: 1,
+          averageRating: 1,
+          barServed: 1,
+          category: 1,
+          calories: 1
+        }
+      }
+    ).toArray();
+    
+    // Optionally, filter out any drinks missing the required fields
+    drinks = drinks.filter(drink =>
+      typeof drink.drinkID === 'number' &&
+      typeof drink.name === 'string' &&
+      typeof drink.description === 'string'
+    );
+    
+    // Return the filtered drinks as JSON
+    res.status(200).json(drinks);
+  } catch (error) {
+    console.error("Error fetching favorite drinks:", error.message);
+    res.status(500).json({ error: "Failed to fetch favorite drinks. Please try again later." });
+  }
 });
-  
 
 // POST endpoint to add a drink to a user's favorites
 router.post('/toggleFavoriteDrink', async (req, res) => {

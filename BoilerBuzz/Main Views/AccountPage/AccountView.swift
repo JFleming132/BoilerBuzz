@@ -58,6 +58,7 @@ struct BlockedStatusResponse: Codable {
 
 struct AccountView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var notificationManager: NotificationManager
     
     @StateObject var profileData = ProfileViewModel()
 
@@ -73,9 +74,13 @@ struct AccountView: View {
     
     @State private var showRatingPopup: Bool = false
     
-    @State private var selectedTab: String = "Posts"
+    @State private var selectedTab: String = "Events"
     @State private var showPostPhotoAction: Bool = false
     @State private var showSourceChoice: Bool = false
+    
+    @State private var showCreateEvent: Bool = false
+    @State private var showCreateDrinkSpecial: Bool = false
+
     
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage? = nil
@@ -83,7 +88,7 @@ struct AccountView: View {
     @State private var selectedSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     enum UploadMode {
-        case none, post, photo
+        case none, event, photo, drinkSpecial
     }
     
     /* TESTING */
@@ -151,6 +156,15 @@ struct AccountView: View {
                 FriendsListPopup(isMyProfile: isOwnProfile, userId: profileData.userId, adminStatus: adminStatus)
                     .presentationDetents([.medium, .large])
             }
+            // New sheet for creating an event
+                        .sheet(isPresented: $showCreateEvent) {
+                            CreateEventView(onEventCreated: { newEvent in
+                                // Optionally update profileData or your events list here.
+                                // For example, you could insert newEvent into profileData.userEvents.
+                                // Then, dismiss the sheet.
+                                showCreateEvent = false
+                            })
+                        }
             // Present image picker for photo uploads.
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $selectedImage, sourceType: selectedSourceType)
@@ -159,6 +173,11 @@ struct AccountView: View {
                             uploadPhoto(image: image)
                         }
                     }
+            }
+            .sheet(isPresented: $showCreateDrinkSpecial) {
+                CreateDrinkSpecialView(onCreated: { special in
+                    // Insert `special` into your specials list or trigger a refresh
+                  })
             }
         }
     }
@@ -175,12 +194,14 @@ struct AccountView: View {
                 .onAppear {
                     if let uid = viewedUserId {
                         profileData.fetchUserProfile(userId: uid)
+                        profileData.fetchCampusStatus(userId: uid)
                         profileData.fetchUserEvents()
-                        profileData.fetchUserPhotos()  
+                        profileData.fetchUserPhotos()
                         fetchFriendStatus()
                         fetchBlockedStatus()
                     } else {
                         profileData.fetchUserProfile()
+                        profileData.fetchCampusStatus()
                         profileData.fetchUserEvents()
                         profileData.fetchUserPhotos()
                     }
@@ -226,15 +247,40 @@ struct AccountView: View {
             }
             Spacer()
             if isOwnProfile {
-                NavigationLink(destination: NotificationCenterView()) {
-                    Image(systemName: "bell.fill")
+                ZStack(alignment: .topTrailing) {
+                    NavigationLink(destination: NotificationCenterView()) {
+                        Image(systemName: "bell.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.primary)
+                            .padding(14)
+                            .clipShape(Circle())
+                            .contentShape(Circle())
+                    }
+
+                    if notificationManager.notifications.contains(where: { !$0.isRead }) {
+                        Text("\(notificationManager.notifications.filter { !$0.isRead }.count)")
+                            .font(.caption2)
+                            .foregroundColor(.white)
+                            .padding(5)
+                            .background(Circle().fill(Color.red))
+                            .offset(x: -4, y: 4)
+                    }
+                }
+                NavigationLink(
+                    destination: DirectMessagesView(
+                        userId: UserDefaults.standard.string(forKey: "userId") ?? "self"
+                    )
+                ) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
                         .resizable()
                         .frame(width: 30, height: 30)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.blue)
                         .padding(14)
                         .clipShape(Circle())
                         .contentShape(Circle())
                 }
+
                 NavigationLink(destination: SettingsView(profileData: profileData)) {
                     Image(systemName: "gearshape.fill")
                         .resizable()
@@ -246,6 +292,7 @@ struct AccountView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityIdentifier("settingsButton")
+
             } else {
                 Button(action: { showRatingPopup = true }) {
                     Image(systemName: "star.bubble.fill")
@@ -258,6 +305,7 @@ struct AccountView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .accessibilityIdentifier("rateUserButton")
+
             }
         }
         .padding(.horizontal)
@@ -312,7 +360,33 @@ struct AccountView: View {
                         .background(Color.red)
                         .cornerRadius(4)
                 }
+                if profileData.isPromoted {
+                    Text("Promoted")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(4)
+                        .background(Color.blue)
+                        .cornerRadius(4)
+                }
+                // New campus status badge
+                if profileData.isOnCampus {
+                        Text("On Campus")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .padding(4)
+                            .background(Color.green.opacity(0.2))
+                            .cornerRadius(4)
+                            .transition(.opacity)
+                } else {
+                    Text("Off Campus")
+                        .font(.caption2)
+                        .foregroundColor(.gray)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(4)
+                        .transition(.opacity)
             }
+        }
             Text(profileData.bio)
                 .font(.subheadline)
                 .foregroundColor(.gray)
@@ -336,8 +410,9 @@ struct AccountView: View {
                     .padding()
             }
             .confirmationDialog("Create New", isPresented: $showPostPhotoAction, titleVisibility: .visible) {
-                            Button("New Post") {
-                                uploadMode = .post
+                            Button("New Event") {
+                                uploadMode = .event
+                                showCreateEvent = true
                                 // TODO: Implement the post creation logic.
                                 // This is the View, but cannot find events, maybe dont need it?
                                 // CreateEventView(onEventCreated: { newEvent in
@@ -348,6 +423,13 @@ struct AccountView: View {
                                 uploadMode = .photo
                                 // Present an action sheet to choose source type
                                 showSourceChoice = true
+                            }
+                            // Only if the account is promoted
+                            if profileData.isPromoted {
+                                Button("New Drink Special") {
+                                    uploadMode = .drinkSpecial
+                                    showCreateDrinkSpecial = true
+                                }
                             }
                             Button("Cancel", role: .cancel) {
                                 uploadMode = .none
@@ -399,16 +481,23 @@ struct AccountView: View {
     var contentTabs: some View {
         VStack {
             Picker("Select Content", selection: $selectedTab) {
-                Text("Posts").tag("Posts")
+                Text("Events").tag("Events")
                 Text("Photos").tag("Photos")
+                if profileData.isPromoted {
+                   Text("Specials").tag("Specials")
+                }
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
             
-            if selectedTab == "Posts" {
+            if selectedTab == "Events" {
                 postsGrid
-            } else {
+            } else if selectedTab == "Photos" {
                 photosGrid
+            }
+            else if selectedTab == "Specials" {
+                BarSpecialsView(barId: profileData.userId)
+                    .padding(.horizontal)
             }
         }
     }

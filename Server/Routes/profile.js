@@ -1,18 +1,50 @@
-//
-//  profile.js
-//  BoilerBuzz
-//
-//  Created by Patrick Barry on 2/13/25.
-//
-
 const express = require('express');
 const User = require('../Models/User');
+const NameList = require('../Models/nameList');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb');
 const UserRating = require('../Models/Rating');
 
 const puppeteer = require('puppeteer');
+
+// New endpoint to get user's full name from NameList
+router.get('/fullName/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+      // First get the username from User collection
+      const user = await User.findById(userId).select('username isIdentified');
+
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!user.isIdentified) {
+          return res.status(404).json({ error: 'User has not completed identification' });
+      }
+
+      // Then look up the name information from NameList using username
+      const nameInfo = await NameList.findOne({ username: user.username });
+
+      if (!nameInfo) {
+          return res.status(404).json({ error: 'Name information not found' });
+      }
+
+      return res.status(200).json({ 
+          firstName: nameInfo.firstName,
+          lastName: nameInfo.lastName,
+          fullName: `${nameInfo.firstName} ${nameInfo.lastName}`.trim()
+      });
+  } catch (error) {
+      console.error("Error fetching user's full name:", error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 router.get('/isIdentified/:userId', async (req, res) => {
   const userId = req.params.userId;
@@ -93,11 +125,54 @@ router.get('/aliasLookup/:alias', async (req, res) => {
       const aliasMatch = userNetID === aliasFromDirectory;
 
       let identified = false;
+      
+      // Extract first and last name from the full name if available
+      let firstName = '', lastName = '';
+      if (result.name) {
+          const nameParts = result.name.split(' ');
+          if (nameParts.length >= 2) {
+              firstName = nameParts[0];
+              lastName = nameParts[nameParts.length - 1];
+              
+              // Handle middle names/initials if present
+              if (nameParts.length > 2) {
+                  // We skip middle names/initials and just use first and last
+              }
+          } else if (nameParts.length === 1) {
+              // Handle case with only one name part
+              firstName = nameParts[0];
+          }
+      }
 
       if (aliasMatch) {
           // ✅ Mark user as identified in the DB
           await User.findByIdAndUpdate(userId, { isIdentified: true });
           identified = true;
+          
+          // Store first and last name in the NameList collection
+          try {
+              // Check if entry already exists
+              const existingNameInfo = await NameList.findOne({ username: user.username });
+              
+              if (existingNameInfo) {
+                  // Update existing record
+                  await NameList.findByIdAndUpdate(existingNameInfo._id, {
+                      firstName,
+                      lastName
+                  });
+              } else {
+                  // Create new record
+                  const nameInfo = new NameList({
+                      username: user.username,
+                      firstName,
+                      lastName
+                  });
+                  await nameInfo.save();
+              }
+          } catch (nameError) {
+              console.error("Error storing name information:", nameError);
+              // Continue with the response even if name storage fails
+          }
       }
 
       res.status(200).json({
@@ -105,7 +180,9 @@ router.get('/aliasLookup/:alias', async (req, res) => {
           aliasMatch,
           userNetID,
           directoryAlias: aliasFromDirectory,
-          identified
+          identified,
+          firstName,
+          lastName
       });
 
   } catch (err) {
@@ -154,7 +231,7 @@ router.get('/random', async (req, res) => {
 router.get('/:userId', async (req, res) => {
     try {
         console.log("Why are we here")
-        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned rating ratingCount'); //TODO: Add isPromoted status
+        const user = await User.findById(req.params.userId).select('username bio profilePicture isAdmin isBanned isPromoted rating ratingCount'); //TODO: Add isPromoted status
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

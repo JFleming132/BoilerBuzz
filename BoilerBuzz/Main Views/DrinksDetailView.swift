@@ -146,7 +146,9 @@ struct DrinksDetailView: View {
     @State private var tempMinCalories: Int? = nil
     @State private var tempMaxCalories: Int? = nil
     @State private var tempMinRating: Int? = nil
-
+    
+    // For recommended drinks
+    @State private var showRecommendedPopup = false
     
     @State private var triedDrinksRatings: [String: Int] = [:]
     
@@ -154,7 +156,10 @@ struct DrinksDetailView: View {
     @State private var selectedSortOption: String? = "Tried Drinks Last"
     
     @State private var searchText: String = ""
-
+    
+    var recommendedList: [Drink] {
+            recommendedDrinks()
+    }
 
     @State private var selectedBar: Int = 0
     let barOptions = ["All Bars", "The Tap", "Neon Cactus", "Where Else", "Brothers", "9irish", "Harry's"]
@@ -220,6 +225,20 @@ struct DrinksDetailView: View {
                     .background(Color(.systemGray5))
                     .cornerRadius(8)
                     .padding(.horizontal)
+                
+                // NEW: Recommended Drinks button
+                Button(action: {
+                            showRecommendedPopup = true
+                }) {
+                    HStack {
+                        Image(systemName: "star.fill")
+                        Text("Recommended Drinks")
+                    }
+                    .padding(8)
+                    .background(Color(.systemGray5))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                }
 
 
                 if let errorMessage = errorMessage {
@@ -254,11 +273,47 @@ struct DrinksDetailView: View {
             if showRandomDrink, let randomDrink = randomDrink {
                 randomDrinkPopup(drink: randomDrink)
             }
+            if showRecommendedPopup {
+                RecommendedDrinksPopup(recommendedDrinks: recommendedList) {
+                    showRecommendedPopup = false
+                }
+            }
+
         }
         .animation(.easeInOut, value: showFilterSidebar)
         .animation(.easeInOut, value: showSortingSidebar)
         .background(ShakeDetector{ showRandomDrinkAnimation() })
     }
+    
+    // MARK: - Recommendation Algorithm
+        func recommendedDrinks() -> [Drink] {
+            // If no drinks have been tried, return the top 5 drinks by overall rating.
+            if triedDrinks.isEmpty || triedDrinksRatings.isEmpty {
+                return drinks.sorted { $0.averageRating > $1.averageRating }
+                             .prefix(5)
+                             .map { $0 }
+            }
+            
+            // Gather ingredients from drinks that the user rated well (e.g., 4 stars or higher).
+            var likedIngredients = Set<String>()
+            for drink in drinks {
+                if let rating = triedDrinksRatings[drink.objectID], rating >= 4 {
+                    likedIngredients.formUnion(drink.ingredients)
+                }
+            }
+            
+            // Compute a recommendation score for each candidate drink (that the user hasn’t tried yet)
+            let candidates = drinks.filter { !triedDrinks.contains($0.objectID) }
+            let scoredCandidates = candidates.map { drink -> (Drink, Double) in
+                let commonIngredientCount = drink.ingredients.filter { likedIngredients.contains($0) }.count
+                // Each matching ingredient counts for 2 points plus the drink's overall rating.
+                let score = Double(commonIngredientCount) * 2.0 + Double(drink.averageRating)
+                return (drink, score)
+            }
+            
+            let sortedCandidates = scoredCandidates.sorted { $0.1 > $1.1 }
+            return sortedCandidates.prefix(5).map { $0.0 }
+        }
     
     private var filterSidebar: some View {
         ZStack {
@@ -1056,3 +1111,50 @@ struct DrinkDetailsPopup: View {
     }
 }
 
+
+struct RecommendedDrinksPopup: View {
+    let recommendedDrinks: [Drink]
+    var onClose: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Recommended Drinks")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            ForEach(recommendedDrinks) { drink in
+                Button(action: {
+                    // Optionally, show drink details or perform another action.
+                }) {
+                    HStack {
+                        // Removed the symbol:
+                        // Image(systemName: "cup.and.saucer.fill")
+                        Text(drink.name)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color(.systemGray5))
+                    .cornerRadius(8)
+                }
+            }
+            
+            Button(action: onClose) {
+                Text("Close")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black)
+                    .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(UIColor.systemBackground))
+                .shadow(radius: 8)
+        )
+        .padding()
+        .transition(.scale)
+    }
+}

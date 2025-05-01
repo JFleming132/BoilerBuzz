@@ -174,7 +174,7 @@ router.post('/addFriend', async (req, res) => {
 });
 
 // POST endpoint to remove a friend
-//Note: Unused on frontend
+
 router.post('/removeFriend', async (req, res) => {
     const { userId, friendId } = req.body;
     
@@ -197,6 +197,16 @@ router.post('/removeFriend', async (req, res) => {
         
         // Remove friendId from the user's friends array.
         user.friends = user.friends.filter(id => id.toString() !== friendId);
+
+        // If the user has notificationPreferences and a friendPosting object, remove the friend.
+        if (user.notificationPreferences && user.notificationPreferences.friendPosting) {
+            // If friendPosting is stored as a Map, use delete; otherwise, as an object, remove the key.
+            if (user.notificationPreferences.friendPosting instanceof Map) {
+                user.notificationPreferences.friendPosting.delete(friendId);
+            } else {
+                delete user.notificationPreferences.friendPosting[friendId];
+            }
+        }
         
         // Save the updated user document.
         await user.save({ validateBeforeSave: false });

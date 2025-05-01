@@ -21,6 +21,7 @@ router.post('/health', async (req, res) => {
 });
 
 
+
 router.post('/update-password', async (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
 
@@ -161,7 +162,8 @@ router.post('/login', async (req, res) => {
             userId: user._id,
             isAdmin: user.isAdmin,
             isPromoted: user.isPromoted,
-            rsvpEvents: user.rsvpEvents
+            rsvpEvents: user.rsvpEvents,
+            notificationPreferences: user.notificationPreferences || {},
          });
     } catch (err) {
         console.error(err);
