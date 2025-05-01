@@ -18,7 +18,7 @@ app.use(express.json());
 app.use('/api/calendar', calendarRouter);
 
 describe('Calendar Endpoints', function () {
-    var userId, blockedUserId, rsvpEventId, promotedEventId, bothEventId, neitherEventId, blockedPromotedEventId, tr;
+    var userId, blockedUserId, rsvpEventId, promotedEventId, bothEventId, neitherEventId, blockedPromotedEventId, tr, randomUserId;
     // Before tests, connect to a test database and create two test users.
     before(async function () {
         this.timeout(20000); // 20 seconds
@@ -35,6 +35,14 @@ describe('Calendar Endpoints', function () {
         await blockedUser.save()
         blockedUserId = blockedUser._id.toString()
         
+        const randomUser = new User({
+            email: "calendartest3@example.com",
+            username: "unblockedUserTest",
+            password: "password"
+        })
+        await randomUser.save()
+        randomUserId = randomUser._id.toString()
+        
         const formattedDate = new Date().getTime();
         if (isNaN(formattedDate)) {
             return res.status(400).json({ message: 'Invalid date format' });
@@ -44,7 +52,7 @@ describe('Calendar Endpoints', function () {
         
         const newPromotedEvent = new Event({
             title: "promotedTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: true,
             description: "test event",
@@ -62,7 +70,7 @@ describe('Calendar Endpoints', function () {
         
         const newRSVPEvent = new Event({
             title: "RSVPTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: false,
             description: "test event",
@@ -80,7 +88,7 @@ describe('Calendar Endpoints', function () {
         
         const newBothEvent = new Event({
             title: "bothTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: true,
             description: "test event",
@@ -98,7 +106,7 @@ describe('Calendar Endpoints', function () {
         
         const newNeitherEvent = new Event({
             title: "neitherTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: false,
             description: "test event",
@@ -116,7 +124,7 @@ describe('Calendar Endpoints', function () {
         
         const newBlockedPromotedEvent = new Event({
             title: "blockedPromotedTest",
-            author: blockedUser._id.toString(),
+            author: blockedUserId,
             rsvpCount: 0,
             promoted: true,
             description: "test event",
@@ -150,7 +158,7 @@ describe('Calendar Endpoints', function () {
          
     after(async function () {
         this.timeout(20000); // 20 seconds
-        await User.deleteMany({ email: { $in: ["calendartest1@example.com", "calendartest2@example.com"] } });
+        await User.deleteMany({ email: { $in: ["calendartest1@example.com", "calendartest2@example.com", "calendartest3@example.com"] } });
         await Event.deleteMany({ _id: { $in: [promotedEventId, rsvpEventId, bothEventId, neitherEventId, blockedPromotedEventId]}})
         await mongoose.connection.close();
     });

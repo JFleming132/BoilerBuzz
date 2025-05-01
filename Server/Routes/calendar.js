@@ -34,88 +34,90 @@ router.get('/events', async (req, res) => {
                                              //and all events that are promoted
                                              //except those events which have been posted by authors
                                              //which the user has blocked
-            [
-              {
+            {
                 $project: {
-                  blockedUserIDs: "$blockedUserIDs",
-                  
+                    blockedUserIDs: {
+                        $map: {
+                            input: "$blockedUserIDs",
+                            as: "blocks",
+                            in: {
+                                $toObjectId: "$$blocks"
+                            }
+                        }
+                    },
                     rsvpEventID: {
-                    $map: {
-                          input: "$rsvpEvents",
-                          as: "event",
-                          in: {$toObjectId: "$$event"}
+                        $map: {
+                            input: "$rsvpEvents",
+                            as: "event",
+                            in: {$toObjectId: "$$event"}
                         }
                     }
                 }
-              },
-              {
+            }, {
                 $lookup: {
-                  from: "events",
-                  let: {
-                    rsvp: "$rsvpEventID",
-                    blocked: "$blockedUserIDs"
-                  },
-                  pipeline: [
-                      {
+                    from: "events",
+                    let: {
+                        rsvp: "$rsvpEventID",
+                        blocked: "$blockedUserIDs"
+                    },
+                    pipeline: [
+                        {
                             $set: {
-                              rsvp: "$$rsvp",
-                            blocked: "$$blocked"
-                          }
-                      },
-                    {
-                        $match: {
-                          $expr: {
-                            $and: [
-                              {
-                                $or: [
-                                  {
-                                    $in:
-                                      [
-                                        "$_id", "$$rsvp"
-                                      ]
-                                  },
-                                  {
-                                    $eq: [
-                                      "$promoted", true
+                                rsvp: "$$rsvp",
+                                blocked: "$$blocked"
+                            }
+                        },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $or: [
+                                                {
+                                                    $in:
+                                                    [
+                                                        "$_id", "$$rsvp"
+                                                    ]
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$promoted", true
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            $not: {
+                                                $in: [
+                                                    "$author", {
+                                                        $ifNull: [
+                                                            "$$blocked",
+                                                            []
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
                                     ]
-                                  }
-                                ]
-                              },
-                              {
-                                $not: {
-                                  $in: [
-                                    "$author", {
-                                      $ifNull: [
-                                        "$$blocked",
-                                        []
-                                      ]
-                                    }
-                                  ]
                                 }
-                              }
-                            ]
-                              }
+                            }
                         }
-                      }
-                  ],
-                  as: "validEvents"
+                    ],
+                    as: "validEvents"
                 }
-              }, {
+            }, {
                 $match: {
-                  _id: currentUserObjectID
+                    _id: currentUserObjectID
                 }
-              },
-              {
+            }, {
                 $unwind: {
-                  path: "$validEvents"
+                    path: "$validEvents"
                 }
-              },
-              {
+            }, {
                 $replaceRoot: {
-                  newRoot: "$validEvents"
+                    newRoot: "$validEvents"
                 }
-              }
-            ]
+            }
         ]);
         //console.log("got events:", events);
         const sanitizedEvents = events.map(event => ({
@@ -123,7 +125,7 @@ router.get('/events', async (req, res) => {
             imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string
         }));
 
-        //console.log("Fetching events from DB:", sanitizedEvents);
+        console.log("Fetching events from DB:", sanitizedEvents);
         res.json(sanitizedEvents);
     } catch (err) {
         console.error("Error fetching events:", err);

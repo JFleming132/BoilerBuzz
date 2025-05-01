@@ -55,6 +55,7 @@ function getTomorrow() {
 describe('Home Endpoints', function () {
     var userId,
         blockedUserId,
+        randomUserId,
         tr,
         tomorrowEventId,
         yesterdayEventId,
@@ -83,6 +84,14 @@ describe('Home Endpoints', function () {
         await blockedUser.save()
         blockedUserId = blockedUser._id.toString()
         
+        const randomUser = new User({
+            email: "calendartest3@example.com",
+            username: "unblockedUserTest",
+            password: "password"
+        })
+        await randomUser.save()
+        randomUserId = randomUser._id.toString()
+        
         yesterdayDate = getYesterday();
         if (isNaN(yesterdayDate)) {
             return res.status(400).json({ message: 'Invalid date format' });
@@ -102,7 +111,7 @@ describe('Home Endpoints', function () {
         //Deleted event
         const RSVPEvent = new Event({
             title: "RSVPTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 1,
             promoted: false,
             description: "test event",
@@ -120,7 +129,7 @@ describe('Home Endpoints', function () {
         
         const tomorrowEvent = new Event({
             title: "tomorrowEvent",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: false,
             description: "test event",
@@ -138,7 +147,7 @@ describe('Home Endpoints', function () {
         
         const yesterdayEvent = new Event({
             title: "yesterdayTest",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: false,
             description: "test event",
@@ -207,7 +216,7 @@ describe('Home Endpoints', function () {
         // Create an event to be deleted as part of a test case
         const deletedEvent = new Event({
             title: "deletedEvent",
-            author: "unblockedUserTest",
+            author: randomUserId,
             rsvpCount: 0,
             promoted: false,
             description: "test event",
@@ -249,7 +258,7 @@ describe('Home Endpoints', function () {
          
     after(async function () {
         this.timeout(20000); // 20 seconds
-        await User.deleteMany({ email: { $in: ["calendartest1@example.com", "calendartest2@example.com"] } });
+        await User.deleteMany({ email: { $in: ["calendartest1@example.com", "calendartest2@example.com", "calendartest3@example.com"] } });
         await Event.deleteMany({ _id: { $in: [
             yesterdayEventId, tomorrowEventId, yesterdayBlockedEventId, tomorrowBlockedEventId, deletedEventId, newEventId, rsvpEventId
         ]}})
