@@ -8,6 +8,7 @@ struct MessageModel: Identifiable, Decodable {
     let id: String
     let text: String
     let sender: String
+    var read: Bool
 }
 
 /// User model
@@ -24,6 +25,7 @@ private struct APIMessage: Decodable {
     let id: String
     let text: String
     let sender: String
+    var read: Bool
 }
 
 /// Decodable version of a user from API
@@ -41,6 +43,7 @@ private struct APIConversation: Decodable {
     let lastMessage: String
     let messages: [APIMessage]
     var status: String
+    var pinned: Bool
 }
 
 // MARK: - App Conversation Model
@@ -53,7 +56,14 @@ struct Conversation: Identifiable {
     var lastMessage: String
     var messages: [MessageModel] = []
     var status: String
+    var pinned: Bool
 }
+
+private struct ConversationResponse: Decodable {
+    let conversations: [APIConversation]
+    let requireMessageRequests: Bool
+}
+
 
 // MARK: - ViewModel
 
@@ -63,6 +73,7 @@ final class DirectMessagesViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isLoadingConversations: Bool = false
     @Published var isLoadingUsers: Bool = false
+    @Published var requireMessageRequests: Bool = false
 
 
     /// Fetch conversations including message lists
@@ -85,10 +96,11 @@ final class DirectMessagesViewModel: ObservableObject {
                     return
                 }
                 do {
-                    let apiConvos = try decoder.decode([APIConversation].self, from: data)
-                    self.conversations = apiConvos.map { api in
+                    let decoded = try decoder.decode(ConversationResponse.self, from: data)
+
+                    self.conversations = decoded.conversations.map { api in
                         let mappedMessages = api.messages.map { msg in
-                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender)
+                            MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read: msg.read)
                         }
                         return Conversation(
                             id: api.id,
@@ -100,15 +112,21 @@ final class DirectMessagesViewModel: ObservableObject {
                             ),
                             lastMessage: api.lastMessage,
                             messages: mappedMessages,
-                            status: api.status
+                            status: api.status,
+                            pinned: api.pinned
                         )
                     }
+
+                    // ✅ Set the toggle state
+                    self.requireMessageRequests = decoded.requireMessageRequests
+
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
             }
         }.resume()
     }
+
     
     func fetchAvailableUsers(userId: String) {
         guard let url = URL(string: "http://localhost:3000/api/messages/getAvailableUsers?userId=\(userId)") else {
@@ -181,10 +199,27 @@ struct ProfileImageView: View {
 
 struct ConversationRow: View {
     let convo: Conversation
+    let currentUserId: String
+    let onTogglePin: () -> Void
+
+    var hasUnreadMessageFromOther: Bool {
+        convo.messages.contains { !$0.read && $0.sender != currentUserId }
+    }
 
     var body: some View {
         HStack(spacing: 15) {
-            ProfileImageView(urlString: convo.otherUser.profileImageURL)
+            ZStack(alignment: .bottomTrailing) {
+                ProfileImageView(urlString: convo.otherUser.profileImageURL)
+                    .frame(width: 50, height: 50)
+
+                if hasUnreadMessageFromOther {
+                    Circle()
+                        .fill(Color.red)
+                        .frame(width: 10, height: 10)
+                        .offset(x: 4, y: 4)
+                }
+            }
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(convo.otherUser.username)
                     .font(.headline)
@@ -193,11 +228,20 @@ struct ConversationRow: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
             }
+
             Spacer()
+
+            Button(action: onTogglePin) {
+                Image(systemName: convo.pinned ? "pin.fill" : "pin")
+                    .foregroundColor(convo.pinned ? .blue : .gray)
+            }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 6)
     }
 }
+
+
 
 // MARK: - DirectMessagesView
 
@@ -234,6 +278,73 @@ struct DirectMessagesView: View {
             convo.status == "pending" && convo.initiatorId != userId
         }
     }
+    
+    private func updateRequireRequestsSetting(_ enabled: Bool) {
+        guard let url = URL(string: "http://localhost:3000/api/messages/\(userId)/requireMessageRequests") else {
+            viewModel.errorMessage = "Invalid server URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["requireMessageRequests": enabled]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            viewModel.errorMessage = "Failed to encode request"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    viewModel.errorMessage = "Update failed: \(error.localizedDescription)"
+                }
+            }
+        }.resume()
+    }
+
+    
+    private func togglePin(for convo: Conversation) {
+        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convo.id)/pin") else {
+            viewModel.errorMessage = "Invalid server URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["pinned": !convo.pinned]
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            viewModel.errorMessage = "Failed to encode request"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    viewModel.errorMessage = error.localizedDescription
+                    return
+                }
+
+                // Toggle pinned in local state
+                if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
+                    viewModel.conversations[index].pinned.toggle()
+
+                    // Re-sort conversations after pin toggle
+                    viewModel.conversations.sort { $0.pinned && !$1.pinned }
+                }
+            }
+        }.resume()
+    }
+
 
     var body: some View {
         NavigationView {
@@ -265,13 +376,22 @@ struct DirectMessagesView: View {
                 }
                 .navigationTitle(selectedTab.rawValue)
                 .toolbar {
-                    if selectedTab == .messages {
-                        ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        if selectedTab == .messages {
                             Button(action: {
                                 showNewConversationSheet = true
                             }) {
                                 Image(systemName: "plus.message.fill")
                                     .font(.title2)
+                            }
+                        } else if selectedTab == .requests {
+                            Toggle(isOn: $viewModel.requireMessageRequests) {
+                                Image(systemName: "lock.shield")
+                                    .foregroundColor(viewModel.requireMessageRequests ? Color.blue : Color.gray)
+                            }
+                            .font(.title2)
+                            .onChange(of: viewModel.requireMessageRequests) { newValue in
+                                updateRequireRequestsSetting(newValue)
                             }
                         }
                     }
@@ -292,11 +412,19 @@ struct DirectMessagesView: View {
     }
 
     private var messagesListView: some View {
-        List(filteredConversations) { convo in
+        let sortedConvos = filteredConversations.sorted {
+            ($0.pinned ? 1 : 0, $0.lastMessage) > ($1.pinned ? 1 : 0, $1.lastMessage)
+        }
+
+        return List(sortedConvos) { convo in
             if convo.status == "accepted" || (convo.status == "pending" && convo.initiatorId == userId) {
                 if let index = viewModel.conversations.firstIndex(where: { $0.id == convo.id }) {
                     NavigationLink(destination: ChatDetailView(conversation: $viewModel.conversations[index], ownUserId: userId)) {
-                        ConversationRow(convo: convo)
+                        ConversationRow(
+                            convo: convo,
+                            currentUserId: userId,
+                            onTogglePin: { togglePin(for: convo) }
+                        )
                     }
                 }
             }
@@ -304,6 +432,7 @@ struct DirectMessagesView: View {
         .listStyle(PlainListStyle())
         .searchable(text: $messageSearchQuery, prompt: "Search…")
     }
+
 
     private var requestsListView: some View {
         List(pendingRequests) { convo in
@@ -481,7 +610,7 @@ struct DirectMessagesView: View {
                 do {
                     let apiConvo = try JSONDecoder().decode(APIConversation.self, from: data)
                     let mappedMessages = apiConvo.messages.map { msg in
-                        MessageModel(id: msg.id, text: msg.text, sender: msg.sender)
+                        MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read:msg.read)
                     }
                     let newConversation = Conversation(
                         id: apiConvo.id,
@@ -493,7 +622,8 @@ struct DirectMessagesView: View {
                         ),
                         lastMessage: apiConvo.lastMessage,
                         messages: mappedMessages,
-                        status: apiConvo.status
+                        status: apiConvo.status,
+                        pinned: apiConvo.pinned
                     )
                     self.viewModel.conversations.append(newConversation)
                     self.viewModel.availableUsers.removeAll { $0.id == validUser.id }
