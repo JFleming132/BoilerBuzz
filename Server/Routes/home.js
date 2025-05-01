@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'theboilerbuzz@gmail.com',
-        pass: 'zgfpwmppahiauhyc' // 🔐 Ideally, use process.env vars
+        pass: 'zgfpwmppahiauhyc' // Ideally, use process.env vars
     }
 });
 
@@ -80,23 +80,25 @@ router.post('/events', async (req, res) => {
     }
 });
 
-//TODO: Fix this endpoint to omit blocked users
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
-        console.log("📆 Current timestamp:", currentDate);
-        console.log("🧠 Attempting to fetch upcoming events from DB...");
+        console.log("Current timestamp:", currentDate);
+        console.log("Attempting to fetch upcoming events from DB...");
 
-        const currentUserID = new ObjectId(req.query.currentUserID)
+        var currentUserID = req.query.currentUserID
         var blockedUsers = []
         if (Object.keys(req.query).length === 0) {
             blockedUsers = []
         } else {
+            //console.log(req.query)
             blockedUsers = await User.findById(currentUserID)
+            //console.log(blockedUsers)
             blockedUsers = blockedUsers.blockedUserIDs.map((bu) => new ObjectId(bu))
+            console.log(blockedUsers)
         }
-        const events = await Event.find({ $and: [{date: { $gte: 0 }}, {author: {$nin: blockedUsers}}] });
-        console.log(`✅ Found ${events.length} event(s)`);
+        const events = await Event.find({ $and: [{date: { $gte: currentDate }}, {author: {$nin: blockedUsers}}] });
+        console.log(`Found ${events.length} event(s)`);
 
         const sanitizedEvents = events.map(event => ({
             _id: event._id.toString(),
@@ -116,8 +118,8 @@ router.get('/events', async (req, res) => {
         res.status(200).json(sanitizedEvents); // Return as a pure array
 
     } catch (err) {
-        console.error("❌ Error fetching events:", err.message);
-        console.error("🔍 Stack trace:", err.stack);
+        console.error("Error fetching events:", err.message);
+        console.error("Stack trace:", err.stack);
         res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
