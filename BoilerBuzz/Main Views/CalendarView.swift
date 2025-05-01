@@ -11,138 +11,242 @@ import EventKit
 import UIKit
 import CalendarView
 
+enum CalendarMode: String, CaseIterable, Identifiable {
+    case week = "Week"
+    case month = "Month"
+    var id: String { rawValue }
+}
+
+extension Date {
+    /// Returns the start of week based on current calendar
+    func startOfWeek(using calendar: Calendar = .current) -> Date {
+        let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self)
+        return calendar.date(from: comps) ?? self
+    }
+}
 
 struct CalendarViewPage: View {
-    @State var events : [Event] = []
-    @State var rsvpEvents : [Event] = []
-    @State var promotedEvents : [Event] = []
-    @State var errorMessage: String?
-    @State var selectedDates: [DateComponents] = [] //should only ever contain one element but is an array anyway? just trust me
-    @State private var showingEventSheet: Bool = false
+    // MARK: State
+    @State private var rsvpEvents: [Event] = []
+    @State private var promotedEvents: [Event] = []
+    @State private var selectedDates: [DateComponents] = []
+    @State private var selectedDate: DateComponents? = nil
+    @State private var showingEventSheet = false
+    @State private var viewMode: CalendarMode = .month
+    @State private var weekStart: Date = Date().startOfWeek()
+
     var body: some View {
-        VStack {
-            CalendarView(selection: $selectedDates)
-                .decorating(
-                    parseEvents(events: rsvpEvents),
-                    systemImage: "star"
-                ) //turn events date data into dateComponents set
-                .decorating(
-                    parseEvents(events: promotedEvents),
-                    systemImage: "star.fill"
-                )
-                .onAppear(perform: fetchEvents) //TODO: clicking on an event should pull up a card with information about it
-                .onChange(of: selectedDates, { oldValue, newValue in
-                    if !newValue.isEmpty {
-                        showingEventSheet = true
-                    }
-                })
-                .sheet(isPresented: $showingEventSheet, onDismiss: onSheetDismissed) {
-                    let allEvents = rsvpEvents + promotedEvents
-                    let selectedEvents = allEvents.filter{
-                        sameDay(dc: selectedDates.first!, d: $0.date)
-                    }
-                    NavigationStack() {
-                        VStack() {
-                            //TODO: Add header to sheet that gives current selected date, which is selectedDates!
-                            ForEach(selectedEvents) { e in
-                                NavigationLink(destination: EventDetailView(event: e)) {
-                                    EventCardView(event: e)
+        VStack(spacing: 0) {
+            // Toggle between Month / Week
+            Picker("View Mode", selection: $viewMode) {
+                ForEach(CalendarMode.allCases) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .padding()
+
+            // Choose the appropriate subview
+            if viewMode == .month {
+                monthView
+            } else {
+                weekView   // your existing weekView
+            }
+        }
+        .onAppear(perform: fetchEvents)
+    }
+
+    // MARK: Month View
+    private var monthView: some View {
+        CalendarView(
+            selection: $selectedDate,
+        )
+        // RSVP’d in gold, large circle
+        .decorating(
+            parseEvents(rsvpEvents),
+            systemImage: "circle.fill",
+            color: .blue,
+            size: .large
+        )
+        // Promoted in blue, large circle
+        .decorating(
+            parseEvents(promotedEvents),
+            systemImage: "circle.fill",
+            color: .yellow,
+            size: .large
+        )
+        .onChange(of: selectedDate) { new in
+            if new != nil {
+                showingEventSheet = true
+            }
+        }
+        .sheet(isPresented: $showingEventSheet, onDismiss: {
+            selectedDate = nil
+        }) {
+            // Build the sheet only if a date is set
+            if let comps = selectedDate,
+               let date = Calendar.current.date(from: comps) {
+                // Filter events for that day
+                let all = rsvpEvents + promotedEvents
+                let todays = all.filter {
+                    Calendar.current.isDate($0.date, inSameDayAs: date)
+                }
+                // Show your event list
+                NavigationStack {
+                    VStack(alignment: .leading) {
+                        Text(date, style: .date)
+                            .font(.headline)
+                            .padding()
+                        ScrollView {
+                            ForEach(todays) { ev in
+                                NavigationLink(destination: EventDetailView(event: ev)) {
+                                    EventCardView(event: ev)
                                 }
-                                .buttonStyle(PlainButtonStyle())
+                                .buttonStyle(.plain)
+                                .padding(.horizontal)
                             }
                         }
                     }
                 }
+            }
         }
     }
-    
-    func sameDay(dc: DateComponents, d: Date) -> Bool {
-        let dc1 = Calendar.current.dateComponents([.day, .year, .month], from: d)
-        if (dc.year! == dc1.year) {
-            if (dc.month! == dc1.month) {
-                if (dc.day! == dc1.day) {
-                    return true
+    // MARK: - Week View
+    private var weekView: some View {
+        VStack(spacing: 8) {
+            // Navigation Header
+            HStack {
+                Button { weekStart = Calendar.current.date(byAdding: .day, value: -7, to: weekStart)! } label: {
+                    Image(systemName: "chevron.left")
+                }
+                Spacer()
+                Text(weekRangeTitle())
+                    .font(.headline)
+                Spacer()
+                Button { weekStart = Calendar.current.date(byAdding: .day, value: 7, to: weekStart)! } label: {
+                    Image(systemName: "chevron.right")
                 }
             }
+            .padding(.horizontal)
+
+            // Days List
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(0..<7) { offset in
+                        let date = Calendar.current.date(byAdding: .day, value: offset, to: weekStart)!
+                        let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
+                        let eventsForDay = (rsvpEvents + promotedEvents).filter { ev in
+                            let evComp = Calendar.current.dateComponents([.year, .month, .day], from: ev.date)
+                            return evComp == comps
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            // Day Header
+                            Text(dayHeader(for: date))
+                                .font(.headline)
+                                .padding(.horizontal)
+
+                            // Event Cards
+                            ForEach(eventsForDay) { ev in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Circle()
+                                        .fill(ev.promoted ? Color.yellow : Color.blue)
+                                        .frame(width: 12, height: 12)
+                                        .padding(.top, 6)
+
+                                    EventCardView(event: ev)
+                                        .padding(.trailing)
+                                }
+                                .onTapGesture {
+                                    selectedDates = [comps]
+                                    showingEventSheet = true
+                                }
+                            }
+
+                            if eventsForDay.isEmpty {
+                                Text("No events")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical)
+            }
+            .sheet(isPresented: $showingEventSheet, onDismiss: { selectedDates = [] }) {
+                eventSheet(for: selectedDates)
+            }
         }
-        return false
+    }
+
+    // MARK: - Event Sheet
+    @ViewBuilder
+    private func eventSheet(for comps: [DateComponents]) -> some View {
+        if let first = comps.first,
+           let date = Calendar.current.date(from: first) {
+            let all = rsvpEvents + promotedEvents
+            let filtered = all.filter { ev in
+                let evComp = Calendar.current.dateComponents([.year, .month, .day], from: ev.date)
+                return evComp == first
+            }
+            NavigationStack {
+                VStack(alignment: .leading) {
+                    Text(date, style: .date)
+                        .font(.headline)
+                        .padding()
+                    ScrollView {
+                        ForEach(filtered) { ev in
+                            NavigationLink(destination: EventDetailView(event: ev)) {
+                                EventCardView(event: ev)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+        } else {
+            EmptyView()
+        }
+    }
+
+    // MARK: - Helpers
+    private func parseEvents(_ events: [Event]) -> Set<DateComponents> {
+        Set(events.map { Calendar.current.dateComponents([.year, .month, .day], from: $0.date) })
+    }
+
+    private func weekRangeTitle() -> String {
+        let end = Calendar.current.date(byAdding: .day, value: 6, to: weekStart)!
+        let fmt = DateFormatter()
+        fmt.dateStyle = .medium
+        return "\(fmt.string(from: weekStart)) – \(fmt.string(from: end))"
+    }
+
+    private func dayHeader(for date: Date) -> String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "EEEE, MMM d"
+        return fmt.string(from: date)
     }
     
-    func onSheetDismissed() {
-        selectedDates = []
-    }
-                          
-    private func parseEvents(events: ([Event])) -> Set<DateComponents> {
-        var DateComponentsArray: [DateComponents] = [] //will be returned, parsed
-        for event in events { //for every event we fetched in init()
-            DateComponentsArray.append( //add the date it contains to the array
-                Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: event.date) //parse the date with built-in methods
-            )
+    private func fetchEvents() {
+        guard let userId = UserDefaults.standard.string(forKey: "userId"),
+              let url = URL(string: "http://localhost:3000/api/calendar/events?currentUserID=\(userId)") else { return }
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let tok = UserDefaults.standard.string(forKey: "authToken") {
+            req.setValue("Bearer \(tok)", forHTTPHeaderField: "Authorization")
         }
-        return Set(DateComponentsArray) //convert array to set for CalendarView()
-    }
-    
-    private func fetchEvents() { //literally copied from Sophie's code
-        guard let myUserId = UserDefaults.standard.string(forKey: "userId") else {
-            print("My user ID not found")
-            return
-        }
-        
-        guard let url = URL(string: "http://localhost:3000/api/calendar/events?currentUserID=\(myUserId)") else {
-            errorMessage = "Invalid API URL"
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-
-        if let token = UserDefaults.standard.string(forKey: "authToken") {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    self.errorMessage = "Error fetching events: \(error.localizedDescription)"
-                }
-                return
-            }
-
-            guard let data = data else {
-                DispatchQueue.main.async {
-                    self.errorMessage = "No data received"
-                }
-                return
-            }
-
-            // Debug raw JSON response
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("🚀 API Response:\n\(jsonString)")
-            }
-
+        URLSession.shared.dataTask(with: req) { data, _, err in
+            guard let data = data, err == nil else { return }
             do {
-                let decoder = JSONDecoder()
-                decoder.dateDecodingStrategy = .millisecondsSince1970 //  Decode timestamps correctly
-                
-                let fetchedEvents = try decoder.decode([Event].self, from: data)
+                let dec = JSONDecoder()
+                dec.dateDecodingStrategy = .millisecondsSince1970
+                let fetched = try dec.decode([Event].self, from: data)
                 DispatchQueue.main.async {
-                    //All events that are promoted go in one array, all other events go in another
-                    self.promotedEvents = fetchedEvents.filter { $0.promoted }
-                    self.rsvpEvents = fetchedEvents.filter { !$0.promoted }
-                    self.errorMessage = nil
-                    print(promotedEvents)
-                    print(rsvpEvents)
+                    self.rsvpEvents = fetched.filter { !$0.promoted }
+                    self.promotedEvents = fetched.filter { $0.promoted }
                 }
-                
-                print("Successfully fetched events")
-            } catch {
-                print(" JSON Decoding Error: \(error)")
-                DispatchQueue.main.async {
-                    self.errorMessage = "JSON Decoding Error: \(error.localizedDescription)"
-                }
-            }
+            } catch {}
         }.resume()
     }
 }
