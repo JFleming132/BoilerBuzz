@@ -150,7 +150,9 @@ struct HomeView: View {
         }
     }
 
+    //Function to fetch all valid events from the backend
     private func fetchEvents() {
+
         guard let userLoc = locationManager.location else {
             DispatchQueue.main.async { self.errorMessage = "Waiting for location…" }
             return
@@ -244,7 +246,10 @@ struct EventsTab: View {
                 }
             }
         }
-        
+        .sheet(isPresented: $isCreatingEvent) {
+            CreateEventView(onEventCreated: { _ in
+            })
+        }
     }
 }
 
@@ -339,7 +344,7 @@ func isRSVPed(event: Event) -> Bool {
 
 func rsvp(event: Event) {
     let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-    guard let url = URL(string: "http://localhost:3000/api/home/rsvp") else {
+    guard let url = URL(string: "\(backendURL)api/home/rsvp") else {
         print("invalid URL")
         return
     }
@@ -370,7 +375,7 @@ func rsvp(event: Event) {
 
 func unrsvp(event: Event) {
     let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? "noID"
-    guard let url = URL(string: "http://localhost:3000/api/home/unrsvp") else {
+    guard let url = URL(string: "\(backendURL)api/home/unrsvp") else {
         print("invalid URL")
         return
     }
@@ -484,7 +489,7 @@ struct HarrysView: View {
     }
     
     private func fetchHarrysData() {
-        guard let url = URL(string: "http://localhost:3000/api/home/harrys/line") else {
+        guard let url = URL(string: "\(backendURL)api/home/harrys/line") else {
             errorMessage = "Invalid API URL"
             return
         }
@@ -587,7 +592,7 @@ struct CreateEventView: View {
     
     private func checkIfUserIsIdentified(completion: @escaping (Bool) -> Void) {
         guard let userId = UserDefaults.standard.string(forKey: "userId"),
-              let url = URL(string: "http://localhost:3000/api/profile/isIdentified/\(userId)") else {
+              let url = URL(string: "\(backendURL)api/profile/isIdentified/\(userId)") else {
             completion(false)
             return
         }
@@ -774,8 +779,8 @@ struct CreateEventView: View {
             organizerName: nil,
             authorUsername: authorUsername
         )
-        
-        guard let url = URL(string: "http://localhost:3000/api/home/events") else {
+        guard let url = URL(string: "\(backendURL)api/home/events") else {
+
             print("Invalid URL")
             return
         }
@@ -1005,7 +1010,7 @@ struct EventDetailView: View {
     }
 
     func deleteEvent() {
-        guard let url = URL(string: "http://localhost:3000/api/home/delEvents/\(event.id)") else {
+        guard let url = URL(string: "\(backendURL)api/home/delEvents/\(event.id)") else {
             print("Invalid URL for event deletion")
             return
         }
@@ -1150,7 +1155,7 @@ struct EditEventView: View {
             "imageUrl": encodedImage ?? event.imageUrl ?? ""
         ]
 
-        guard let url = URL(string: "http://localhost:3000/api/home/events/\(event.id)") else {
+        guard let url = URL(string: "\(backendURL)api/home/events/\(event.id)") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -1344,7 +1349,7 @@ struct ReportEventView: View {
             "additionalInfo": additionalInfo
         ]
         
-        guard let url = URL(string: "http://localhost:3000/api/report/submit") else {
+        guard let url = URL(string: "\(backendURL)api/report/submit") else {
             print("Invalid URL for submitting report")
             return
         }

@@ -104,7 +104,7 @@ struct AccountSettingsView: View {
 
     // Save profile changes to the server
     func saveProfileChanges() {
-        guard let url = URL(string: "http://localhost:3000/api/profile/\(profileData.userId)") else {
+        guard let url = URL(string: "\(backendURL)api/profile/\(profileData.userId)") else {
             print("Invalid URL")
             return
         }

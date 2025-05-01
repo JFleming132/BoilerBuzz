@@ -144,8 +144,10 @@ struct FriendsListPopup: View {
     }
     
     func fetchFriendsList() {
+
         isLoading = true
-        guard let url = URL(string: "http://localhost:3000/api/friends/\(userId)") else {
+        guard let url = URL(string: "\(backendURL)api/friends/\(userId)") else {
+
             errorMessage = "Invalid URL"
             return
         }
@@ -194,7 +196,7 @@ struct FriendsListPopup: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/friends/removeFriend") else {
+        guard let url = URL(string: "\(backendURL)api/friends/removeFriend") else {
             print("Invalid URL")
             return
         }

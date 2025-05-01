@@ -6,13 +6,13 @@ const NameList = require('../Models/NameList'); // Adjust path as needed
 const User = require('../Models/User');   // Ensure correct path to User model
 const HarrysCount = require('../Models/harrys'); // Ensure correct import
 const nodemailer = require('nodemailer');
-
+const { ObjectId } = require('mongodb');
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'theboilerbuzz@gmail.com',
-        pass: 'zgfpwmppahiauhyc' // 🔐 Ideally, use process.env vars
+        pass: 'zgfpwmppahiauhyc' // Ideally, use process.env vars
     }
 });
 
@@ -84,10 +84,24 @@ router.post('/events', async (req, res) => {
 router.get('/events', async (req, res) => {
     try {
         const currentDate = new Date().getTime();
+        console.log("Current timestamp:", currentDate);
+        console.log("Attempting to fetch upcoming events from DB...");
 
+        var currentUserID = req.query.currentUserID
+        var blockedUsers = []
+        if (Object.keys(req.query).length === 0) {
+            blockedUsers = []
+        } else {
+            //console.log(req.query)
+            blockedUsers = await User.findById(currentUserID)
+            //console.log(blockedUsers)
+            blockedUsers = blockedUsers.blockedUserIDs.map((bu) => new ObjectId(bu))
+            console.log(blockedUsers)
+        }
+        
         // 1. Fetch events
-        const events = await Event.find({ date: { $gte: currentDate } });
-        console.log(` Found ${events.length} event(s)`);
+        const events = await Event.find({ $and: [{date: { $gte: currentDate }}, {author: {$nin: blockedUsers}}] });
+        console.log(`Found ${events.length} event(s)`);
 
         // 2. Get unique author usernames
         const usernames = [...new Set(events.map(e => e.authorUsername))];
@@ -123,7 +137,8 @@ router.get('/events', async (req, res) => {
         res.status(200).json(sanitizedEvents);
 
     } catch (err) {
-        console.error("❌ Error fetching events:", err.message);
+        console.error("Error fetching events:", err.message);
+        console.error("Stack trace:", err.stack);
         res.status(500).json({ message: 'Error fetching events', error: err.message });
     }
 });
@@ -216,7 +231,8 @@ router.post('/unrsvp', async (req, res) => {
     }
 });
 
-// Update event and notify RSVP'd users
+/* DEPRECATED */
+/*
 router.post('/update-event', async (req, res) => {
     try {
         const { eventId, title, description, location, date, capacity } = req.body;
@@ -261,7 +277,7 @@ router.post('/update-event', async (req, res) => {
         res.status(500).json({ error: 'Server error updating event' });
     }
 });
-
+*/
 
 router.put('/events/:id', async (req, res) => {
     const eventId = req.params.id;

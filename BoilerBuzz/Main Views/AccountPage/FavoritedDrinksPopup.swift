@@ -77,8 +77,10 @@ struct FavoritedDrinksPopup: View {
         }
     }
     
-    func fetchFavoriteDrinks() {
-        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
+    func fetchFavoriteDrinks() { //TODO: This function fails if the retrieved JSON does not STRICTLY adhere to the type Drink,
+        //Even if it only needs to display the name and icon.
+        //Either fix it, or ensure all drinks in the database can be decoded
+        guard let url = URL(string: "\(backendURL)api/drinks/favoriteDrinks/\(userId)") else {
             errorMessage = "Invalid URL"
             return
         }

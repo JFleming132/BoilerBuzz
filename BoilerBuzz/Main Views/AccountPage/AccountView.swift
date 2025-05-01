@@ -600,7 +600,7 @@ struct AccountView: View {
     
     // MARK: - Functions
     func uploadPhoto(image: UIImage) {
-        guard let url = URL(string: "http://localhost:3000/api/photo/uploadPhoto") else {
+        guard let url = URL(string: "\(backendURL)api/photo/uploadPhoto") else {
             print("Invalid URL for photo upload")
             return
         }
@@ -670,7 +670,7 @@ struct AccountView: View {
             print("Missing admin or friend id")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/profile/deleteUser") else {
+        guard let url = URL(string: "\(backendURL)api/profile/deleteUser") else {
             print("Invalid URL for deleteUser")
             return
         }
@@ -714,7 +714,7 @@ struct AccountView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/profile/banUser") else {
+        guard let url = URL(string: "\(backendURL)api/profile/banUser") else {
             print("Invalid URL for banUser")
             return
         }
@@ -759,7 +759,7 @@ struct AccountView: View {
             print("Friend ID is missing")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/friends/addFriend") else {
+        guard let url = URL(string: "\(backendURL)api/friends/addFriend") else {
             print("Invalid URL")
             return
         }
@@ -800,7 +800,7 @@ struct AccountView: View {
               let friendId = viewedUserId,
               !isOwnProfile else { return }
         
-        guard let url = URL(string: "http://localhost:3000/api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
+        guard let url = URL(string: "\(backendURL)api/friends/status?userId=\(myUserId)&friendId=\(friendId)") else {
             print("Invalid URL for friend status")
             return
         }
@@ -835,7 +835,7 @@ struct AccountView: View {
               !isOwnProfile else { return }
         
         //Done: Edit this string to correspond with the a new backend function
-        guard let url = URL(string: "http://localhost:3000/api/blocked/status?userId=\(myUserId)&friendId=\(friendId)") else {
+        guard let url = URL(string: "\(backendURL)api/blocked/status?userId=\(myUserId)&friendId=\(friendId)") else {
             print("Invalid URL for Blocked status")
             return
         }
@@ -865,7 +865,7 @@ struct AccountView: View {
 
     func fetchRandomProfile(completion: @escaping (String?) -> Void) {
         guard let myUserId = UserDefaults.standard.string(forKey: "userId"),
-            let url = URL(string: "http://localhost:3000/api/profile/random?exclude=\(myUserId)") else {
+            let url = URL(string: "\(backendURL)api/profile/random?exclude=\(myUserId)") else {
             completion(nil)
             return
         }
@@ -905,7 +905,7 @@ struct AccountView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/ratings") else {
+        guard let url = URL(string: "\(backendURL)api/ratings") else {
             print("Invalid URL for ratings endpoint")
             return
         }
@@ -950,7 +950,7 @@ struct AccountView: View {
             print("Friend ID is missing")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/blocked/block") else {
+        guard let url = URL(string: "\(backendURL)api/blocked/block") else {
             print("Invalid URL")
             return
         }
@@ -994,7 +994,7 @@ struct AccountView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/profile/promote") else {
+        guard let url = URL(string: "\(backendURL)api/profile/promote") else {
             print("Invalid URL for promote")
             return
         }

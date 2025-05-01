@@ -42,8 +42,8 @@ class ProfileViewModel: ObservableObject {
         }
 
         self.userId = idToFetch
+        guard let url = URL(string: "\(backendURL)api/profile/\(idToFetch)") else {
 
-        guard let url = URL(string: "http://localhost:3000/api/profile/\(idToFetch)") else {
             print("Invalid URL")
             return
         }
@@ -88,7 +88,7 @@ class ProfileViewModel: ObservableObject {
             return
         }
 
-        let urlString = "http://localhost:3000/api/home/events/byUser/\(idToFetch)"
+        let urlString = "\(backendURL)api/home/events/byUser/\(idToFetch)"
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return
@@ -116,7 +116,6 @@ class ProfileViewModel: ObservableObject {
         }.resume()
     }
 
-    // MARK: - Fetch User Photos
 
     func fetchUserPhotos(userId: String? = nil) {
         let idToFetch: String
@@ -131,7 +130,8 @@ class ProfileViewModel: ObservableObject {
             return
         }
 
-        let urlString = "http://localhost:3000/api/photo/byUser/\(idToFetch)"
+        let urlString = "\(backendURL)api/photo/byUser/\(idToFetch)"
+
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")
             return

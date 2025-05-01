@@ -26,6 +26,7 @@ extension Date {
 }
 
 struct CalendarViewPage: View {
+
     // MARK: State
     @State private var rsvpEvents: [Event] = []
     @State private var promotedEvents: [Event] = []
@@ -61,14 +62,14 @@ struct CalendarViewPage: View {
         CalendarView(
             selection: $selectedDate,
         )
-        // RSVP’d in gold, large circle
+        // RSVP’d in blue, large circle
         .decorating(
             parseEvents(rsvpEvents),
             systemImage: "circle.fill",
             color: .blue,
             size: .large
         )
-        // Promoted in blue, large circle
+        // Promoted in gold, large circle
         .decorating(
             parseEvents(promotedEvents),
             systemImage: "circle.fill",
@@ -104,13 +105,16 @@ struct CalendarViewPage: View {
                                 }
                                 .buttonStyle(.plain)
                                 .padding(.horizontal)
+
                             }
+                            Spacer()
                         }
                     }
                 }
             }
         }
     }
+
     // MARK: - Week View
     private var weekView: some View {
         VStack(spacing: 8) {
@@ -208,6 +212,7 @@ struct CalendarViewPage: View {
             EmptyView()
         }
     }
+
 
     // MARK: - Helpers
     private func parseEvents(_ events: [Event]) -> Set<DateComponents> {

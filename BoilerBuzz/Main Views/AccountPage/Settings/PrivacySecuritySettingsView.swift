@@ -49,7 +49,7 @@ struct PrivacySecuritySettingsView: View {
 
         isLoading = true
 
-        let url = URL(string: "http://localhost:3000/api/auth/update-password")!
+        let url = URL(string: "\(backendURL)api/auth/update-password")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

@@ -23,7 +23,8 @@ router.get('/events', async (req, res) => {
         const currentDate = new Date().getTime();
         currentUserObjectID = new ObjectId(currentUserID);
         if (!mongoose.Types.ObjectId.isValid(currentUserID)) {
-          return res.status(400).json({ error: 'Invalid user Id(s)' });
+            console.log(currentUserID + " is not valid")
+            return res.status(400).json({ error: 'Invalid user Id(s)' });
         }
         const db = req.app.locals.db || mongoose.connection.client.db('Boiler_Buzz');
 
@@ -33,90 +34,92 @@ router.get('/events', async (req, res) => {
                                              //and all events that are promoted
                                              //except those events which have been posted by authors
                                              //which the user has blocked
-            [
-              {
+            {
                 $project: {
-                  blockedUserIDs: "$blockedUserIDs",
-                  
+                    blockedUserIDs: {
+                        $map: {
+                            input: "$blockedUserIDs",
+                            as: "blocks",
+                            in: {
+                                $toObjectId: "$$blocks"
+                            }
+                        }
+                    },
                     rsvpEventID: {
-                    $map: {
-                          input: "$rsvpEvents",
-                          as: "event",
-                          in: {$toObjectId: "$$event"}
+                        $map: {
+                            input: "$rsvpEvents",
+                            as: "event",
+                            in: {$toObjectId: "$$event"}
                         }
                     }
                 }
-              },
-              {
+            }, {
                 $lookup: {
-                  from: "events",
-                  let: {
-                    rsvp: "$rsvpEventID",
-                    blocked: "$blockedUserIDs"
-                  },
-                  pipeline: [
-                      {
+                    from: "events",
+                    let: {
+                        rsvp: "$rsvpEventID",
+                        blocked: "$blockedUserIDs"
+                    },
+                    pipeline: [
+                        {
                             $set: {
-                              rsvp: "$$rsvp",
-                            blocked: "$$blocked"
-                          }
-                      },
-                    {
-                        $match: {
-                          $expr: {
-                            $and: [
-                              {
-                                $or: [
-                                  {
-                                    $in:
-                                      [
-                                        "$_id", "$$rsvp"
-                                      ]
-                                  },
-                                  {
-                                    $eq: [
-                                      "$promoted", true
+                                rsvp: "$$rsvp",
+                                blocked: "$$blocked"
+                            }
+                        },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $or: [
+                                                {
+                                                    $in:
+                                                    [
+                                                        "$_id", "$$rsvp"
+                                                    ]
+                                                },
+                                                {
+                                                    $eq: [
+                                                        "$promoted", true
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            $not: {
+                                                $in: [
+                                                    "$author", {
+                                                        $ifNull: [
+                                                            "$$blocked",
+                                                            []
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
                                     ]
-                                  }
-                                ]
-                              },
-                              {
-                                $not: {
-                                  $in: [
-                                    "$author", {
-                                      $ifNull: [
-                                        "$$blocked",
-                                        []
-                                      ]
-                                    }
-                                  ]
                                 }
-                              }
-                            ]
-                              }
+                            }
                         }
-                      }
-                  ],
-                  as: "validEvents"
+                    ],
+                    as: "validEvents"
                 }
-              }, {
+            }, {
                 $match: {
-                  _id: currentUserObjectID
+                    _id: currentUserObjectID
                 }
-              },
-              {
+            }, {
                 $unwind: {
-                  path: "$validEvents"
+                    path: "$validEvents"
                 }
-              },
-              {
+            }, {
                 $replaceRoot: {
-                  newRoot: "$validEvents"
+                    newRoot: "$validEvents"
                 }
-              }
-            ]
+            }
         ]);
-        console.log("got events:", events);
+        //console.log("got events:", events);
         const sanitizedEvents = events.map(event => ({
             ...event,
             imageUrl: event.imageUrl || "" // ✅ Ensure imageUrl is always a string

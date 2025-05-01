@@ -125,9 +125,10 @@ struct NotificationsSettingsView: View {
 
     
     // Fetch friend list similar to the FriendsListPopup.
+
     func fetchFriendList(completion: @escaping () -> Void) {
         guard let userId = UserDefaults.standard.string(forKey: "userId"),
-            let url = URL(string: "http://localhost:3000/api/notification/friends/\(userId)") else {
+            let url = URL(string: "\(backendURL)api/notification/friends/\(userId)") else {
             self.errorMessage = "Invalid URL or User ID."
             completion()
             return
@@ -171,10 +172,12 @@ struct NotificationsSettingsView: View {
     }
     // Fetch the current notification preferences from the backend.
     func fetchNotificationPreferences() {
+
         guard let userId = UserDefaults.standard.string(forKey: "userId"),
-            let url = URL(string: "http://localhost:3000/api/notification/\(userId)") else {
+            let url = URL(string: "\(backendURL)api/notification/\(userId)") else {
             self.errorMessage = "Invalid URL or User ID."
             self.isLoadingPreferences = false
+
             return
         }
         
@@ -219,7 +222,7 @@ struct NotificationsSettingsView: View {
             print("User ID not found")
             return
         }
-        guard let url = URL(string: "http://localhost:3000/api/notification/\(userId)") else {
+        guard let url = URL(string: "\(backendURL)api/notification/\(userId)") else {
             print("Invalid URL")
             return
         }

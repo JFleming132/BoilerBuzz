@@ -130,6 +130,45 @@ router.get('/triedDrinks/:userId', async (req, res) => {
   }
 });
 
+router.get('/isDrinkFavorite', async (req, res) => {
+    console.log("Incoming Request to /isDrinkTried")
+    const userId = req.query.userId
+    const drinkId = req.query.drinkId
+    const userObjId = new ObjectId(userId)
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        console.log("Invalid User Id: " + userId)
+        return res.status(400).json({ error: 'Invalid user Id' })
+    }
+    try {
+        const triedMatches = await User.aggregate(
+                                                  [
+                                                   [
+                                                       {
+                                                         $match: {
+                                                           _id: userObjId
+                                                         }
+                                                       },
+                                                       { $project: { favoriteDrinks: 1 } },
+                                                       { $unwind: { path: '$favoriteDrinks' } },
+                                                       { $match: { favoriteDrinks: drinkId } },
+                                                     ],
+                                                    ],
+          { maxTimeMS: 60000, allowDiskUse: true }
+        );
+        //console.log(userId + " with drink " + drinkId + " returns:")
+        //console.log(triedMatches)
+        let calculatedResponse;
+        if (triedMatches.length > 0) {
+            calculatedResponse = {isDrinkTried: true}
+        } else {
+            calculatedResponse = {isDrinkTried: false}
+        }
+        res.json(calculatedResponse)
+    } catch (error) {
+        console.error('Error fetching drink\'s tried status by user:', error);
+        return res.status(500).json({ error: 'Internal server error' })
+    }
+});
 
   router.get('/favoriteDrinks/:userId', async (req, res) => {
   try {
@@ -187,7 +226,6 @@ router.get('/triedDrinks/:userId', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch favorite drinks. Please try again later." });
   }
 });
-
 
 // POST endpoint to add a drink to a user's favorites
 router.post('/toggleFavoriteDrink', async (req, res) => {

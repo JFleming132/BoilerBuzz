@@ -8,6 +8,11 @@
 import SwiftUI
 import ConfettiSwiftUI
 
+//Small struct to decode an optomized backend call
+struct DrinkIsTriedResponse: Codable {
+    let isDrinkTried: Bool //See: Server/Routes/drinks.js
+}
+
 struct Drink: Identifiable, Codable {
     let id = UUID()
     let objectID: String
@@ -786,7 +791,7 @@ struct DrinksDetailView: View {
             return
         }
 
-        guard let url = URL(string: "http://localhost:3000/api/drinks/triedDrinks/\(userId)") else {
+        guard let url = URL(string: "\(backendURL)api/drinks/triedDrinks/\(userId)") else {
             print("Invalid URL")
             return
         }
@@ -826,7 +831,7 @@ struct DrinksDetailView: View {
     }
     
     func fetchDrinks() {
-        guard let url = URL(string: "http://localhost:3000/api/auth/drinks") else {
+        guard let url = URL(string: "\(backendURL)api/auth/drinks") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -849,7 +854,7 @@ struct DrinksDetailView: View {
             do {
                 // Print raw JSON response
                 if let jsonString = String(data: data, encoding: .utf8) {
-                    print("🚀 API Response:\n\(jsonString)")
+                    print(" API Response:\n\(jsonString)")
                 }
 
                 // Decode as a general JSON object first
@@ -862,8 +867,8 @@ struct DrinksDetailView: View {
                             let decodedDrink = try JSONDecoder().decode(Drink.self, from: drinkData)
                             decodedDrinks.append(decodedDrink)
                         } catch {
-                            print("❌ Failed to decode drink at index \(index): \(drinkJSON)")
-                            print("🔴 Decoding error: \(error)\n")
+                            print(" Failed to decode drink at index \(index): \(drinkJSON)")
+                            print(" Decoding error: \(error)\n")
                         }
                     }
 
@@ -1003,20 +1008,22 @@ struct DrinkDetailsPopup: View {
         }
     }
 
+    //function to check if a drink is favorited
+    //TODO: Test this new backend call
     func fetchFavoriteStatus() {
         guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
-        
-        guard let url = URL(string: "http://localhost:3000/api/drinks/favoriteDrinks/\(userId)") else {
+        let drinkID = drink.drinkID
+        guard let url = URL(string: "\(backendURL)api/drinks/isDrinkFavorite?drinkId=\(drinkID)&userId=\(userId)") else {
             print("Invalid URL")
             return
         }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
-                print("Error fetching favorite drinks: \(error.localizedDescription)")
+                print("Error fetching favorite drink status: \(error.localizedDescription)")
                 return
             }
             
@@ -1026,25 +1033,24 @@ struct DrinkDetailsPopup: View {
             }
             
             do {
-                let favoriteDrinks = try JSONDecoder().decode([Drink].self, from: data)
+                let drinkResponse = try JSONDecoder().decode(DrinkIsTriedResponse.self, from: data)
                 DispatchQueue.main.async {
-                    // Check if the current drink's drinkID is in the fetched favorites
-                    self.isFavorited = favoriteDrinks.contains(where: { $0.drinkID == drink.drinkID })
+                    self.isFavorited = drinkResponse.isDrinkTried
                 }
             } catch {
-                print("Error decoding favorite drinks: \(error.localizedDescription)")
+                print("Error decoding favorite drink status: \(error.localizedDescription)")
             }
         }.resume()
     }
 
-        
+    //function to toggle if a drink is favorited or not
     func toggleFavorite() {
         guard let userId = getUserId() else {
             print("User ID not found")
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/drinks/toggleFavoriteDrink") else {
+        guard let url = URL(string: "\(backendURL)api/drinks/toggleFavoriteDrink") else {
             print("Invalid URL")
             return
         }

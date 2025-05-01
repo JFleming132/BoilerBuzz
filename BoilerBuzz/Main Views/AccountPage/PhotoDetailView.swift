@@ -56,7 +56,7 @@ struct PhotoDetailView: View {
     }
     
     func deletePhoto() {
-        guard let url = URL(string: "http://localhost:3000/api/photo/\(photo.id)") else {
+        guard let url = URL(string: "\(backendURL)api/photo/\(photo.id)") else {
             print("Invalid URL for photo deletion")
             return
         }
