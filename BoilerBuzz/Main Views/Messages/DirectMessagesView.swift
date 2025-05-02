@@ -74,8 +74,9 @@ final class DirectMessagesViewModel: ObservableObject {
     @Published var isLoadingConversations: Bool = false
     @Published var isLoadingUsers: Bool = false
     @Published var requireMessageRequests: Bool = false
-
-
+    @Published var blockedUserIDs: [String] = []
+    
+    
     /// Fetch conversations including message lists
     func fetchConversations(userId: String) {
         guard let url = URL(string: "http://localhost:3000/api/messages/getConversations?userId=\(userId)") else {
@@ -97,7 +98,7 @@ final class DirectMessagesViewModel: ObservableObject {
                 }
                 do {
                     let decoded = try decoder.decode(ConversationResponse.self, from: data)
-
+                    
                     self.conversations = decoded.conversations.map { api in
                         let mappedMessages = api.messages.map { msg in
                             MessageModel(id: msg.id, text: msg.text, sender: msg.sender, read: msg.read)
@@ -116,17 +117,17 @@ final class DirectMessagesViewModel: ObservableObject {
                             pinned: api.pinned
                         )
                     }
-
+                    
                     // ✅ Set the toggle state
                     self.requireMessageRequests = decoded.requireMessageRequests
-
+                    
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
             }
         }.resume()
     }
-
+    
     
     func fetchAvailableUsers(userId: String) {
         guard let url = URL(string: "http://localhost:3000/api/messages/getAvailableUsers?userId=\(userId)") else {
@@ -150,6 +151,51 @@ final class DirectMessagesViewModel: ObservableObject {
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+            }
+        }.resume()
+    }
+    
+    func blockUser(currentUserId: String, targetUserId: String, conversationId: String? = nil) {
+        guard !self.blockedUserIDs.contains(targetUserId) else { return }
+
+        guard let url = URL(string: "http://localhost:3000/api/blocked/block") else {
+            self.errorMessage = "Invalid block URL"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        var body: [String: Any] = [
+            "userId": currentUserId,
+            "friendId": targetUserId
+        ]
+
+        if let convoId = conversationId {
+            body["conversationId"] = convoId
+        }
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+        } catch {
+            self.errorMessage = "Failed to encode block request"
+            return
+        }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.errorMessage = "Block failed: \(error.localizedDescription)"
+                    return
+                }
+
+                guard let _ = data else {
+                    self.errorMessage = "No response from server"
+                    return
+                }
+
+                self.blockedUserIDs.append(targetUserId)
             }
         }.resume()
     }
@@ -201,7 +247,7 @@ struct ConversationRow: View {
     let convo: Conversation
     let currentUserId: String
     let onTogglePin: () -> Void
-
+    
     var hasUnreadMessageFromOther: Bool {
         convo.messages.contains { !$0.read && $0.sender != currentUserId }
     }
@@ -256,6 +302,10 @@ struct DirectMessagesView: View {
         case messages = "Messages"
         case requests = "Requests"
     }
+    
+    @State private var userToBlock: String? = nil
+    @State private var showBlockConfirmation = false
+
 
     @State private var searchQuery: String = ""
     @State private var showNewConversationSheet = false
@@ -265,11 +315,14 @@ struct DirectMessagesView: View {
 
     @State private var messageSearchQuery: String = ""
     @State private var newUserSearchQuery: String = ""
+    
+    @State private var selectedConversationId: String? = nil
+
 
     private var filteredConversations: [Conversation] {
-        guard !messageSearchQuery.isEmpty else { return viewModel.conversations }
-        return viewModel.conversations.filter { convo in
-            convo.otherUser.username.localizedCaseInsensitiveContains(messageSearchQuery)
+        viewModel.conversations.filter { convo in
+            !viewModel.blockedUserIDs.contains(convo.otherUser.id) &&
+            (messageSearchQuery.isEmpty || convo.otherUser.username.localizedCaseInsensitiveContains(messageSearchQuery))
         }
     }
 
@@ -306,6 +359,7 @@ struct DirectMessagesView: View {
             }
         }.resume()
     }
+
 
     
     private func togglePin(for convo: Conversation) {
@@ -409,6 +463,19 @@ struct DirectMessagesView: View {
                 }
             }
         }
+        .alert("Block this user?", isPresented: $showBlockConfirmation) {
+            Button("Block", role: .destructive) {
+                if let targetId = userToBlock {
+                    viewModel.blockUser(currentUserId: userId, targetUserId: targetId, conversationId: selectedConversationId)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                selectedConversationId = nil
+            }
+        } message: {
+            Text("You will no longer see conversations from this user.")
+        }
+
     }
 
     private var messagesListView: some View {
@@ -425,6 +492,15 @@ struct DirectMessagesView: View {
                             currentUserId: userId,
                             onTogglePin: { togglePin(for: convo) }
                         )
+                    }
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            userToBlock = convo.otherUser.id
+                            selectedConversationId = convo.id  // <- You’ll need to add this state variable
+                            showBlockConfirmation = true
+                        } label: {
+                            Label("Block User", systemImage: "hand.raised.slash")
+                        }
                     }
                 }
             }
@@ -603,10 +679,27 @@ struct DirectMessagesView: View {
                     self.errorText = "Request failed: \(error.localizedDescription)"
                     return
                 }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    self.errorText = "Invalid response from server."
+                    return
+                }
+
                 guard let data = data else {
                     self.errorText = "No response from server."
                     return
                 }
+
+                if httpResponse.statusCode != 201 {
+                    if let serverError = try? JSONDecoder().decode([String: String].self, from: data),
+                       let message = serverError["error"] {
+                        self.errorText = message
+                    } else {
+                        self.errorText = "Unexpected error (code \(httpResponse.statusCode))"
+                    }
+                    return
+                }
+
                 do {
                     let apiConvo = try JSONDecoder().decode(APIConversation.self, from: data)
                     let mappedMessages = apiConvo.messages.map { msg in

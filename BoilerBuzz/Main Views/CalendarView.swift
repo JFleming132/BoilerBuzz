@@ -60,7 +60,7 @@ struct CalendarViewPage: View {
     // MARK: Month View
     private var monthView: some View {
         CalendarView(
-            selection: $selectedDate,
+            selection: $selectedDate
         )
         // RSVP’d in blue, large circle
         .decorating(
