@@ -66,6 +66,8 @@ struct HomeView: View {
     @State private var isCreatingEvent = false
     @State private var events: [Event] = []
     @State private var errorMessage: String?
+    @State private var creatorEvents: [Event] = []
+    @State private var notifiedEvents: Set<String> = []
     
     @State private var selectedEvent: Event? = nil
     @State private var showEventDetail: Bool = false
@@ -73,6 +75,12 @@ struct HomeView: View {
     @EnvironmentObject var locationManager: LocationManager
 
     var eventToView: String? = nil
+    
+    private func startPollingCreatorEvents() {
+        Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
+            pollCreatorEventRSVPs()
+        }
+    }
 
     @ViewBuilder
     private func NavigationDestinationView() -> some View {
@@ -141,6 +149,7 @@ struct HomeView: View {
             }
             .onAppear {
                 fetchEvents()
+                startPollingCreatorEvents()
             }
             .navigationDestination(isPresented: $showEventDetail) {
                 if let event = selectedEvent {
@@ -148,6 +157,46 @@ struct HomeView: View {
                 }
             }
         }
+    }
+    
+    
+    private func pollCreatorEventRSVPs() {
+        guard let userId = UserDefaults.standard.string(forKey: "userId"),
+              let url = URL(string: "\(backendURL)api/home/events/byUser/\(userId)") else {
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching creator events: \(error)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data returned for creator events.")
+                return
+            }
+
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .millisecondsSince1970
+                let events = try decoder.decode([Event].self, from: data)
+                DispatchQueue.main.async {
+                    self.creatorEvents = events
+                    for event in events {
+                        if event.rsvpCount >= event.capacity && !notifiedEvents.contains(event.id) {
+                            NotificationManager.shared.addNotification(
+                                title: "Your event is full!",
+                                message: "\"\(event.title)\" has reached its RSVP limit (\(event.capacity))."
+                            )
+                            notifiedEvents.insert(event.id)
+                        }
+                    }
+                }
+            } catch {
+                print("Decoding error for creator events: \(error)")
+            }
+        }.resume()
     }
 
     //Function to fetch all valid events from the backend
@@ -361,15 +410,34 @@ func rsvp(event: Event) {
     }
     URLSession.shared.dataTask(with: request) { data, response, error in
         if let error = error {
-            print("Error removing friend: \(error.localizedDescription)")
+            print("Error RSVP-ing: \(error.localizedDescription)")
             return
         }
-        
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200,
+              let data = data else {
             print("Unexpected response rsvping: \(response ?? "No response" as Any)")
             return
         }
+
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let message = json["notificationMessage"] as? String {
+                
+                // Check if current user is the author
+                let currentUserID = UserDefaults.standard.string(forKey: "userId") ?? ""
+                if currentUserID == event.author {
+                    DispatchQueue.main.async {
+                        NotificationManager.shared.addNotification(title: "Event Full", message: message)
+                    }
+                }
+            }
+        } catch {
+            print("Error parsing RSVP response: \(error)")
+        }
     }.resume()
+
     return
 }
 
