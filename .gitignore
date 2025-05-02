@@ -28,3 +28,22 @@ APIKeys.swift
 
 # .env files
 .env
+
+# Xcode build folder
+build/
+DerivedData/
+
+# Module cache
+*.pcm
+*.pcm.timestamp
+*.dSYM/
+*.xcarchive
+
+# Swift Package Manager
+/.build/
+/Packages/
+/.swiftpm/
+
+# Compiler module cache
+*.pcm
+*.pcm.timestamp
