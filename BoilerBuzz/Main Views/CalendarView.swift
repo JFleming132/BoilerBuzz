@@ -234,7 +234,7 @@ struct CalendarViewPage: View {
     
     private func fetchEvents() {
         guard let userId = UserDefaults.standard.string(forKey: "userId"),
-              let url = URL(string: "http://localhost:3000/api/calendar/events?currentUserID=\(userId)") else { return }
+              let url = URL(string: "http://54.146.194.154:3000/api/calendar/events?currentUserID=\(userId)") else { return }
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

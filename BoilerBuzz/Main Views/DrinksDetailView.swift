@@ -728,7 +728,7 @@ struct DrinksDetailView: View {
 
     
     func toggleDrinkSelection(objectID: String, userId: String) {
-        let url = URL(string: "http://localhost:3000/api/drinks/toggleTriedDrink")!
+        let url = URL(string: "http://54.146.194.154:3000/api/drinks/toggleTriedDrink")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

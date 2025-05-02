@@ -79,7 +79,7 @@ final class DirectMessagesViewModel: ObservableObject {
     
     /// Fetch conversations including message lists
     func fetchConversations(userId: String) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/getConversations?userId=\(userId)") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/getConversations?userId=\(userId)") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -130,7 +130,7 @@ final class DirectMessagesViewModel: ObservableObject {
     
     
     func fetchAvailableUsers(userId: String) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/getAvailableUsers?userId=\(userId)") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/getAvailableUsers?userId=\(userId)") else {
             errorMessage = "Invalid URL"
             return
         }
@@ -158,7 +158,7 @@ final class DirectMessagesViewModel: ObservableObject {
     func blockUser(currentUserId: String, targetUserId: String, conversationId: String? = nil) {
         guard !self.blockedUserIDs.contains(targetUserId) else { return }
 
-        guard let url = URL(string: "http://localhost:3000/api/blocked/block") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/blocked/block") else {
             self.errorMessage = "Invalid block URL"
             return
         }
@@ -333,7 +333,7 @@ struct DirectMessagesView: View {
     }
     
     private func updateRequireRequestsSetting(_ enabled: Bool) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/\(userId)/requireMessageRequests") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/\(userId)/requireMessageRequests") else {
             viewModel.errorMessage = "Invalid server URL"
             return
         }
@@ -363,7 +363,7 @@ struct DirectMessagesView: View {
 
     
     private func togglePin(for convo: Conversation) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convo.id)/pin") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/conversations/\(convo.id)/pin") else {
             viewModel.errorMessage = "Invalid server URL"
             return
         }
@@ -600,7 +600,7 @@ struct DirectMessagesView: View {
     }
 
     private func updateConversationStatus(convo: Conversation, newStatus: String) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convo.id)/status") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/conversations/\(convo.id)/status") else {
             viewModel.errorMessage = "Invalid server URL"
             return
         }
@@ -651,7 +651,7 @@ struct DirectMessagesView: View {
             return
         }
         
-        guard let url = URL(string: "http://localhost:3000/api/messages/startConversation") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/startConversation") else {
             errorText = "Invalid server URL."
             return
         }

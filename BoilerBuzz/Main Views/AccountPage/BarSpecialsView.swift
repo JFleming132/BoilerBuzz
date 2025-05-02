@@ -99,7 +99,7 @@ struct BarSpecialsView: View {
     private func fetchBarSpecials() {
         isLoading = true
         errorMessage = nil
-        let url = URL(string: "http://localhost:3000/api/drinkspecials/bar/\(barId)")!
+        let url = URL(string: "http://54.146.194.154:3000/api/drinkspecials/bar/\(barId)")!
         URLSession.shared.dataTask(with: url) { data, _, error in
             DispatchQueue.main.async {
                 isLoading = false
@@ -125,7 +125,7 @@ struct BarSpecialsView: View {
     }
 
     private func deleteSpecial(_ special: DrinkSpecial) {
-        guard let url = URL(string: "http://localhost:3000/api/drinkspecials/\(special.id)") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/drinkspecials/\(special.id)") else {
             errorMessage = "Invalid delete URL"; return
         }
         var request = URLRequest(url: url)

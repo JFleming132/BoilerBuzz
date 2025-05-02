@@ -207,7 +207,7 @@ struct HomeView: View {
             return
         }
 
-        let url = URL(string: "http://localhost:3000/api/home/events")!
+        let url = URL(string: "http://54.146.194.154:3000/api/home/events")!
         URLSession.shared.dataTask(with: url) { data, _, err in
             if let err = err {
                 DispatchQueue.main.async { self.errorMessage = err.localizedDescription }
@@ -476,7 +476,7 @@ func unrsvp(event: Event) {
 private func uploadImageToServer(_ image: UIImage) -> String {
     // Simulate image upload - Replace with actual upload logic if needed
     let imageId = UUID().uuidString
-    return "https://localhost:3000/uploads/\(imageId).jpg"
+    return "http://54.146.194.154:3000/uploads/\(imageId).jpg"
 }
 
 // Harry's View

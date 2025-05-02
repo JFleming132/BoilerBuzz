@@ -4,7 +4,7 @@ enum Tab: Hashable {
     case map, calendar, home, drinks, account, game
 }
 
-let backendURL = "http://localhost:3000/"
+let backendURL = "http://54.146.194.154:3000/"
 
 struct ContentView: View {
     @State private var selectedTab: Tab

@@ -16,7 +16,7 @@ class SocketIOManager: ObservableObject {
     private var socket: SocketIOClient
     
     private init() {
-        guard let url = URL(string: "http://localhost:3000") else {
+        guard let url = URL(string: "http://54.146.194.154:3000") else {
             fatalError("Invalid URL for Socket.IO server")
         }
         manager = SocketManager(socketURL: url, config: [.log(false), .compress])

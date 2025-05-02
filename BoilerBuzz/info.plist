@@ -2,40 +2,59 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSFaceIDUsageDescription</key>
-	<string>We use FaceID to authenticate your access securely.</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.Patrick.BoilerBuzz</string>
-	<key>CFBundleDisplayName</key>
-	<string>BoilerBuzz</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
-	<key>CFBundleVersion</key>
-	<string>1</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>need your location even in background</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>need your location</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.Patrick.boilerbuzz</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>boilerbuzz</string>
-			</array>
-		</dict>
-	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>comgooglemaps</string>
-	</array>
+  <key>NSFaceIDUsageDescription</key>
+  <string>We use FaceID to authenticate your access securely.</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.Patrick.BoilerBuzz</string>
+  <key>CFBundleDisplayName</key>
+  <string>BoilerBuzz</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>CFBundleVersion</key>
+  <string>1</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>need your location even in background</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>need your location</string>
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>location</string>
+  </array>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>com.Patrick.boilerbuzz</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>boilerbuzz</string>
+      </array>
+    </dict>
+  </array>
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+    <string>comgooglemaps</string>
+  </array>
+
+  <!-- ADDED: Allow HTTP requests to your EC2 server -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>54.146.194.154</key>
+      <dict>
+        <key>NSIncludesSubdomains</key>
+        <true/>
+        <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+        <true/>
+        <key>NSTemporaryExceptionMinimumTLSVersion</key>
+        <string>TLSv1.0</string>
+      </dict>
+    </dict>
+  </dict>
+
 </dict>
 </plist>
+

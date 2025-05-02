@@ -172,7 +172,7 @@ class ProfileViewModel: ObservableObject {
             return
         }
 
-        guard let url = URL(string: "http://localhost:3000/api/users/\(idToFetch)/campus-status") else { return }
+        guard let url = URL(string: "http://54.146.194.154:3000/api/users/\(idToFetch)/campus-status") else { return }
 
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {

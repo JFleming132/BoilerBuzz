@@ -86,7 +86,7 @@ struct SpecialsView: View {
     private func fetchSpecials() {
         isLoading = true
         errorMessage = nil
-        let url = URL(string: "http://localhost:3000/api/drinkspecials")!
+        let url = URL(string: "http://54.146.194.154:3000/api/drinkspecials")!
         URLSession.shared.dataTask(with: url) { data, response, error in
             DispatchQueue.main.async {
                 isLoading = false

@@ -16,7 +16,7 @@ struct ChatDetailView: View {
     @State private var newMessage: String = ""
     
     func markMessagesAsRead(convoId: String, userId: String) {
-        guard let url = URL(string: "http://localhost:3000/api/messages/conversations/\(convoId)/markRead") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/messages/conversations/\(convoId)/markRead") else {
             print("Invalid URL")
             return
         }
@@ -54,7 +54,7 @@ struct ChatDetailView: View {
 
     
     func sendMessageBackend(convoId: String, messageText: String, sender: String, other: String) {
-        guard let postUrl = URL(string: "http://localhost:3000/api/messages/conversations/\(convoId)/sendMessage") else {
+        guard let postUrl = URL(string: "http://54.146.194.154:3000/api/messages/conversations/\(convoId)/sendMessage") else {
             print("Invalid URL")
             return
         }

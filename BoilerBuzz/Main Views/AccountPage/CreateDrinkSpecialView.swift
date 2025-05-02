@@ -190,7 +190,7 @@ struct CreateDrinkSpecialView: View {
 
 
         // Request setup
-        guard let url = URL(string: "http://localhost:3000/api/drinkspecials") else {
+        guard let url = URL(string: "http://54.146.194.154:3000/api/drinkspecials") else {
             errorMessage = "Invalid endpoint URL"
             isSubmitting = false
             return
