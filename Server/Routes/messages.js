@@ -266,13 +266,19 @@ router.post("/conversations/:id/sendMessage", async(req, res) => {
   }
 });
 
-// GET /api/messages/getAvailableUsers?userId={userId}
 router.get('/getAvailableUsers', async (req, res) => {
   try {
     const userId = req.query.userId;
     if (!userId) return res.status(400).json({ error: 'userId query required' });
 
-    // First, find all conversations the user is part of
+    // Find the current user to get their blockedUserIDs
+    const currentUser = await User.findById(userId).select('blockedUserIDs');
+    if (!currentUser) return res.status(404).json({ error: 'User not found' });
+
+    const blockedIds = currentUser.blockedUserIDs?.map(id => id.toString()) || [];
+    console.log(blockedIds);
+
+    // Find all conversations the user is part of
     const convos = await Conversation.find({
       $or: [{ initiator: userId }, { recipient: userId }]
     });
@@ -284,10 +290,13 @@ router.get('/getAvailableUsers', async (req, res) => {
       if (c.recipient.toString() !== userId) connectedUserIds.add(c.recipient.toString());
     });
 
-    // Also add yourself to the set to exclude yourself
+    // Also add yourself and blocked users to the exclusion set
     connectedUserIds.add(userId);
+    for (const id of blockedIds) {
+      connectedUserIds.add(id);
+    }
 
-    // Find all users not in the set
+    // Find users not in conversation with and not blocked
     const availableUsers = await User.find({
       _id: { $nin: Array.from(connectedUserIds) }
     }).select('username profilePicture');
@@ -305,6 +314,7 @@ router.get('/getAvailableUsers', async (req, res) => {
   }
 });
 
+
 router.post('/startConversation', async (req, res) => {
   try {
     const { initiator, recipient, messageText } = req.body;
@@ -313,6 +323,20 @@ router.post('/startConversation', async (req, res) => {
       return res.status(400).json({ error: 'initiator, recipient, and messageText are required.' });
     }
 
+    // Check if the recipient has blocked the initiator
+    const recipientUser = await User.findById(recipient).select('requireMessageRequests blockedUserIDs');
+    if (!recipientUser) {
+      return res.status(404).json({ error: 'Recipient user not found.' });
+    }
+
+    console.log(recipientUser.blockedUserIDs)
+
+    const blockedIds = recipientUser.blockedUserIDs?.map(id => id.toString()) || [];
+    console.log(recipientUser.blockedUserIDs)
+    console.log(blockedIds)
+    if (blockedIds.includes(initiator.toString())) {
+      return res.status(403).json({ error: 'You cannot message this user. You are blocked.' });
+    }
     // Check if a conversation already exists
     let convo = await Conversation.findOne({ initiator, recipient })
       || await Conversation.findOne({ initiator: recipient, recipient: initiator });
@@ -321,17 +345,17 @@ router.post('/startConversation', async (req, res) => {
       return res.status(400).json({ error: 'Conversation already exists.' });
     }
 
-    // ✅ Check if the recipient requires message requests
-    const recipientUser = await User.findById(recipient).select('requireMessageRequests');
-    if (!recipientUser) {
-      return res.status(404).json({ error: 'Recipient user not found.' });
-    }
-
     const requiresRequest = recipientUser.requireMessageRequests;
     const status = requiresRequest ? 'pending' : 'accepted';
 
     // Create the new conversation
-    convo = new Conversation({ initiator, recipient, status, pinned: false, acceptedAt: status === 'accepted' ? Date.now() : undefined });
+    convo = new Conversation({
+      initiator,
+      recipient,
+      status,
+      pinned: false,
+      acceptedAt: status === 'accepted' ? Date.now() : undefined
+    });
     await convo.save();
 
     // Create the first message
@@ -343,12 +367,10 @@ router.post('/startConversation', async (req, res) => {
     });
     await message.save();
 
-    // Attach message to conversation
     convo.messages.push(message._id);
     convo.updatedAt = Date.now();
     await convo.save();
 
-    // Populate initiator and recipient properly
     await convo.populate('initiator', 'username profilePicture');
     await convo.populate('recipient', 'username profilePicture');
     await convo.populate({
@@ -393,6 +415,7 @@ router.post('/startConversation', async (req, res) => {
     res.status(500).json({ error: 'Server error starting conversation' });
   }
 });
+
 
 
 // PATCH /api/messages/conversations/:id/status
